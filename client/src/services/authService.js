@@ -15,14 +15,23 @@ const MOCK_USERS = [
     accessType: 'admin', // This is crucial for role-based access
     role: 'admin', // Additional role field for backward compatibility
     permissions: [
-      'VIEW_DASHBOARD', 'VIEW_TOURNAMENTS', 'VIEW_MATCHES', 
-      'VIEW_ACADEMY', 'VIEW_SFA_NEXT', 'VIEW_SPORTS_CAMPS',
-      'VIEW_MODULES', 'VIEW_USER_MANAGEMENT', 'VIEW_USERS',
-      'MANAGE_USERS', 'VIEW_ROLES', 'MANAGE_ROLES', 'ASSIGN_ROLES',
-      'VIEW_SETTINGS'
+      'VIEW_DASHBOARD',
+      'VIEW_TOURNAMENTS',
+      'VIEW_MATCHES',
+      'VIEW_ACADEMY',
+      'VIEW_SFA_NEXT',
+      'VIEW_SPORTS_CAMPS',
+      'VIEW_MODULES',
+      'VIEW_USER_MANAGEMENT',
+      'VIEW_USERS',
+      'MANAGE_USERS',
+      'VIEW_ROLES',
+      'MANAGE_ROLES',
+      'ASSIGN_ROLES',
+      'VIEW_SETTINGS',
     ],
-    avatar: 'https://randomuser.me/api/portraits/men/1.jpg'
-  }
+    avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+  },
 ];
 
 /**
@@ -37,57 +46,19 @@ class AuthService {
   async login(credentials) {
     try {
       // When API is ready, use this:
-      // const response = await httpClient.post('/auth/login', credentials);
-      // const { user, token } = response;
-      
-      // For now, use the mock implementation
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      const user = MOCK_USERS.find(u => 
-        u.email === credentials.email && 
-        u.password === credentials.password
-      );
-      
-      if (!user) {
-        throw { status: 401, message: 'Invalid email or password' };
-      }
-      
-      // For admin@sfa.com credentials, always ensure accessType is set to admin 
-      if (user.email === 'admin@sfa.com') {
-        user.accessType = 'admin';
-        
-        // Also ensure all required permissions are set
-        if (!user.permissions) {
-          user.permissions = [];
-        }
-        
-        const requiredPermissions = [
-          'VIEW_DASHBOARD', 'VIEW_TOURNAMENTS', 'VIEW_MATCHES', 
-          'VIEW_ACADEMY', 'VIEW_SFA_NEXT', 'VIEW_SPORTS_CAMPS',
-          'VIEW_MODULES', 'VIEW_USER_MANAGEMENT', 'VIEW_USERS',
-          'MANAGE_USERS', 'VIEW_ROLES', 'MANAGE_ROLES', 'ASSIGN_ROLES',
-          'VIEW_SETTINGS'
-        ];
-        
-        // Add any missing permissions
-        requiredPermissions.forEach(perm => {
-          if (!user.permissions.includes(perm)) {
-            user.permissions.push(perm);
-          }
-        });
-      }
-      
-      // Create a mock token
-      const token = `mock-jwt-token-${Math.random().toString(36).substring(2)}`;
-      
-      // Store auth data
-      this.setSession(token, user);
-      
-      // Log user data for debugging
-      console.log('User logged in with data:', this.sanitizeUser(user));
-      
-      return { user: this.sanitizeUser(user), token };
+      // const response = await httpClient.post('/login', credentials);
+      // const { data } = response;
+      // const { access_token, meta } = data;
+      // const { user } = meta;
+      // this.setSession(access_token, user);
+      // return { user: this.sanitizeUser(user), token: access_token };
+      // // Create a mock token
+      // const token = `mock-jwt-token-${Math.random().toString(36).substring(2)}`;
+      // // Store auth data
+      // this.setSession(token, user);
+      // // Log user data for debugging
+      // console.log('User logged in with data:', this.sanitizeUser(user));
+      // return { user: this.sanitizeUser(user), token };
     } catch (error) {
       errorHandler.handleError(error);
       throw error;
@@ -104,17 +75,17 @@ class AuthService {
       // When API is ready, use this:
       // const response = await httpClient.post('/auth/register', userData);
       // const { user, token } = response;
-      
+
       // For now, use the mock implementation
       // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
       // Check if email already exists
-      const existingUser = MOCK_USERS.find(u => u.email === userData.email);
+      const existingUser = MOCK_USERS.find((u) => u.email === userData.email);
       if (existingUser) {
         throw { status: 409, message: 'Email already in use' };
       }
-      
+
       // Create a new user
       const newUser = {
         id: MOCK_USERS.length + 1,
@@ -123,22 +94,28 @@ class AuthService {
         password: userData.password,
         accessType: 'user',
         permissions: [
-          'VIEW_DASHBOARD', 'VIEW_TOURNAMENTS', 'VIEW_MATCHES', 
-          'VIEW_ACADEMY', 'VIEW_SFA_NEXT', 'VIEW_SPORTS_CAMPS',
-          'VIEW_SETTINGS'
+          'VIEW_DASHBOARD',
+          'VIEW_TOURNAMENTS',
+          'VIEW_MATCHES',
+          'VIEW_ACADEMY',
+          'VIEW_SFA_NEXT',
+          'VIEW_SPORTS_CAMPS',
+          'VIEW_SETTINGS',
         ],
-        avatar: `https://randomuser.me/api/portraits/${Math.random() > 0.5 ? 'men' : 'women'}/${Math.floor(Math.random() * 100)}.jpg`
+        avatar: `https://randomuser.me/api/portraits/${
+          Math.random() > 0.5 ? 'men' : 'women'
+        }/${Math.floor(Math.random() * 100)}.jpg`,
       };
-      
+
       // Add to mock database (in memory only for this demo)
       MOCK_USERS.push(newUser);
-      
+
       // Create a mock token
       const token = `mock-jwt-token-${Math.random().toString(36).substring(2)}`;
-      
+
       // Store auth data
       this.setSession(token, newUser);
-      
+
       return { user: this.sanitizeUser(newUser), token };
     } catch (error) {
       errorHandler.handleError(error);
@@ -154,15 +131,15 @@ class AuthService {
     try {
       // When API is ready, use this:
       // await httpClient.post('/auth/logout');
-      
+
       // Clear session
       this.clearSession();
-      
+
       return true;
     } catch (error) {
       // Still clear session even if API call fails
       this.clearSession();
-      
+
       // Log the error but don't throw (we want to ensure logout happens)
       console.error('Logout error:', error);
       return true;
@@ -176,7 +153,7 @@ class AuthService {
   getCurrentUser() {
     const userJson = localStorage.getItem(USER_KEY);
     if (!userJson) return null;
-    
+
     try {
       return JSON.parse(userJson);
     } catch (e) {
@@ -210,9 +187,12 @@ class AuthService {
     try {
       // When API is ready, use this:
       // return await httpClient.post('/auth/reset-password-request', data);
-      
+
       // For now, simulate success
-      return { success: true, message: 'Password reset link sent to your email.' };
+      return {
+        success: true,
+        message: 'Password reset link sent to your email.',
+      };
     } catch (error) {
       errorHandler.handleError(error);
       throw error;
@@ -228,9 +208,12 @@ class AuthService {
     try {
       // When API is ready, use this:
       // return await httpClient.post('/auth/reset-password', data);
-      
+
       // For now, simulate success
-      return { success: true, message: 'Password has been reset successfully.' };
+      return {
+        success: true,
+        message: 'Password has been reset successfully.',
+      };
     } catch (error) {
       errorHandler.handleError(error);
       throw error;
@@ -268,13 +251,13 @@ class AuthService {
   sanitizeUser(user) {
     const userToStore = { ...user };
     delete userToStore.password;
-    
+
     // For admin@sfa.com, ensure accessType is always properly set
     if (userToStore.email === 'admin@sfa.com') {
       userToStore.accessType = 'admin';
       userToStore.role = 'admin';
     }
-    
+
     return userToStore;
   }
 }
@@ -289,3 +272,5 @@ export const register = (userData) => authService.register(userData);
 export const logout = () => authService.logout();
 export const getCurrentUser = () => authService.getCurrentUser();
 export const isAuthenticated = () => authService.isAuthenticated();
+export const setSession = (token, user) => authService.setSession(token, user);
+export const sanitizeUser = (user) => authService.sanitizeUser(user);

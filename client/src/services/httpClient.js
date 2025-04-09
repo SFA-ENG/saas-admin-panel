@@ -13,18 +13,20 @@ class HttpClient {
   constructor(config = {}) {
     // Create new axios instance with default config
     this.client = axios.create({
-      baseURL: '/api',
+      baseURL: 'http://localhost:3000/api/v1/iam',
       timeout: 30000,
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
+        Accept: 'application/json',
       },
       ...config,
     });
 
+    console.log(this.client);
+
     // Initialize request interceptors
     this.initRequestInterceptors();
-    
+
     // Initialize response interceptors
     this.initResponseInterceptors();
   }
@@ -37,17 +39,22 @@ class HttpClient {
       (config) => {
         // Get the token from localStorage (if exists)
         const token = localStorage.getItem('auth_token');
-        
+
         // If token exists, add it to the headers
         if (token) {
           config.headers['Authorization'] = `Bearer ${token}`;
         }
-        
+
         // Log the request (dev only)
         if (process.env.NODE_ENV === 'development') {
-          console.log(`📤 [API Request] ${config.method.toUpperCase()} ${config.baseURL}${config.url}`, config.data || {});
+          console.log(
+            `📤 [API Request] ${config.method.toUpperCase()} ${config.baseURL}${
+              config.url
+            }`,
+            config.data || {}
+          );
         }
-        
+
         return config;
       },
       (error) => {
@@ -66,16 +73,19 @@ class HttpClient {
       (response) => {
         // Log the response (dev only)
         if (process.env.NODE_ENV === 'development') {
-          console.log(`📥 [API Response] ${response.status} ${response.config.url}`, response.data);
+          console.log(
+            `📥 [API Response] ${response.status} ${response.config.url}`,
+            response.data
+          );
         }
-        
+
         // Return just the data by default
         return response.data;
       },
       (error) => {
         // Handle response error
         console.error('📥 [API Response Error]', error);
-        
+
         // Handle unauthorized errors (401)
         if (error.response && error.response.status === 401) {
           // Clear auth token and redirect to login
@@ -83,13 +93,23 @@ class HttpClient {
           window.location.href = '/auth';
         }
 
+        let errorMessage = '';
+
+        error.response?.data?.errors?.forEach((error) => {
+          error.rawErrors?.forEach((rawError) => {
+            errorMessage += rawError.message + '\n';
+          });
+        });
+
         // Format the error for easier handling
         const formattedError = {
           status: error.response?.status,
           statusText: error.response?.statusText,
-          message: error.response?.data?.message || error.message,
+          message: errorMessage || error.message,
           data: error.response?.data,
         };
+
+        console.log(formattedError);
 
         return Promise.reject(formattedError);
       }

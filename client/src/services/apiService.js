@@ -111,7 +111,8 @@ class ApiService {
      * @param {Object} mappingData - Mapping data to update
      * @returns {Promise} Promise object representing the request
      */
-    update: (id, mappingData) => httpClient.put(`/user-roles/${id}`, mappingData),
+    update: (id, mappingData) =>
+      httpClient.put(`/user-roles/${id}`, mappingData),
 
     /**
      * Delete a user-role mapping
@@ -152,7 +153,8 @@ class ApiService {
      * @param {Object} tournamentData - Tournament data to update
      * @returns {Promise} Promise object representing the request
      */
-    update: (id, tournamentData) => httpClient.put(`/tournaments/${id}`, tournamentData),
+    update: (id, tournamentData) =>
+      httpClient.put(`/tournaments/${id}`, tournamentData),
 
     /**
      * Delete a tournament
@@ -218,7 +220,8 @@ class ApiService {
      * @param {Object} params - Query parameters for filtering/pagination
      * @returns {Promise} Promise object representing the request
      */
-    getActivities: (params = {}) => httpClient.get('/dashboard/activities', params),
+    getActivities: (params = {}) =>
+      httpClient.get('/dashboard/activities', params),
   };
 
   /**
@@ -230,7 +233,7 @@ class ApiService {
      * @param {Object} credentials - Login credentials
      * @returns {Promise} Promise object representing the request
      */
-    login: (credentials) => httpClient.post('/auth/login', credentials),
+    login: (credentials) => httpClient.post('/login', credentials),
 
     /**
      * Register a new user
@@ -256,7 +259,8 @@ class ApiService {
      * @param {Object} data - Email data for password reset
      * @returns {Promise} Promise object representing the request
      */
-    resetPasswordRequest: (data) => httpClient.post('/auth/reset-password-request', data),
+    resetPasswordRequest: (data) =>
+      httpClient.post('/auth/reset-password-request', data),
 
     /**
      * Reset password with token

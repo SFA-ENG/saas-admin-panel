@@ -1,6 +1,8 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import authService from '../services/authService';
+import apiService from '../services/apiService';
+import errorHandler from '../utils/errorHandler';
 
 // Create the context
 const AuthContext = createContext();
@@ -27,17 +29,35 @@ export const AuthProvider = ({ children }) => {
   // Login function
   const login = async (credentials) => {
     try {
-      const result = await authService.login(credentials);
-      
+      const response = await apiService.auth.login(credentials);
+      const { data } = response;
+      const { access_token, meta } = data;
+      const isSuperAdmin = meta.roles?.find(
+        (role) => role.role_name?.toUpperCase() === 'SUPER_ADMIN'
+      );
+      if (!isSuperAdmin) {
+        throw {
+          status: 403,
+          message: 'You are not authorized to access this application',
+        };
+      }
+
+      authService.setSession(access_token, meta);
+      const result = {
+        user: authService.sanitizeUser(meta),
+        token: access_token,
+      };
+
       // Ensure admin user has proper accessType
-      if (result.user.email === 'admin@sfa.com' && !result.user.accessType) {
+      if (!result.user.accessType) {
         result.user.accessType = 'admin';
         console.log('Added admin accessType in AuthContext:', result.user);
       }
-      
+
       setUser(result.user);
       return result;
     } catch (error) {
+      errorHandler.handleError(error);
       throw error;
     }
   };
@@ -67,14 +87,10 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
-    isAuthenticated: () => !!user
+    isAuthenticated: () => !!user,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 // Custom hook to use the context
