@@ -1,37 +1,77 @@
 import { useState, useEffect } from "react";
-import { Card, Row, Col, Statistic, List, Avatar, Button } from 'antd';
+import { Card, Row, Col, Statistic, List, Avatar, Button, Spin } from 'antd';
 import { UserOutlined, TeamOutlined, UsergroupAddOutlined, UserSwitchOutlined } from '@ant-design/icons';
 import { Link } from "react-router-dom";
+import { apiService } from '../services/apiService';
 
 const UserDashboard = () => {
-  // Mock data for users and roles
-  const dummyUsers = [
-    { id: 1, name: 'John Smith', email: 'john.smith@example.com', role: 'Administrator' },
-    { id: 2, name: 'Emily Johnson', email: 'emily.johnson@example.com', role: 'Manager' },
-    { id: 3, name: 'Michael Brown', email: 'michael.brown@example.com', role: 'Coach' },
-    { id: 4, name: 'Sarah Williams', email: 'sarah.williams@example.com', role: 'Analyst' },
-    { id: 5, name: 'David Lee', email: 'david.lee@example.com', role: 'Staff' }
-  ];
-
-  const dummyRoles = [
-    { id: 1, name: 'Administrator', users: 2, color: '#FF5733' },
-    { id: 2, name: 'Manager', users: 3, color: '#33A5FF' },
-    { id: 3, name: 'Coach', users: 5, color: '#33FF57' },
-    { id: 4, name: 'Analyst', users: 2, color: '#FF33E9' },
-    { id: 5, name: 'Staff', users: 3, color: '#FFBD33' }
-  ];
-
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch users and roles data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        // Fetch users
+        const usersResponse = await apiService.users.getAll();
+        if (usersResponse && usersResponse.data) {
+          setUsers(usersResponse.data);
+        }
+
+        // Fetch roles
+        const rolesResponse = await apiService.roles.getAll();
+        if (rolesResponse && rolesResponse.data) {
+          setRoles(rolesResponse.data);
+        }
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        setError(err.message || 'Failed to fetch data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   const [recentlyAddedUsers, setRecentlyAddedUsers] = useState([]);
 
-  // Initialize with dummy data
+  // Update recently added users when users data changes
   useEffect(() => {
-    setUsers(dummyUsers);
-    setRoles(dummyRoles);
-    // Sort to get most recently added users (assuming higher IDs are more recent)
-    setRecentlyAddedUsers([...dummyUsers].sort((a, b) => b.id - a.id).slice(0, 5));
-  }, []);
+    if (users.length > 0) {
+      // Sort users by creation date (assuming there's a created_at field)
+      // If not, we can sort by ID as a fallback
+      const sortedUsers = [...users].sort((a, b) => {
+        if (a.created_at && b.created_at) {
+          return new Date(b.created_at) - new Date(a.created_at);
+        }
+        return b.tenant_user_id - a.tenant_user_id;
+      });
+      setRecentlyAddedUsers(sortedUsers.slice(0, 5));
+    }
+  }, [users]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="text-red-500 mb-4">Error: {error}</div>
+        <Button type="primary" onClick={() => window.location.reload()}>
+          Retry
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">

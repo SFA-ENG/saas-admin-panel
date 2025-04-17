@@ -2,17 +2,29 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, Button, Dropdown, Menu, Space } from 'antd';
 import { UserOutlined, LogoutOutlined, SettingOutlined, BellOutlined, MenuOutlined } from '@ant-design/icons';
+import { apiService } from '../../services/apiService';
 
 const Header = ({ user, handleMenuClick }) => {
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    // Clear authentication data
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    
-    // Redirect to login page
-    navigate('/auth');
+  const handleLogout = async () => {
+    try {
+      // Call the logout API
+      await apiService.auth.logout();
+      
+      // Clear authentication data
+      localStorage.removeItem('sfa_admin_token');
+      localStorage.removeItem('user');
+      
+      // Force a hard navigation to ensure complete logout
+      window.location.href = '/auth';
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Even if API call fails, we should still clear local storage and redirect
+      localStorage.removeItem('sfa_admin_token');
+      localStorage.removeItem('user');
+      window.location.href = '/auth';
+    }
   };
 
   const userMenu = (

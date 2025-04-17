@@ -1,134 +1,161 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Table, Button, Modal, Form, Input, Select, message, Dropdown, Tag, Space, Avatar } from 'antd';
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Modal, Form, Input, Select, Button, message, Badge, Tag, Dropdown, Spin, Upload, Avatar, Popconfirm } from 'antd';
 import { 
   CloseOutlined, 
   UserOutlined, 
   MailOutlined, 
   LockOutlined, 
-  PhoneOutlined,
+  PhoneOutlined, 
+  TagOutlined, 
+  InfoCircleOutlined, 
   EditOutlined, 
   DeleteOutlined, 
   MoreOutlined,
-  PlusOutlined,
-  UserSwitchOutlined
+  SearchOutlined,
+  UploadOutlined
 } from '@ant-design/icons';
 import SearchBar from '../components/common/SearchBar';
-import { Link, useNavigate } from "react-router-dom";
+import { apiService } from '../services/apiService';
 
 const UsersManagement = () => {
-  // Mock data for users
-  const dummyUsers = [
-    {
-      id: 1,
-      name: 'John Smith',
-      email: 'john.smith@example.com',
-      role: 'Administrator',
-      password: 'Password123',
-      phone: '+1 (555) 123-4567',
-      status: 'active',
-      avatar: 'https://randomuser.me/api/portraits/men/32.jpg'
-    },
-    {
-      id: 2,
-      name: 'Emily Johnson',
-      email: 'emily.johnson@example.com',
-      role: 'Manager',
-      password: 'Password123',
-      phone: '+1 (555) 234-5678',
-      status: 'active',
-      avatar: 'https://randomuser.me/api/portraits/women/26.jpg'
-    },
-    {
-      id: 3,
-      name: 'Michael Brown',
-      email: 'michael.brown@example.com',
-      role: 'Coach',
-      password: 'Password123',
-      phone: '+1 (555) 345-6789',
-      status: 'active',
-      avatar: 'https://randomuser.me/api/portraits/men/41.jpg'
-    },
-    {
-      id: 4,
-      name: 'Sarah Williams',
-      email: 'sarah.williams@example.com',
-      role: 'Analyst',
-      password: 'Password123',
-      phone: '+1 (555) 456-7890',
-      status: 'inactive',
-      avatar: 'https://randomuser.me/api/portraits/women/67.jpg'
-    },
-    {
-      id: 5,
-      name: 'David Lee',
-      email: 'david.lee@example.com',
-      role: 'Staff',
-      password: 'Password123',
-      phone: '+1 (555) 567-8901',
-      status: 'active',
-      avatar: 'https://randomuser.me/api/portraits/men/59.jpg'
-    },
-    {
-      id: 6,
-      name: 'Jennifer Martinez',
-      email: 'jennifer.martinez@example.com',
-      role: 'Coach',
-      password: 'Password123',
-      phone: '+1 (555) 678-9012',
-      status: 'active',
-      avatar: 'https://randomuser.me/api/portraits/women/33.jpg'
-    },
-    {
-      id: 7,
-      name: 'Robert Wilson',
-      email: 'robert.wilson@example.com',
-      role: 'Manager',
-      password: 'Password123',
-      phone: '+1 (555) 789-0123',
-      status: 'active',
-      avatar: 'https://randomuser.me/api/portraits/men/45.jpg'
-    },
-    {
-      id: 8,
-      name: 'Jessica Taylor',
-      email: 'jessica.taylor@example.com',
-      role: 'Administrator',
-      password: 'Password123',
-      phone: '+1 (555) 890-1234',
-      status: 'active',
-      avatar: 'https://randomuser.me/api/portraits/women/52.jpg'
-    },
-    {
-      id: 9,
-      name: 'Thomas Anderson',
-      email: 'thomas.anderson@example.com',
-      role: 'Analyst',
-      password: 'Password123',
-      phone: '+1 (555) 901-2345',
-      status: 'inactive',
-      avatar: 'https://randomuser.me/api/portraits/men/72.jpg'
-    }
-  ];
-
   const [users, setUsers] = useState([]);
+  const [roles, setRoles] = useState([]);
+  const [userRoleMappings, setUserRoleMappings] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [modalVisible, setModalVisible] = useState(false);
-  const [form] = Form.useForm();
+  const [userSearchTerm, setUserSearchTerm] = useState('');
+  const [userModalVisible, setUserModalVisible] = useState(false);
+  const [roleAssignmentModalVisible, setRoleAssignmentModalVisible] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [userForm] = Form.useForm();
+  const [roleAssignmentForm] = Form.useForm();
   const [editingUserId, setEditingUserId] = useState(null);
-  const [modalTitle, setModalTitle] = useState('Add New User');
-  const navigate = useNavigate();
-
-  // Initialize with dummy data
-  useEffect(() => {
-    setUsers(dummyUsers);
-    setFilteredUsers(dummyUsers);
-  }, []);
+  const [userModalTitle, setUserModalTitle] = useState('Add New User');
+  const [previewImage, setPreviewImage] = useState(null);
+  const [imagePreviewVisible, setImagePreviewVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
   
-  // Handle search
-  const handleSearch = (searchTerm) => {
-    setSearchTerm(searchTerm);
+  // Fetch users data using React Query
+  const { data: usersData, isLoading, error, refetch } = useQuery({
+    queryKey: ['users'],
+    queryFn: async () => {
+      console.log('Fetching users...');
+      try {
+        const response = await apiService.users.getAll();
+        console.log('Raw API Response:', response);
+        
+        // Extract the data array from the response
+        const usersArray = response?.data || [];
+        console.log('Raw Users Array:', usersArray);
+        
+        // Process each user to ensure proper role structure
+        const processedUsers = usersArray.map(user => {
+          console.log('Processing user:', user);
+          console.log('User roles before processing:', user.roles);
+          
+          // Ensure roles is an array and has the correct structure
+          const processedRoles = Array.isArray(user.roles) 
+            ? user.roles.map(role => ({
+                tenant_role_id: role.tenant_role_id,
+                name: role.name
+              }))
+            : [];
+          
+          console.log('Processed roles for user:', processedRoles);
+          
+          return {
+            ...user,
+            roles: processedRoles
+          };
+        });
+        
+        console.log('Final processed users:', processedUsers);
+        return processedUsers;
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        throw error;
+      }
+    },
+    onSuccess: (data) => {
+      console.log('Users data received in onSuccess:', data);
+      if (Array.isArray(data)) {
+      setUsers(data);
+      setFilteredUsers(data);
+      } else {
+        setUsers([]);
+        setFilteredUsers([]);
+      }
+    },
+    onError: (error) => {
+      console.error('Query error:', error);
+      message.error('Failed to fetch users. Please try again later.');
+    }
+  });
+  
+  // Fetch roles data using React Query
+  const { data: rolesData, isLoading: isRolesLoading, error: rolesError } = useQuery({
+    queryKey: ['roles'],
+    queryFn: async () => {
+      console.log('Fetching roles...');
+      try {
+        const response = await apiService.roles.getAll();
+        console.log('Raw Roles Response:', response);
+        return response?.data || [];
+      } catch (error) {
+        console.error('Error fetching roles:', error);
+        throw error;
+      }
+    },
+    onSuccess: (data) => {
+      console.log('Roles data received:', data);
+      setRoles(data);
+    }
+  });
+  
+  // Add useEffect to monitor state changes
+  useEffect(() => {
+    console.log('Current users state:', users);
+    console.log('Current filteredUsers state:', filteredUsers);
+    console.log('Users length:', users.length);
+    console.log('Filtered users length:', filteredUsers.length);
+  }, [users, filteredUsers]);
+  
+  // Add useEffect to handle usersData changes
+  useEffect(() => {
+    if (usersData) {
+      console.log('usersData changed:', usersData);
+      setUsers(usersData);
+      setFilteredUsers(usersData);
+    }
+  }, [usersData]);
+  
+  // Add useEffect to handle rolesData changes
+  useEffect(() => {
+    if (rolesData) {
+      console.log('Setting roles state with data:', rolesData);
+      setRoles(rolesData);
+    }
+  }, [rolesData]);
+  
+  // Add useEffect to monitor roles state
+  useEffect(() => {
+    console.log('Current roles state:', roles);
+    console.log('Roles length:', roles.length);
+  }, [roles]);
+  
+  // Add useEffect to log user data changes
+  useEffect(() => {
+    console.log('Current users state:', users);
+    users.forEach(user => {
+      console.log(`User ${user.name} roles:`, user.roles);
+    });
+  }, [users]);
+  
+  // Handle user search
+  const handleUserSearch = (searchTerm) => {
+    setUserSearchTerm(searchTerm);
     if (!searchTerm.trim()) {
       setFilteredUsers(users);
       return;
@@ -136,234 +163,229 @@ const UsersManagement = () => {
     
     const filtered = users.filter(user => 
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.role.toLowerCase().includes(searchTerm.toLowerCase())
+      user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredUsers(filtered);
   };
 
-  // Fetch users data
-  const { data, isLoading } = useQuery({
-    queryKey: ['/api/users'],
-    enabled: false, // Disable actual fetch for now since we're using state
-  });
+  // Handler for showing the role assignment modal
+  const showRoleAssignmentModal = (user) => {
+    setSelectedUser(user);
+    const currentRoles = user.roles || [];
+    const currentRoleIds = currentRoles.map(role => role.tenant_role_id);
+    
+    roleAssignmentForm.setFieldsValue({
+      roleIds: currentRoleIds
+    });
+    setRoleAssignmentModalVisible(true);
+  };
+
+  const handleAlphabeticalInput = (e) => {
+    const char = e.key;
+    if (!/^[A-Za-z\s]$/.test(char)) {
+      e.preventDefault();
+    }
+  };
+
+  const handleNumericInput = (e) => {
+    const char = e.key;
+    if (!/^\d$/.test(char)) {
+      e.preventDefault();
+    }
+  };
+  
+  // Handler for submitting the role assignment form
+  const handleRoleAssignmentSubmit = async (values) => {
+    try {
+      if (!selectedUser?.tenant_user_id) {
+        throw new Error('User ID is required');
+      }
+
+      if (!values.roleIds || !Array.isArray(values.roleIds) || values.roleIds.length === 0) {
+        throw new Error('Please select at least one role');
+      }
+
+      // Validate that all selected role IDs exist in the roles array
+      const validRoleIds = roles.map(role => role.tenant_role_id);
+      const invalidRoleIds = values.roleIds.filter(id => !validRoleIds.includes(id));
+      
+      if (invalidRoleIds.length > 0) {
+        throw new Error('Invalid role IDs selected');
+      }
+
+      const payload = {
+        tenant_user_id: selectedUser.tenant_user_id,
+        tenant_role_ids: values.roleIds,
+        type: 'ADD'
+      };
+
+      console.log('Sending role assignment request:', payload);
+
+      const response = await apiService.userRoles.assign(payload);
+      console.log('Role assignment response:', response);
+      
+      if (response.success) {
+        // Invalidate and refetch users query to get updated data
+        await queryClient.invalidateQueries(['users']);
+        message.success('Roles assigned successfully');
+        setRoleAssignmentModalVisible(false);
+        setSelectedUser(null);
+        roleAssignmentForm.resetFields();
+      } else {
+        throw new Error(response.message || 'Failed to assign roles');
+      }
+    } catch (error) {
+      console.error('Error assigning roles:', error);
+      message.error(error.response?.data?.message || error.message || 'Failed to assign roles. Please try again later.');
+    }
+  };
+  
+  // Handler for closing the role assignment modal
+  const closeRoleAssignmentModal = () => {
+    setRoleAssignmentModalVisible(false);
+    setSelectedUser(null);
+    roleAssignmentForm.resetFields();
+  };
 
   // Handler for opening the add user form
   const showAddUserModal = () => {
     setEditingUserId(null);
-    setModalTitle('Add New User');
-    form.resetFields();
-    setModalVisible(true);
+    setUserModalTitle('Add New User');
+    userForm.resetFields();
+    setUserModalVisible(true);
+  };
+  
+  // Handle profile picture URL change
+  const handleProfilePictureChange = (e) => {
+    const url = e.target.value;
+    setPreviewImage(url);
   };
   
   // Handler for opening the edit user form
   const showEditUserModal = (user) => {
-    setEditingUserId(user.id);
-    setModalTitle('Edit User');
+    setEditingUserId(user.tenant_user_id);
+    setUserModalTitle('Edit User');
+    setPreviewImage(user.profile_picture_url);
     
-    form.setFieldsValue({
+    // Set form values, handling both old and new contact number formats
+    const formValues = {
       name: user.name,
       email: user.email,
-      password: user.password,
-      phone: user.phone,
-    });
+      contact_number: {
+        country_code: user.contact_number?.country_code || '+1',
+        isd_code: user.contact_number?.isd_code || '1',
+        number: user.contact_number?.number || '',
+      },
+      profile_picture_url: user.profile_picture_url || ''
+    };
     
-    setModalVisible(true);
+    userForm.setFieldsValue(formValues);
+    setUserModalVisible(true);
   };
 
   // Handler for submitting the user form (both add and edit)
-  const handleFormSubmit = (values) => {
-    if (editingUserId) {
-      // Edit existing user - keep their existing roles
-      const existingUser = users.find(user => user.id === editingUserId);
-      const updatedUsers = users.map(user => {
-        if (user.id === editingUserId) {
-          return { 
-            ...user, 
-            ...values
-            // Roles will remain unchanged
-          };
-        }
-        return user;
-      });
-      setUsers(updatedUsers);
-      
-      // Update filtered users
-      if (searchTerm) {
-        handleSearch(searchTerm);
-      } else {
-        setFilteredUsers(updatedUsers);
-      }
-      
-      console.log('Updated User:', { id: editingUserId, ...values, role: existingUser.role, assignedRoles: existingUser.assignedRoles });
-      message.success('User updated successfully');
-    } else {
-      // Add new user with Staff role by default
-      const defaultRole = 'Staff';
-      const defaultAssignedRoles = [{
-        id: 5, // Staff role ID
-        name: 'Staff',
-        color: '#FFBD33'
-      }];
-      
-      const newUser = {
-        id: users.length + 1,
-        ...values,
-        role: defaultRole,
-        assignedRoles: defaultAssignedRoles,
-        status: 'active',
-        avatar: 'https://randomuser.me/api/portraits/men/1.jpg'
+  const handleUserFormSubmit = async (values) => {
+    try {
+      // Prepare the request payload
+      const payload = {
+        name: values.name,
+        contact_number: values.contact_number || {
+          country_code: '+1',
+          isd_code: '1',
+          number: values.phone || '',
+        },
+        profile_picture_url: values.profile_picture_url || ''
       };
-      const newUsers = [...users, newUser];
-      setUsers(newUsers);
-      
-      // Update filtered users
-      if (searchTerm) {
-        handleSearch(searchTerm);
+
+      if (editingUserId) {
+        // Update existing user using API
+        const response = await apiService.users.update(editingUserId, payload);
+        console.log('Update response:', response);
+        
+        if (response.success) {
+          // Invalidate and refetch users query
+          await queryClient.invalidateQueries(['users']);
+          message.success('User updated successfully');
+        } else {
+          throw new Error(response.message || 'Failed to update user');
+        }
       } else {
-        setFilteredUsers(newUsers);
+        // For new users, include email in the payload
+        const createPayload = {
+          ...payload,
+          email: values.email
+        };
+        
+        // Add new user using API
+        const response = await apiService.users.create(createPayload);
+        console.log('Create response:', response);
+        
+        if (response.success) {
+          // Invalidate and refetch users query
+          await queryClient.invalidateQueries(['users']);
+          message.success('User added successfully');
+        } else {
+          throw new Error(response.message || 'Failed to add user');
+        }
       }
       
-      console.log('New User:', newUser);
-      message.success('User added successfully');
+      setUserModalVisible(false);
+      setEditingUserId(null);
+      userForm.resetFields();
+      setPreviewImage(null);
+    } catch (error) {
+      console.error('Error in handleUserFormSubmit:', error);
+      message.error(error.message || 'Failed to add/update user');
     }
-    setModalVisible(false);
-    setEditingUserId(null);
-    form.resetFields();
   };
 
-  // Handler for closing the modal
-  const closeModal = () => {
-    setModalVisible(false);
+  // Handler for closing the modals
+  const closeUserModal = () => {
+    setUserModalVisible(false);
     setEditingUserId(null);
-    form.resetFields();
+    userForm.resetFields();
   };
 
-  // State for role assignment modal
-  const [roleModalVisible, setRoleModalVisible] = useState(false);
-  const [selectedUserForRole, setSelectedUserForRole] = useState(null);
-  const [roleForm] = Form.useForm();
-  
-  // Mock data for roles
-  const dummyRoles = [
-    {
-      id: 1,
-      name: 'Administrator',
-      description: 'Full access to all features and settings',
-      color: '#FF5733',
-    },
-    {
-      id: 2,
-      name: 'Manager',
-      description: 'Manage tournaments, teams, and matches',
-      color: '#33A5FF',
-    },
-    {
-      id: 3,
-      name: 'Coach',
-      description: 'Manage team details and view match data',
-      color: '#33FF57',
-    },
-    {
-      id: 4,
-      name: 'Analyst',
-      description: 'View and analyze match statistics',
-      color: '#FF33E9',
-    },
-    {
-      id: 5,
-      name: 'Staff',
-      description: 'Basic access to the platform',
-      color: '#FFBD33',
-    }
-  ];
-  
-  // Show role assignment modal
-  const handleAssignRoles = (user) => {
-    setSelectedUserForRole(user);
-    
-    // Determine which roles the user already has
-    let initialRoleIds = [];
-    
-    // If user has assignedRoles property, use that
-    if (user.assignedRoles && user.assignedRoles.length > 0) {
-      initialRoleIds = user.assignedRoles.map(role => role.id);
-    } else {
-      // Otherwise, just use the main role
-      const roleId = user.role === 'Administrator' ? 1 : 
-                     user.role === 'Manager' ? 2 :
-                     user.role === 'Coach' ? 3 :
-                     user.role === 'Analyst' ? 4 : 5;
-      initialRoleIds = [roleId];
-    }
-    
-    roleForm.setFieldsValue({
-      roleIds: initialRoleIds
-    });
-    
-    setRoleModalVisible(true);
-  };
-  
-  // Handle role assignment form submission
-  const handleRoleFormSubmit = (values) => {
-    const selectedRoles = dummyRoles.filter(role => values.roleIds.includes(role.id));
-    const roleNames = selectedRoles.map(role => role.name).join(', ');
-    
-    // Create an array of assigned roles for display purposes
-    const assignedRoles = selectedRoles.map(role => ({
-      id: role.id,
-      name: role.name,
-      color: role.color
-    }));
-    
-    // Update user role - for now, we'll just set the primary role as the first selected one
-    // but store all roles in a new property
-    const updatedUsers = users.map(user => {
-      if (user.id === selectedUserForRole.id) {
-        return { 
-          ...user, 
-          role: selectedRoles[0].name, // Primary role for display in table
-          assignedRoles: assignedRoles  // All assigned roles
-        };
+  // Handler for deleting a user
+  const handleDeleteUser = async (userId) => {
+    try {
+      setLoading(true);
+      const response = await apiService.users.delete(userId);
+      
+      if (response.data?.success) {
+        message.success('User deleted successfully');
+        
+        // Update local state
+        const updatedUsers = users.filter(user => user.tenant_user_id !== userId);
+        setUsers(updatedUsers);
+        setFilteredUsers(updatedUsers);
+        
+        // Refetch users data to ensure we have the latest state
+        const { data: usersData } = await apiService.users.getAll();
+        if (usersData) {
+          setUsers(usersData);
+          setFilteredUsers(usersData);
+        }
+      } else {
+        throw new Error(response.data?.message || 'Failed to delete user');
       }
-      return user;
-    });
-    
-    setUsers(updatedUsers);
-    setFilteredUsers(updatedUsers);
-    
-    // Success message
-    if (selectedRoles.length === 1) {
-      message.success(`Role '${roleNames}' assigned to ${selectedUserForRole.name}`);
-    } else {
-      message.success(`Roles '${roleNames}' assigned to ${selectedUserForRole.name}`);
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to delete user. Please try again later.';
+      message.error(errorMessage);
+    } finally {
+      setLoading(false);
     }
-    
-    setRoleModalVisible(false);
-    setSelectedUserForRole(null);
-    roleForm.resetFields();
-  };
-  
-  // Close role modal
-  const closeRoleModal = () => {
-    setRoleModalVisible(false);
-    setSelectedUserForRole(null);
-    roleForm.resetFields();
   };
 
-  // Table columns
   const columns = [
     {
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
       render: (text, record) => (
-        <div className="flex items-center">
-          <img 
-            src={record.avatar} 
-            alt={record.name} 
-            className="w-8 h-8 rounded-full mr-2"
-          />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Avatar src={record.profile_picture_url} size="small" />
           <span>{text}</span>
         </div>
       ),
@@ -374,290 +396,539 @@ const UsersManagement = () => {
       key: 'email',
     },
     {
-      title: 'Role',
-      dataIndex: 'role',
-      key: 'role',
-      render: (text, record) => (
-        <div>
-          {/* Primary role */}
-          <Tag color={
-            text === 'Administrator' ? 'red' :
-            text === 'Manager' ? 'blue' :
-            text === 'Coach' ? 'green' :
-            text === 'Analyst' ? 'purple' :
-            'orange'
-          }>
-            {text}
-          </Tag>
-          
-          {/* Show additional roles if they exist */}
-          {record.assignedRoles && record.assignedRoles.length > 1 && (
-            <div className="mt-1">
-              {record.assignedRoles
-                .filter(role => role.name !== text) // Skip the primary role
-                .map(role => (
-                  <Tag 
-                    key={role.id}
-                    color={role.color}
-                    className="mr-1 mt-1"
-                    style={{ opacity: 0.8 }}
-                  >
-                    {role.name}
-                  </Tag>
-                ))
-              }
-            </div>
+      title: 'Contact Number',
+      dataIndex: 'contact_number',
+      key: 'contact_number',
+      render: (text) => formatPhoneNumber(text),
+    },
+    {
+      title: 'Profile Picture',
+      dataIndex: 'profile_picture_url',
+      key: 'profile_picture_url',
+      render: (text) => (
+        text ? (
+          <Button
+            type="link"
+            onClick={() => {
+              setSelectedImage(text);
+              setImagePreviewVisible(true);
+            }}
+          >
+            View Image
+          </Button>
+        ) : (
+          <span className="text-sm text-gray-500">No image</span>
+        )
+      ),
+    },
+    {
+      title: 'Roles',
+      dataIndex: 'roles',
+      key: 'roles',
+      render: (roles) => (
+        <div className="flex flex-wrap gap-1">
+          {roles?.length > 0 ? (
+            roles.map(role => (
+              <Tag key={role.tenant_role_id} color="blue">{role.name}</Tag>
+            ))
+          ) : (
+            <span className="text-sm text-gray-500">No roles assigned</span>
           )}
         </div>
       ),
     },
     {
       title: 'Status',
-      dataIndex: 'status',
+      dataIndex: 'is_active',
       key: 'status',
-      render: (status) => (
-        <Tag color={status === 'active' ? 'success' : 'default'}>
-          {status.charAt(0).toUpperCase() + status.slice(1)}
-        </Tag>
-      ),
-    },
-    {
-      title: 'Actions',
-      key: 'actions',
-      render: (_, record) => (
-        <Space size="small">
-          <Button 
-            type="primary" 
-            size="small" 
-            icon={<UserSwitchOutlined />} 
-            onClick={() => handleAssignRoles(record)}
-          >
-            Assign Roles
-          </Button>
-          <Button 
-            size="small" 
-            icon={<EditOutlined />} 
-            onClick={() => showEditUserModal(record)}
-          >
-            Edit
-          </Button>
-          <Dropdown
-            menu={{
-              items: [
-                {
-                  key: '1',
-                  icon: <DeleteOutlined />,
-                  label: 'Delete',
-                  danger: true,
-                  onClick: () => {
-                    message.success(`User ${record.name} deleted`);
-                    const newUsers = users.filter(user => user.id !== record.id);
-                    setUsers(newUsers);
-                    setFilteredUsers(newUsers);
-                  },
-                },
-              ],
-            }}
-          >
-            <Button type="text" icon={<MoreOutlined />} size="small" />
-          </Dropdown>
-        </Space>
+      render: (isActive) => (
+        <Badge status={isActive ? 'success' : 'error'} text={isActive ? 'Active' : 'Inactive'} />
       ),
     },
   ];
 
   return (
     <div className="p-6">
-      <div className="mb-6 flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-semibold text-[#111827]">Users Management</h1>
-          <p className="text-[#6B7280]">Manage user accounts and details</p>
-        </div>
-        <Button 
-          type="primary" 
-          icon={<PlusOutlined />} 
-          onClick={showAddUserModal}
-          size="large"
-        >
-          Add New User
-        </Button>
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold text-[#111827]">User Management</h1>
+        <p className="text-[#6B7280]">Manage user accounts and permissions</p>
       </div>
       
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="bg-white rounded-lg shadow-sm p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-8 h-8 bg-[#EEF2FF] rounded-lg flex items-center justify-center">
+              <i className="fas fa-users text-[#6366F1]"></i>
+            </div>
+          </div>
+          <h3 className="font-semibold mb-1">Total Users</h3>
+          <p className="text-sm text-[#6B7280] mb-4">{users.length} active user accounts</p>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow-sm p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-8 h-8 bg-[#EEF2FF] rounded-lg flex items-center justify-center">
+              <i className="fas fa-user-shield text-[#6366F1]"></i>
+            </div>
+          </div>
+          <h3 className="font-semibold mb-1">Admins</h3>
+          <p className="text-sm text-[#6B7280] mb-4">{users.filter(user => user.roles?.[0]?.role_name === 'SUPER_ADMIN').length} administrator accounts</p>
+        </div>
+      </div>
+      
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold">User Accounts</h2>
+        <button 
+          className="bg-[#6366F1] text-white text-sm px-4 py-2 rounded hover:bg-[#4F46E5] transition-colors"
+          onClick={showAddUserModal}
+        >
+          Add User
+        </button>
+      </div>
+      
+      <div className="bg-white rounded-lg shadow-sm p-4 mb-8">
         <div className="mb-4">
-          <SearchBar 
-            placeholder="Search users by name, email or role..." 
-            onSearch={handleSearch}
+          <SearchBar
+            placeholder="Search users by name or email..."
+            value={userSearchTerm}
+            onChange={setUserSearchTerm}
+            onSearch={handleUserSearch}
+            className="max-w-md"
           />
         </div>
-        
-        <Table 
-          dataSource={filteredUsers} 
-          columns={columns} 
-          rowKey="id"
-          pagination={{ pageSize: 7 }}
-          loading={isLoading}
-          scroll={{ y: 400 }}
-          className="user-table"
-        />
+        {isLoading ? (
+          <div className="flex justify-center items-center p-8">
+            <Spin size="large" />
+          </div>
+        ) : error ? (
+          <div className="p-6 text-center">
+            <p className="text-red-500 mb-4">Error loading users: {error.message}</p>
+            <button 
+              className="bg-gray-200 text-gray-700 text-sm px-4 py-2 rounded hover:bg-gray-300 transition-colors"
+              onClick={() => window.location.reload()}
+            >
+              Retry
+            </button>
+          </div>
+        ) : users && users.length > 0 ? (
+          <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
+            <table className="min-w-full divide-y divide-[#E5E7EB]">
+              <thead className="bg-gray-50 sticky top-0">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wider">Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wider">Email</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wider">Contact Number</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wider">Profile Picture</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wider">Roles</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-[#6B7280] uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-[#E5E7EB]">
+                {filteredUsers.map((user) => {
+                  console.log('Rendering user:', user);
+                  return (
+                    <tr key={user.tenant_user_id}>
+                    <td className="px-6 py-4">
+                            <div className="text-sm font-medium text-gray-900">{user.name || 'N/A'}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                        <div className="text-sm text-gray-500">{user.email || 'N/A'}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                        <div className="text-sm text-gray-500">
+                          {user.contact_number ? 
+                            `${user.contact_number.country_code} ${user.contact_number.isd_code} ${user.contact_number.number}` 
+                            : 'N/A'}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        {user.profile_picture_url ? (
+                          <Button
+                            type="link"
+                            onClick={() => {
+                              setSelectedImage(user.profile_picture_url);
+                              setImagePreviewVisible(true);
+                            }}
+                          >
+                            View Image
+                          </Button>
+                        ) : (
+                          <span className="text-sm text-gray-500">No image</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-wrap gap-1">
+                          {user.roles?.length > 0 ? (
+                            user.roles.map(role => (
+                              <Tag key={role.tenant_role_id} color="blue">{role.name}</Tag>
+                            ))
+                          ) : (
+                            <span className="text-sm text-gray-500">No roles assigned</span>
+                          )}
+                        </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <Badge 
+                          status={user.is_active ? 'success' : 'error'} 
+                          text={user.is_active ? 'Active' : 'Inactive'} 
+                      />
+                    </td>
+                    <td className="px-6 py-4 text-right text-sm font-medium">
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            type="primary"
+                            icon={<TagOutlined />}
+                            onClick={() => showRoleAssignmentModal(user)}
+                            className="bg-[#6366F1] hover:bg-[#4F46E5]"
+                          >
+                            Assign Roles
+                          </Button>
+                          <Dropdown
+                            menu={{
+                              items: [
+                                {
+                                  key: '1',
+                                  label: 'Edit',
+                                  icon: <EditOutlined />,
+                                  onClick: () => showEditUserModal(user),
+                                },
+                                {
+                                  key: '2',
+                                  label: (
+                                    <Popconfirm
+                                      title="Delete User"
+                                      description="Are you sure you want to delete this user?"
+                                      onConfirm={() => handleDeleteUser(user.tenant_user_id)}
+                                      okText="Yes"
+                                      cancelText="No"
+                                      placement="left"
+                                    >
+                                      <span className="text-red-500">
+                                        <DeleteOutlined /> Delete
+                                      </span>
+                                    </Popconfirm>
+                                  ),
+                                  danger: true,
+                                },
+                              ],
+                            }}
+                            placement="bottomRight"
+                            trigger={['click']}
+                          >
+                            <Button type="text" icon={<MoreOutlined />} />
+                          </Dropdown>
+                        </div>
+                    </td>
+                  </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="p-6 text-center">
+                <p className="text-[#6B7280] mb-4">No users found</p>
+                <button 
+                  className="bg-[#6366F1] text-white text-sm px-4 py-2 rounded hover:bg-[#4F46E5] transition-colors"
+                  onClick={showAddUserModal}
+                >
+                  Add Your First User
+                </button>
+          </div>
+        )}
       </div>
-      
-      {/* User Form Modal */}
+
+      {/* User Modal (Add/Edit) */}
       <Modal
-        title={modalTitle}
-        open={modalVisible}
-        onCancel={closeModal}
+        title={
+          <div className="flex justify-between items-center">
+            <span>{userModalTitle}</span>
+            <button 
+              onClick={closeUserModal}
+              className="border-none bg-transparent text-gray-500 hover:text-gray-700"
+            >
+              <CloseOutlined />
+            </button>
+          </div>
+        }
+        open={userModalVisible}
+        onCancel={closeUserModal}
         footer={null}
-        destroyOnClose
-        width={500}
+        maskStyle={{ backdropFilter: 'blur(4px)' }}
+        closeIcon={null}
         className="user-modal"
-        centered
-        closeIcon={<CloseOutlined />}
       >
-        
         <Form
-          form={form}
+          form={userForm}
           layout="vertical"
-          onFinish={handleFormSubmit}
-          className="mt-4"
-          requiredMark={false}
+          onFinish={handleUserFormSubmit}
+          onPress={handleAlphabeticalInput}
         >
           <Form.Item
             name="name"
             label="Full Name"
-            rules={[{ required: true, message: 'Please enter name' }]}
+            rules={[{ required: true, message: 'Please enter full name' }]}
           >
-            <Input prefix={<UserOutlined />} placeholder="Enter full name" />
+            <Input 
+              placeholder="Enter full name" 
+              prefix={<UserOutlined className="text-gray-400" />}
+              onKeyPress={handleAlphabeticalInput}
+            />
           </Form.Item>
           
           <Form.Item
             name="email"
-            label="Email"
+            label="Email Address"
             rules={[
               { required: true, message: 'Please enter email' },
               { type: 'email', message: 'Please enter a valid email' }
             ]}
           >
-            <Input prefix={<MailOutlined />} placeholder="Enter email address" />
+            <Input 
+              placeholder="Enter email address" 
+              prefix={<MailOutlined className="text-gray-400" />} 
+            />
           </Form.Item>
           
-          <Form.Item
+          {/* <Form.Item
             name="password"
             label="Password"
             rules={[
-              { required: !editingUserId, message: 'Please enter password' },
+              { required: true, message: 'Please enter password' },
               { min: 8, message: 'Password must be at least 8 characters' }
             ]}
           >
-            <Input.Password prefix={<LockOutlined />} placeholder="Enter password" />
+            <Input.Password 
+              placeholder="Enter password" 
+              prefix={<LockOutlined className="text-gray-400" />} 
+            />
+          </Form.Item> */}
+          
+          <Form.Item
+            label="Contact Number"
+            required
+          >
+            <div className="flex space-x-2">
+              <Form.Item
+                name={['contact_number', 'country_code']}
+                noStyle
+                initialValue="IN"
+              >
+                <Select 
+                  style={{ width: 100 }}
+                  showSearch
+                  optionFilterProp="children"
+                  options={[
+                    { value: 'IN', label: 'India (+91)' },
+                    { value: 'US', label: 'USA (+1)' },
+                    { value: 'GB', label: 'UK (+44)' },
+                    { value: 'JP', label: 'Japan (+81)' },
+                    { value: 'CN', label: 'China (+86)' },
+                    { value: 'DE', label: 'Germany (+49)' },
+                    { value: 'FR', label: 'France (+33)' },
+                    { value: 'IT', label: 'Italy (+39)' },
+                    { value: 'ES', label: 'Spain (+34)' },
+                    { value: 'BR', label: 'Brazil (+55)' },
+                    { value: 'RU', label: 'Russia (+7)' },
+                    { value: 'AU', label: 'Australia (+61)' },
+                    { value: 'CA', label: 'Canada (+1)' },
+                    { value: 'MX', label: 'Mexico (+52)' },
+                    { value: 'ZA', label: 'South Africa (+27)' },
+                  ]}
+                />
+              </Form.Item>
+              <Form.Item
+                name={['contact_number', 'isd_code']}
+                noStyle
+                initialValue="91"
+              >
+                <Select 
+                  style={{ width: 80 }}
+                  options={[
+                    { value: '91', label: '+91' },
+                    { value: '1', label: '+1' },
+                    { value: '44', label: '+44' },
+                    { value: '81', label: '+81' },
+                    { value: '86', label: '+86' },
+                    { value: '49', label: '+49' },
+                    { value: '33', label: '+33' },
+                    { value: '39', label: '+39' },
+                    { value: '34', label: '+34' },
+                    { value: '55', label: '+55' },
+                    { value: '7', label: '+7' },
+                    { value: '61', label: '+61' },
+                    { value: '52', label: '+52' },
+                    { value: '27', label: '+27' },
+                  ]}
+                />
+              </Form.Item>
+              <Form.Item
+                name={['contact_number', 'number']}
+                noStyle
+                rules={[{ required: true, message: 'Please enter phone number' }]}
+              >
+                <Input 
+                  placeholder="Enter phone number" 
+                  prefix={<PhoneOutlined className="text-gray-400" />}
+                  maxLength={10}
+                  onKeyPress={handleNumericInput}
+                />
+              </Form.Item>
+            </div>
           </Form.Item>
           
           <Form.Item
-            name="phone"
-            label="Phone"
-            rules={[{ required: true, message: 'Please enter phone number' }]}
+            name="profile_picture_url"
+            label="Profile Picture URL"
           >
-            <Input prefix={<PhoneOutlined />} placeholder="Enter phone number" />
+            <Input 
+              placeholder="Enter profile picture URL" 
+              onChange={handleProfilePictureChange}
+              prefix={<UploadOutlined />}
+            />
           </Form.Item>
-          
 
+          <div className="text-center mb-4">
+            <Avatar
+              size={100}
+              src={previewImage}
+              icon={!previewImage && <UserOutlined />}
+            />
+          </div>
           
           <Form.Item className="mb-0 flex justify-end">
-            <Button className="mr-2" onClick={closeModal}>Cancel</Button>
-            <Button type="primary" htmlType="submit">
+            <Button
+              type="default"
+              onClick={closeUserModal}
+              className="mr-2"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              className="bg-[#6366F1] hover:bg-[#4F46E5]"
+            >
               {editingUserId ? 'Update User' : 'Add User'}
             </Button>
           </Form.Item>
         </Form>
       </Modal>
-      
+
       {/* Role Assignment Modal */}
       <Modal
-        title="Assign/Edit Role"
-        open={roleModalVisible}
-        onCancel={closeRoleModal}
+        title={
+          <div className="flex justify-between items-center">
+            <span>Assign Roles to User</span>
+            <button 
+              onClick={closeRoleAssignmentModal}
+              className="border-none bg-transparent text-gray-500 hover:text-gray-700"
+            >
+              <CloseOutlined />
+            </button>
+          </div>
+        }
+        open={roleAssignmentModalVisible}
+        onCancel={closeRoleAssignmentModal}
         footer={null}
-        destroyOnClose
-        width={480}
-        className="role-modal"
-        centered
-        closeIcon={<CloseOutlined />}
+        maskStyle={{ backdropFilter: 'blur(4px)' }}
+        closeIcon={null}
+        className="role-assignment-modal"
       >
-        
-        {selectedUserForRole && (
-          <div className="mb-6 mt-4">
+        {selectedUser && (
+          <div className="mb-6">
             <div className="flex items-center mb-4">
-              <Avatar 
-                src={selectedUserForRole.avatar} 
-                size={64} 
-                className="mr-4"
+              <img 
+                src={selectedUser.profile_picture_url || 'https://randomuser.me/api/portraits/men/1.jpg'} 
+                alt={selectedUser.name} 
+                className="h-12 w-12 rounded-full mr-4"
               />
               <div>
-                <h3 className="text-lg font-medium">{selectedUserForRole.name}</h3>
-                <p className="text-gray-500">{selectedUserForRole.email}</p>
-                <div className="mt-1">
-                  <Tag color={selectedUserForRole.status === 'active' ? 'success' : 'default'}>
-                    {selectedUserForRole.status.charAt(0).toUpperCase() + selectedUserForRole.status.slice(1)}
-                  </Tag>
-                  <Tag color={
-                    selectedUserForRole.role === 'Administrator' ? 'red' : 
-                    selectedUserForRole.role === 'Manager' ? 'blue' : 
-                    selectedUserForRole.role === 'Coach' ? 'green' : 
-                    selectedUserForRole.role === 'Analyst' ? 'purple' : 'orange'
-                  }>
-                    Current Role: {selectedUserForRole.role}
-                  </Tag>
-                </div>
+                <h3 className="text-lg font-semibold">{selectedUser.name}</h3>
+                <p className="text-gray-500">{selectedUser.email}</p>
               </div>
             </div>
             
-            <Form
-              form={roleForm}
-              layout="vertical"
-              onFinish={handleRoleFormSubmit}
-              requiredMark={false}
-            >
-              <Form.Item
-                name="roleIds"
-                label="Select Role(s)"
-                rules={[{ required: true, message: 'Please select at least one role' }]}
-              >
-                <Select 
-                  mode="multiple"
-                  placeholder="Select one or more roles"
-                  optionLabelProp="label"
-                >
-                  {dummyRoles.map(role => (
-                    <Select.Option 
-                      key={role.id} 
-                      value={role.id}
-                      label={role.name}
-                    >
-                      <div className="flex items-center">
-                        <div 
-                          className="w-3 h-3 rounded-full mr-2" 
-                          style={{ backgroundColor: role.color }}
-                        ></div>
-                        <span>{role.name}</span>
-                      </div>
-                    </Select.Option>
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div>
+                <p className="text-sm text-gray-500">Current Roles</p>
+                <div className="flex flex-wrap gap-2">
+                  {selectedUser.roles?.map(role => (
+                    <Tag key={role.tenant_role_id} color="blue">{role.name}</Tag>
                   ))}
-                </Select>
-              </Form.Item>
-              
-              <Form.Item className="mb-0 flex justify-end">
-                <Button className="mr-2" onClick={closeRoleModal}>Cancel</Button>
-                <Button 
-                  type="primary" 
-                  htmlType="submit"
-                  icon={<UserSwitchOutlined />}
-                >
-                  Assign/Edit Role
-                </Button>
-              </Form.Item>
-            </Form>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Status</p>
+                <Badge 
+                  status={selectedUser.is_active ? 'success' : 'error'} 
+                  text={selectedUser.is_active ? 'Active' : 'Inactive'} 
+                />
+          </div>
+            </div>
           </div>
         )}
+        
+        <Form
+          form={roleAssignmentForm}
+          layout="vertical"
+          onFinish={handleRoleAssignmentSubmit}
+        >
+          <Form.Item
+            name="roleIds"
+            label="Assign Roles"
+            rules={[{ required: true, message: 'Please select at least one role' }]}
+          >
+            <Select
+              mode="multiple"
+              allowClear
+              placeholder="Select roles to assign"
+              style={{ width: '100%' }}
+              loading={isRolesLoading}
+            >
+              {roles.map(role => (
+                <Select.Option key={role.tenant_role_id} value={role.tenant_role_id}>
+                  {role.name}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+          
+          <Form.Item className="mb-0 flex justify-end">
+            <Button
+              type="default"
+              onClick={closeRoleAssignmentModal}
+              className="mr-2"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              className="bg-[#6366F1] hover:bg-[#4F46E5]"
+            >
+              Assign Roles
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Image Preview Modal */}
+      <Modal
+        title="Profile Picture Preview"
+        open={imagePreviewVisible}
+        onCancel={() => setImagePreviewVisible(false)}
+        footer={null}
+        width={600}
+      >
+        <div className="flex justify-center">
+          <img 
+            src={selectedImage} 
+            alt="Profile Preview" 
+            className="max-w-full h-auto"
+          />
+        </div>
       </Modal>
     </div>
   );

@@ -13,7 +13,6 @@ import RolesManagement from "./pages/RolesManagement";
 import ModulesList from "./pages/modules/ModulesList";
 import TiersList from "./pages/modules/TiersList";
 import SubModulesList from "./pages/modules/SubModulesList";
-
 import AssignRoles from "./pages/AssignRoles";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";

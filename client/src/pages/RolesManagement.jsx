@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Table, Button, Modal, Form, Input, Select, message, Tag, Checkbox, Space } from 'antd';
+import { Table, Button, Modal, Form, Input, Select, message, Tag, Checkbox, Space, Spin } from 'antd';
 import { 
   CloseOutlined, 
   TagOutlined,
@@ -10,63 +10,11 @@ import {
 } from '@ant-design/icons';
 import SearchBar from '../components/common/SearchBar';
 import { TwitterPicker } from 'react-color';
+import apiService from '../services/apiService';
+import { useQueryClient } from "@tanstack/react-query";
 
 const RolesManagement = () => {
-  // Mock data for roles
-  const dummyRoles = [
-    {
-      id: 1,
-      name: 'Administrator',
-      description: 'Full access to all features and settings',
-      users: 2,
-      color: '#FF5733',
-      permissions: ['manage_users', 'manage_roles', 'admin_access', 'manage_tournaments', 'manage_teams', 'manage_matches', 'view_reports']
-    },
-    {
-      id: 2,
-      name: 'Manager',
-      description: 'Manage tournaments, teams, and matches',
-      users: 3,
-      color: '#33A5FF',
-      permissions: ['manage_tournaments', 'manage_teams', 'manage_matches', 'view_reports']
-    },
-    {
-      id: 3,
-      name: 'Coach',
-      description: 'Manage team details and view match data',
-      users: 5,
-      color: '#33FF57',
-      permissions: ['manage_teams', 'view_reports']
-    },
-    {
-      id: 4,
-      name: 'Analyst',
-      description: 'View and analyze match statistics',
-      users: 2,
-      color: '#FF33E9',
-      permissions: ['view_reports']
-    },
-    {
-      id: 5,
-      name: 'Staff',
-      description: 'Basic access to the platform',
-      users: 3,
-      color: '#FFBD33',
-      permissions: []
-    }
-  ];
-
-  // Permission options
-  const permissionOptions = [
-    { label: 'Manage Users', value: 'manage_users' },
-    { label: 'Manage Roles', value: 'manage_roles' },
-    { label: 'Admin Access', value: 'admin_access' },
-    { label: 'Manage Tournaments', value: 'manage_tournaments' },
-    { label: 'Manage Teams', value: 'manage_teams' },
-    { label: 'Manage Matches', value: 'manage_matches' },
-    { label: 'View Reports', value: 'view_reports' },
-  ];
-
+  const queryClient = useQueryClient();
   const [roles, setRoles] = useState([]);
   const [filteredRoles, setFilteredRoles] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -75,105 +23,151 @@ const RolesManagement = () => {
   const [editingRoleId, setEditingRoleId] = useState(null);
   const [modalTitle, setModalTitle] = useState('Create New Role');
   const [selectedColor, setSelectedColor] = useState('#FF5733');
+  const [loading, setLoading] = useState(true);
 
-  // Initialize with dummy data
+  // Hardcoded permissions list
+  const permissionsList = [
+    {
+      id: "623e0949-99e5-4ecf-af99-6735520b7f1e",
+      name: "READ:SUB_MODULE_1"
+    },
+    {
+      id: "9ab57abf-3cac-4696-b2ae-53c54564be52",
+      name: "UPDATE:SUB_MODULE_1"
+    },
+    {
+      id: "f2b97e7e-3a0d-44d0-bedc-697ea94edaf5",
+      name: "DELETE:SUB_MODULE_1"
+    },
+    {
+      id: "f8220e87-938e-4d44-9e78-0d76db00a1d9",
+      name: "CREATE:SUB_MODULE_1"
+    }
+  ];
+
+  // Format permissions for Select component
+  const permissionOptions = permissionsList.map(permission => ({
+    label: permission.name,
+    value: permission.id
+  }));
+
+  // Fetch roles from API
+  const fetchRoles = async () => {
+    try {
+      setLoading(true);
+      const response = await apiService.roles.getAll();
+      
+      if (!response || !response.data || !Array.isArray(response.data)) {
+        throw new Error('Invalid response format from server');
+      }
+
+      const rolesData = response.data.map(role => ({
+        tenant_role_id: role.tenant_role_id,
+        role_name: role.name || role.role_name,
+        privileges: role.privileges || []
+      }));
+
+      setRoles(rolesData);
+      setFilteredRoles(rolesData);
+    } catch (error) {
+      console.error('Error fetching roles:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to fetch roles. Please try again later.';
+      message.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initial fetch
   useEffect(() => {
-    setRoles(dummyRoles);
-    setFilteredRoles(dummyRoles);
+    fetchRoles();
   }, []);
-  
+
   // Handle search
   const handleSearch = (searchTerm) => {
     setSearchTerm(searchTerm);
+  };
+
+  // Add useEffect to handle search filtering
+  useEffect(() => {
     if (!searchTerm.trim()) {
       setFilteredRoles(roles);
       return;
     }
     
     const filtered = roles.filter(role => 
-      role.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      role.description.toLowerCase().includes(searchTerm.toLowerCase())
+      role.role_name.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredRoles(filtered);
-  };
+  }, [searchTerm, roles]);
 
   // Handler for opening the add role form
   const showAddRoleModal = () => {
     setEditingRoleId(null);
     setModalTitle('Create New Role');
-    setSelectedColor('#FF5733');
     form.resetFields();
-    form.setFieldsValue({ color: '#FF5733' });
     setModalVisible(true);
   };
   
   // Handler for opening the edit role form
   const showEditRoleModal = (role) => {
-    setEditingRoleId(role.id);
+    console.log('Editing role:', role);
+    setEditingRoleId(role.tenant_role_id);
     setModalTitle('Edit Role');
-    setSelectedColor(role.color);
     form.setFieldsValue({
-      name: role.name,
-      description: role.description,
-      permissions: role.permissions,
-      color: role.color,
+      role_name: role.role_name,
+      permissions: role.privileges ? role.privileges.map(priv => priv.tenant_privilege_id) : [],
     });
     setModalVisible(true);
   };
 
-  // Handler for color change
-  const handleColorChange = (color) => {
-    setSelectedColor(color.hex);
-    form.setFieldsValue({ color: color.hex });
-  };
+  // // Handler for color change
+  // const handleColorChange = (color) => {
+  //   setSelectedColor(color.hex);
+  //   form.setFieldsValue({ color: color.hex });
+  // };
 
   // Handler for submitting the role form (both add and edit)
-  const handleFormSubmit = (values) => {
-    // Ensure color is included
-    const formData = { ...values, color: selectedColor };
-
-    if (editingRoleId) {
-      // Edit existing role
-      const updatedRoles = roles.map(role => {
-        if (role.id === editingRoleId) {
-          return { ...role, ...formData };
+  const handleFormSubmit = async (values) => {
+    try {
+      if (editingRoleId) {
+        // Update role permissions
+        if (values.permissions && values.permissions.length > 0) {
+          await apiService.roles.updatePermissions({
+            tenant_role_id: editingRoleId,
+            tenant_privilege_ids: values.permissions,
+            type: 'ADD'
+          });
         }
-        return role;
-      });
-      setRoles(updatedRoles);
-      
-      // Update filtered roles
-      if (searchTerm) {
-        handleSearch(searchTerm);
+        
+        message.success('Role permissions updated successfully');
       } else {
-        setFilteredRoles(updatedRoles);
+        // Create new role with permissions
+        const roleData = {
+          name: values.role_name,
+          tenant_privilege_ids: values.permissions || []
+        };
+
+        const response = await apiService.roles.create(roleData);
+        
+        if (response.success) {
+          message.success('Role added successfully');
+        } else {
+          throw new Error(response.message || 'Failed to create role');
+        }
       }
+
+      // Refetch roles data
+      await fetchRoles();
       
-      console.log('Updated Role:', { id: editingRoleId, ...formData });
-      message.success('Role updated successfully');
-    } else {
-      // Add new role
-      const newRole = {
-        id: roles.length + 1,
-        ...formData,
-        users: 0
-      };
-      const newRoles = [...roles, newRole];
-      setRoles(newRoles);
-      
-      // Update filtered roles
-      if (searchTerm) {
-        handleSearch(searchTerm);
-      } else {
-        setFilteredRoles(newRoles);
-      }
-      
-      console.log('New Role:', newRole);
-      message.success('Role added successfully');
+      setModalVisible(false);
+      setEditingRoleId(null);
+      form.resetFields();
+    } catch (error) {
+      console.error('Error creating/updating role:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to create/update role';
+      message.error(errorMessage);
     }
-    setModalVisible(false);
-    setEditingRoleId(null);
-    form.resetFields();
   };
 
   // Handler for closing the modal
@@ -183,52 +177,44 @@ const RolesManagement = () => {
     form.resetFields();
   };
 
+  const handleRoleNameInput = (e) => {
+    const char = e.key;
+    if (!/^[A-Za-z_]$/.test(char)) {
+      e.preventDefault();
+    }
+  };
+
   // Table columns
   const columns = [
     {
       title: 'Role',
-      dataIndex: 'name',
-      key: 'name',
-      render: (text, record) => (
-        <div className="flex items-center">
-          <div 
-            className="w-4 h-4 rounded-full mr-2" 
-            style={{ backgroundColor: record.color }}
-          ></div>
-          <span className="font-medium">{text}</span>
-        </div>
-      ),
-    },
-    {
-      title: 'Description',
-      dataIndex: 'description',
-      key: 'description',
+      dataIndex: 'role_name',
+      key: 'role_name',
+      render: (text) => <span className="font-medium">{text.toUpperCase()}</span>,
     },
     {
       title: 'Permissions',
-      dataIndex: 'permissions',
-      key: 'permissions',
-      render: (permissions) => (
-        <div className="flex flex-wrap gap-1">
-          {permissions.length > 0 ? (
-            permissions.map((perm, index) => (
-              <Tag key={index} color="blue">
-                {perm.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-              </Tag>
-            ))
-          ) : (
-            <span className="text-gray-400">No permissions</span>
-          )}
-        </div>
-      ),
-    },
-    {
-      title: 'Users',
-      dataIndex: 'users',
-      key: 'users',
-      render: (count) => (
-        <Tag color="green">{count}</Tag>
-      ),
+      dataIndex: 'privileges',
+      key: 'privileges',
+      render: (privileges) => {
+        if (!privileges || privileges.length === 0) {
+          return <span className="text-gray-400">No permissions</span>;
+        }
+
+        return (
+          <div className="flex flex-wrap gap-1">
+            {privileges.map((priv) => {
+              // Find the permission name from our hardcoded list
+              const permission = permissionsList.find(p => p.id === priv.tenant_privilege_id);
+              return (
+                <Tag key={priv.tenant_privilege_id} color="blue">
+                  {permission ? permission.name : priv.tenant_privilege_id}
+                </Tag>
+              );
+            })}
+          </div>
+        );
+      },
     },
     {
       title: 'Actions',
@@ -242,19 +228,19 @@ const RolesManagement = () => {
           >
             Edit
           </Button>
-          <Button 
+          {/* <Button 
             danger 
             size="small" 
             icon={<DeleteOutlined />}
             onClick={() => {
-              message.success(`Role ${record.name} deleted`);
-              const newRoles = roles.filter(role => role.id !== record.id);
+              message.success(`Role ${record.role_name} deleted`);
+              const newRoles = roles.filter(role => role.tenant_role_id !== record.tenant_role_id);
               setRoles(newRoles);
               setFilteredRoles(newRoles);
             }}
           >
             Delete
-          </Button>
+          </Button> */}
         </Space>
       ),
     },
@@ -280,19 +266,27 @@ const RolesManagement = () => {
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="mb-4">
           <SearchBar 
-            placeholder="Search roles by name or description..." 
+            placeholder="Search roles by name..." 
+            value={searchTerm}
+            onChange={setSearchTerm}
             onSearch={handleSearch}
           />
         </div>
         
-        <Table 
-          dataSource={filteredRoles} 
-          columns={columns} 
-          rowKey="id"
-          pagination={{ pageSize: 7 }}
-          scroll={{ y: 400 }}
-          className="roles-table"
-        />
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <Spin size="large" />
+          </div>
+        ) : (
+          <Table 
+            dataSource={filteredRoles} 
+            columns={columns} 
+            rowKey="tenant_role_id"
+            pagination={{ pageSize: 7 }}
+            scroll={{ y: 400 }}
+            className="roles-table"
+          />
+        )}
       </div>
       
       {/* Role Form Modal */}
@@ -316,40 +310,15 @@ const RolesManagement = () => {
           requiredMark={false}
         >
           <Form.Item
-            name="name"
+            name="role_name"
             label="Role Name"
             rules={[{ required: true, message: 'Please enter role name' }]}
           >
-            <Input prefix={<TagOutlined />} placeholder="Enter role name" />
-          </Form.Item>
-          
-          <Form.Item
-            name="description"
-            label="Description"
-            rules={[{ required: true, message: 'Please enter description' }]}
-          >
-            <Input.TextArea 
-              placeholder="Enter role description" 
-              autoSize={{ minRows: 2, maxRows: 4 }}
+            <Input 
+              prefix={<TagOutlined />} 
+              placeholder="Enter role name" 
+              onKeyPress={handleRoleNameInput}
             />
-          </Form.Item>
-          
-          <Form.Item
-            name="color"
-            label="Role Color"
-            rules={[{ required: true, message: 'Please select a color' }]}
-          >
-            <div>
-              <TwitterPicker 
-                color={selectedColor}
-                onChange={handleColorChange}
-                colors={['#FF5733', '#33A5FF', '#33FF57', '#FF33E9', '#FFBD33', '#5D33FF', '#33FFBD', '#FF5733', '#33A5FF', '#33FF57']}
-              />
-              <div 
-                className="mt-2 h-8 rounded border border-gray-200" 
-                style={{ backgroundColor: selectedColor }}
-              ></div>
-            </div>
           </Form.Item>
           
           <Form.Item

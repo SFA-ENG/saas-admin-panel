@@ -18,7 +18,9 @@ class HttpClient {
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
+        'ngrok-skip-browser-warning': 'true'
       },
+    
       ...config,
     });
 
@@ -38,7 +40,7 @@ class HttpClient {
     this.client.interceptors.request.use(
       (config) => {
         // Get the token from localStorage (if exists)
-        const token = localStorage.getItem('auth_token');
+        const token = localStorage.getItem('sfa_admin_token');
 
         // If token exists, add it to the headers
         if (token) {
@@ -79,8 +81,14 @@ class HttpClient {
           );
         }
 
-        // Return just the data by default
-        return response.data;
+        // Ensure we're getting JSON data
+        const contentType = response.headers['content-type'];
+        if (contentType && contentType.includes('application/json')) {
+          return response.data;
+        } else {
+          console.warn('Response is not JSON:', response);
+          return response;
+        }
       },
       (error) => {
         // Handle response error
@@ -89,23 +97,29 @@ class HttpClient {
         // Handle unauthorized errors (401)
         if (error.response && error.response.status === 401) {
           // Clear auth token and redirect to login
-          localStorage.removeItem('auth_token');
+          localStorage.removeItem('sfa_admin_token');
           window.location.href = '/auth';
         }
 
         let errorMessage = '';
 
-        error.response?.data?.errors?.forEach((error) => {
-          error.rawErrors?.forEach((rawError) => {
-            errorMessage += rawError.message + '\n';
+        if (error.response?.data?.errors) {
+          error.response.data.errors.forEach((error) => {
+            error.rawErrors?.forEach((rawError) => {
+              errorMessage += rawError.message + '\n';
+            });
           });
-        });
+        } else if (error.response?.data?.message) {
+          errorMessage = error.response.data.message;
+        } else {
+          errorMessage = error.message;
+        }
 
         // Format the error for easier handling
         const formattedError = {
           status: error.response?.status,
           statusText: error.response?.statusText,
-          message: errorMessage || error.message,
+          message: errorMessage,
           data: error.response?.data,
         };
 
