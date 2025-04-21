@@ -10,6 +10,7 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const { login, register, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const [form] = Form.useForm();
 
   // Redirect if already authenticated using useEffect
   useEffect(() => {
@@ -60,7 +61,8 @@ const Auth = () => {
       const response = await apiService.auth.registerTenant(tenantData);
       if (response.success) {
         message.success('Registration successful!');
-        navigate('/auth');
+        form.resetFields();
+        setActiveTab('login');
       } else {
         throw new Error(response.message || 'Registration failed');
       }
@@ -148,6 +150,7 @@ const Auth = () => {
 
   const registerForm = (
     <Form
+      form={form}
       name="register"
       onFinish={handleRegister}
       layout="vertical"
@@ -358,14 +361,26 @@ const Auth = () => {
           name="country"
           label="Country"
           rules={[
-            { required: true, message: 'Please enter country' }
+            { required: true, message: 'Please enter country' },
+            { 
+              pattern: /^[A-Z]+$/,
+              message: 'Country must be in uppercase letters only'
+            }
           ]}
           className="w-full"
         >
           <Input 
             placeholder="Enter country" 
             size="large"
-            onKeyPress={handleAlphabeticalInput}
+            onKeyPress={(e) => {
+              const char = e.key;
+              if (!/^[A-Z]$/.test(char)) {
+                e.preventDefault();
+              }
+            }}
+            onChange={(e) => {
+              e.target.value = e.target.value.toUpperCase();
+            }}
             className="w-full"
           />
         </Form.Item>

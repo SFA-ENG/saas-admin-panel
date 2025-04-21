@@ -285,6 +285,7 @@ const RolesManagement = () => {
             pagination={{ pageSize: 7 }}
             scroll={{ y: 400 }}
             className="roles-table"
+            sticky
           />
         )}
       </div>
@@ -307,7 +308,6 @@ const RolesManagement = () => {
           layout="vertical"
           onFinish={handleFormSubmit}
           className="mt-4"
-          requiredMark={false}
         >
           <Form.Item
             name="role_name"
@@ -328,6 +328,7 @@ const RolesManagement = () => {
               title: 'Select the permissions for this role', 
               icon: <InfoCircleOutlined /> 
             }}
+            rules={[{ required: true, message: 'Please select permissions' }]}
           >
             <Select
               mode="multiple"

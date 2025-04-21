@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Modal, Form, Input, Select, Button, message, Badge, Tag, Dropdown, Spin, Upload, Avatar, Popconfirm } from 'antd';
+  import { Modal, Form, Input, Select, Button, message, Badge, Tag, Dropdown, Spin, Upload, Avatar, Popconfirm } from 'antd';
 import { 
   CloseOutlined, 
   UserOutlined, 
@@ -383,6 +383,7 @@ const UsersManagement = () => {
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
+      align: 'center',
       render: (text, record) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Avatar src={record.profile_picture_url} size="small" />
@@ -394,17 +395,20 @@ const UsersManagement = () => {
       title: 'Email',
       dataIndex: 'email',
       key: 'email',
+      align: 'center',
     },
     {
       title: 'Contact Number',
       dataIndex: 'contact_number',
       key: 'contact_number',
       render: (text) => formatPhoneNumber(text),
+      align: 'center',
     },
     {
       title: 'Profile Picture',
       dataIndex: 'profile_picture_url',
       key: 'profile_picture_url',
+      align: 'center',
       render: (text) => (
         text ? (
           <Button
@@ -425,6 +429,7 @@ const UsersManagement = () => {
       title: 'Roles',
       dataIndex: 'roles',
       key: 'roles',
+      align: 'center',
       render: (roles) => (
         <div className="flex flex-wrap gap-1">
           {roles?.length > 0 ? (
@@ -441,6 +446,7 @@ const UsersManagement = () => {
       title: 'Status',
       dataIndex: 'is_active',
       key: 'status',
+      align: 'center',
       render: (isActive) => (
         <Badge status={isActive ? 'success' : 'error'} text={isActive ? 'Active' : 'Inactive'} />
       ),
@@ -513,15 +519,15 @@ const UsersManagement = () => {
         ) : users && users.length > 0 ? (
           <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
             <table className="min-w-full divide-y divide-[#E5E7EB]">
-              <thead className="bg-gray-50 sticky top-0">
+              <thead className="bg-gray-50 sticky top-0 z-10 align-middle">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wider">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wider">Email</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wider">Contact Number</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wider">Profile Picture</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wider">Roles</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-[#6B7280] uppercase tracking-wider">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wider bg-gray-50 align-middle">Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wider bg-gray-50 align-middle">Email</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wider bg-gray-50 align-middle">Contact Number</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wider bg-gray-50 align-middle">Profile Picture</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wider bg-gray-50 align-middle">Roles</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wider bg-gray-50 align-middle">Status</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-[#6B7280] uppercase tracking-wider bg-gray-50 align-middle">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-[#E5E7EB]">
@@ -781,6 +787,7 @@ const UsersManagement = () => {
           <Form.Item
             name="profile_picture_url"
             label="Profile Picture URL"
+            rules={[{ required: true, message: 'Please enter profile picture URL' }]}
           >
             <Input 
               placeholder="Enter profile picture URL" 
