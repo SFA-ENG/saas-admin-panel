@@ -17,6 +17,7 @@ import AssignRoles from "./pages/AssignRoles";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import AuthPage from "./pages/auth-page"; // Import our debug auth page
+import Profile from "./components/profile/Profile";
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
         {/* Protected Routes - MainLayout handles authentication and authorization */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/tournaments" element={<Tournaments />} />
           <Route path="/matches/:id" element={<LiveMatch />} />
           <Route path="/academy" element={<Academy />} />

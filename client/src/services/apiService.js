@@ -62,12 +62,7 @@ class ApiService {
      * @param {Object} params - Query parameters for filtering/pagination
      * @returns {Promise} Promise object representing the request
      */
-    getAll: (params = {}) => httpClient.get('/roles', params, {
-      headers: {
-        'accept': '*/*',
-        'x-channel-id': 'WEB'
-      }
-    }),
+    getAll: (params = {}) => httpClient.get('/roles', params),
 
     /**
      * Update role permissions
@@ -286,6 +281,13 @@ class ApiService {
      * @returns {Promise} Promise object representing the request
      */
     registerTenant: (tenantData) => httpClient.post('/onboard-tenant', tenantData),
+
+    /**
+     * Update tenant information
+     * @param {Object} tenantData - Tenant update data
+     * @returns {Promise} Promise object representing the request
+     */
+    updateTenant: (tenantData) => httpClient.patch('/tenant', tenantData),
 
     /**
      * Logout the current user

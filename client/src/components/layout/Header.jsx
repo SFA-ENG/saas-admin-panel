@@ -29,7 +29,7 @@ const Header = ({ user, handleMenuClick }) => {
 
   const userMenu = (
     <Menu>
-      <Menu.Item key="profile" icon={<UserOutlined />} onClick={() => navigate('/settings')}>
+      <Menu.Item key="profile" icon={<UserOutlined />} onClick={() => navigate('/profile')}>
         Profile
       </Menu.Item>
       <Menu.Item key="settings" icon={<SettingOutlined />} onClick={() => navigate('/settings')}>
