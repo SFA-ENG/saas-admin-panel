@@ -19,21 +19,16 @@ const UserDashboard = () => {
         setLoading(true);
         
         // Fetch total users count (without pagination)
-        const totalUsersResponse = await apiService.users.getAll({}, {
-          headers: {
-            'x-channel-id': 'WEB'
-          }
+        const totalUsersResponse = await apiService.users.getAll({
+          page: 1,
+          page_size: 50
         });
         if (totalUsersResponse && totalUsersResponse.data) {
           setTotalUsers(totalUsersResponse.data.length);
         }
 
         // Fetch total roles count (without pagination)
-        const totalRolesResponse = await apiService.roles.getAll({}, {
-          headers: {
-            'x-channel-id': 'WEB'
-          }
-        });
+        const totalRolesResponse = await apiService.roles.getAll({});
         if (totalRolesResponse && totalRolesResponse.data) {
           setTotalRoles(totalRolesResponse.data.length);
         }
@@ -42,10 +37,6 @@ const UserDashboard = () => {
         const usersResponse = await apiService.users.getAll({
           page: 1,
           page_size: 5
-        }, {
-          headers: {
-            'x-channel-id': 'WEB'
-          }
         });
         if (usersResponse && usersResponse.data) {
           setUsers(usersResponse.data);

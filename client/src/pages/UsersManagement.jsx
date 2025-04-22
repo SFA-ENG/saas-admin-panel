@@ -34,17 +34,28 @@ const UsersManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const queryClient = useQueryClient();
+  const [totalUsers, setTotalUsers] = useState(0);
+
+  
 
   // Fetch users data using React Query
   const { data: usersData, isLoading, error, refetch } = useQuery({
     queryKey: ['users', currentPage, pageSize],
     queryFn: async () => {
-      console.log('Fetching users...');
       try {
         const response = await apiService.users.getAll({
           page: currentPage,
           page_size: pageSize
         });
+         // Fetch total users count (without pagination)
+         const totalUsersResponse = await apiService.users.getAll({
+          page: 1,
+          page_size: 50
+        });
+        if (totalUsersResponse && totalUsersResponse.data) {
+          setTotalUsers(totalUsersResponse.data.length);
+        }
+
 
         // Extract the data array from the response
         const usersArray = response?.data || [];
@@ -52,9 +63,6 @@ const UsersManagement = () => {
 
         // Process each user to ensure proper role structure
         const processedUsers = usersArray.map(user => {
-          console.log('Processing user:', user);
-          console.log('User roles before processing:', user.roles);
-
           // Ensure roles is an array and has the correct structure
           const processedRoles = Array.isArray(user.roles)
             ? user.roles.map(role => ({
@@ -74,7 +82,6 @@ const UsersManagement = () => {
           pagination
         };
       } catch (error) {
-        console.error('Error fetching users:', error);
         throw error;
       }
     },
@@ -93,6 +100,8 @@ const UsersManagement = () => {
     }
   });
 
+  
+
   // Fetch roles data using React Query
   const { data: rolesData, isLoading: isRolesLoading, error: rolesError } = useQuery({
     queryKey: ['roles'],
@@ -108,7 +117,6 @@ const UsersManagement = () => {
       setRoles(data);
     }
   });
-
 
 
   // Add useEffect to handle usersData changes
@@ -216,10 +224,8 @@ const UsersManagement = () => {
         type: 'ADD'
       };
 
-      console.log('Sending role assignment request:', payload);
-
       const response = await apiService.userRoles.assign(payload);
-      console.log('Role assignment response:', response);
+
 
       if (response.success) {
         // Invalidate and refetch users query to get updated data
@@ -470,7 +476,7 @@ const UsersManagement = () => {
             </div>
           </div>
           <h3 className="font-semibold mb-1">Total Users</h3>
-          <p className="text-sm text-[#6B7280] mb-4">{users.length} active user accounts</p>
+          <p className="text-sm text-[#6B7280] mb-4">{totalUsers} active user accounts</p>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm p-5">
