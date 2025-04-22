@@ -1,17 +1,10 @@
 import { useState, useEffect } from "react";
-import { Table, Button, Modal, Form, Input, Select, message, Tag, Checkbox, Space, Spin } from 'antd';
-import { 
-  CloseOutlined, 
-  TagOutlined,
-  EditOutlined, 
-  DeleteOutlined, 
-  InfoCircleOutlined,
-  PlusOutlined
-} from '@ant-design/icons';
-import SearchBar from '../components/common/SearchBar';
-import { TwitterPicker } from 'react-color';
-import apiService from '../services/apiService';
 import { useQueryClient } from "@tanstack/react-query";
+import { message, Spin } from 'antd';
+import SearchBar from '../components/common/SearchBar';
+import { apiService } from '../services/apiService';
+import RolesTable from '../components/roles/RolesTable';
+import RoleFormModal from '../components/roles/RoleFormModal';
 
 const RolesManagement = () => {
   const queryClient = useQueryClient();
@@ -19,10 +12,7 @@ const RolesManagement = () => {
   const [filteredRoles, setFilteredRoles] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
-  const [form] = Form.useForm();
-  const [editingRoleId, setEditingRoleId] = useState(null);
-  const [modalTitle, setModalTitle] = useState('Create New Role');
-  const [selectedColor, setSelectedColor] = useState('#FF5733');
+  const [editingRole, setEditingRole] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // Hardcoded permissions list
@@ -44,12 +34,6 @@ const RolesManagement = () => {
       name: "CREATE:SUB_MODULE_1"
     }
   ];
-
-  // Format permissions for Select component
-  const permissionOptions = permissionsList.map(permission => ({
-    label: permission.name,
-    value: permission.id
-  }));
 
   // Fetch roles from API
   const fetchRoles = async () => {
@@ -103,38 +87,25 @@ const RolesManagement = () => {
 
   // Handler for opening the add role form
   const showAddRoleModal = () => {
-    setEditingRoleId(null);
-    setModalTitle('Create New Role');
-    form.resetFields();
+    setEditingRole(null);
     setModalVisible(true);
   };
   
   // Handler for opening the edit role form
   const showEditRoleModal = (role) => {
-    console.log('Editing role:', role);
-    setEditingRoleId(role.tenant_role_id);
-    setModalTitle('Edit Role');
-    form.setFieldsValue({
-      role_name: role.role_name,
-      permissions: role.privileges ? role.privileges.map(priv => priv.tenant_privilege_id) : [],
-    });
+    setEditingRole(role);
     setModalVisible(true);
   };
-
-  // // Handler for color change
-  // const handleColorChange = (color) => {
-  //   setSelectedColor(color.hex);
-  //   form.setFieldsValue({ color: color.hex });
-  // };
 
   // Handler for submitting the role form (both add and edit)
   const handleFormSubmit = async (values) => {
     try {
-      if (editingRoleId) {
+      setLoading(true);
+      if (editingRole) {
         // Update role permissions
         if (values.permissions && values.permissions.length > 0) {
           await apiService.roles.updatePermissions({
-            tenant_role_id: editingRoleId,
+            tenant_role_id: editingRole.tenant_role_id,
             tenant_privilege_ids: values.permissions,
             type: 'ADD'
           });
@@ -161,90 +132,21 @@ const RolesManagement = () => {
       await fetchRoles();
       
       setModalVisible(false);
-      setEditingRoleId(null);
-      form.resetFields();
+      setEditingRole(null);
     } catch (error) {
       console.error('Error creating/updating role:', error);
       const errorMessage = error.response?.data?.message || error.message || 'Failed to create/update role';
       message.error(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
   // Handler for closing the modal
-  const closeModal = () => {
+  const handleModalClose = () => {
     setModalVisible(false);
-    setEditingRoleId(null);
-    form.resetFields();
+    setEditingRole(null);
   };
-
-  const handleRoleNameInput = (e) => {
-    const char = e.key;
-    if (!/^[A-Za-z_]$/.test(char)) {
-      e.preventDefault();
-    }
-  };
-
-  // Table columns
-  const columns = [
-    {
-      title: 'Role',
-      dataIndex: 'role_name',
-      key: 'role_name',
-      render: (text) => <span className="font-medium">{text.toUpperCase()}</span>,
-    },
-    {
-      title: 'Permissions',
-      dataIndex: 'privileges',
-      key: 'privileges',
-      render: (privileges) => {
-        if (!privileges || privileges.length === 0) {
-          return <span className="text-gray-400">No permissions</span>;
-        }
-
-        return (
-          <div className="flex flex-wrap gap-1">
-            {privileges.map((priv) => {
-              // Find the permission name from our hardcoded list
-              const permission = permissionsList.find(p => p.id === priv.tenant_privilege_id);
-              return (
-                <Tag key={priv.tenant_privilege_id} color="blue">
-                  {permission ? permission.name : priv.tenant_privilege_id}
-                </Tag>
-              );
-            })}
-          </div>
-        );
-      },
-    },
-    {
-      title: 'Actions',
-      key: 'actions',
-      render: (_, record) => (
-        <Space size="small">
-          <Button 
-            size="small" 
-            icon={<EditOutlined />} 
-            onClick={() => showEditRoleModal(record)}
-          >
-            Edit
-          </Button>
-          {/* <Button 
-            danger 
-            size="small" 
-            icon={<DeleteOutlined />}
-            onClick={() => {
-              message.success(`Role ${record.role_name} deleted`);
-              const newRoles = roles.filter(role => role.tenant_role_id !== record.tenant_role_id);
-              setRoles(newRoles);
-              setFilteredRoles(newRoles);
-            }}
-          >
-            Delete
-          </Button> */}
-        </Space>
-      ),
-    },
-  ];
 
   return (
     <div className="p-6">
@@ -253,14 +155,12 @@ const RolesManagement = () => {
           <h1 className="text-2xl font-semibold text-[#111827]">Roles Management</h1>
           <p className="text-[#6B7280]">Manage roles and permissions</p>
         </div>
-        <Button 
-          type="primary" 
-          icon={<PlusOutlined />} 
+        <button
+          className="bg-[#6366F1] text-white text-sm px-4 py-2 rounded hover:bg-[#4F46E5] transition-colors"
           onClick={showAddRoleModal}
-          size="large"
         >
           Create New Role
-        </Button>
+        </button>
       </div>
       
       <div className="bg-white rounded-lg shadow-sm p-6">
@@ -274,80 +174,25 @@ const RolesManagement = () => {
           />
         </div>
         
-        {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <Spin size="large" />
-          </div>
-        ) : (
-          <Table 
-            dataSource={filteredRoles} 
-            columns={columns} 
-            rowKey="tenant_role_id"
-            pagination={{ pageSize: 7 }}
-            scroll={{ y: 400 }}
-            className="roles-table"
-            sticky
+        <Spin spinning={loading}>
+          <RolesTable
+            roles={filteredRoles}
+            loading={loading}
+            onEditRole={showEditRoleModal}
+            permissionsList={permissionsList}
           />
-        )}
+        </Spin>
       </div>
       
-      {/* Role Form Modal */}
-      <Modal
-        title={modalTitle}
-        open={modalVisible}
-        onCancel={closeModal}
-        footer={null}
-        destroyOnClose
-        width={550}
-        className="role-modal"
-        centered
-        closeIcon={<CloseOutlined />}
-      >
-        
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleFormSubmit}
-          className="mt-4"
-        >
-          <Form.Item
-            name="role_name"
-            label="Role Name"
-            rules={[{ required: true, message: 'Please enter role name' }]}
-          >
-            <Input 
-              prefix={<TagOutlined />} 
-              placeholder="Enter role name" 
-              onKeyPress={handleRoleNameInput}
-            />
-          </Form.Item>
-          
-          <Form.Item
-            name="permissions"
-            label="Permissions"
-            tooltip={{ 
-              title: 'Select the permissions for this role', 
-              icon: <InfoCircleOutlined /> 
-            }}
-            rules={[{ required: true, message: 'Please select permissions' }]}
-          >
-            <Select
-              mode="multiple"
-              placeholder="Select permissions"
-              optionLabelProp="label"
-              className="w-full"
-              options={permissionOptions}
-            />
-          </Form.Item>
-          
-          <Form.Item className="mb-0 flex justify-end">
-            <Button className="mr-2" onClick={closeModal}>Cancel</Button>
-            <Button type="primary" htmlType="submit">
-              {editingRoleId ? 'Update Role' : 'Create Role'}
-            </Button>
-          </Form.Item>
-        </Form>
-      </Modal>
+      <RoleFormModal
+        visible={modalVisible}
+        onClose={handleModalClose}
+        onSubmit={handleFormSubmit}
+        initialValues={editingRole}
+        title={editingRole ? 'Edit Role' : 'Add New Role'}
+        loading={loading}
+        permissionsList={permissionsList}
+      />
     </div>
   );
 };
