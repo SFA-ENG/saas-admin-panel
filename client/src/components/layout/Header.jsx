@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, Button, Dropdown, Menu, Space } from 'antd';
 import { UserOutlined, LogoutOutlined, SettingOutlined, BellOutlined, MenuOutlined } from '@ant-design/icons';
@@ -6,6 +6,27 @@ import { apiService } from '../../services/apiService';
 
 const Header = ({ user, handleMenuClick }) => {
   const navigate = useNavigate();
+  const [userName, setUserName] = useState('');
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await apiService.auth.getTenants();
+        const currentUserData = response.data.find(
+          tenant => tenant.tenant_id === user?.tenant_id
+        );
+        if (currentUserData) {
+          setUserName(currentUserData.name);
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    if (user?.tenant_id) {
+      fetchUserData();
+    }
+  }, [user?.tenant_id]);
 
   const handleLogout = async () => {
     try {
@@ -75,7 +96,7 @@ const Header = ({ user, handleMenuClick }) => {
                 icon={!user?.avatar && <UserOutlined />} 
                 size="small"
               />
-              <span className="hidden md:inline">{user?.name || 'User'}</span>
+              <span className="hidden md:inline">{userName || 'User'}</span>
             </Space>
           </Dropdown>
         </div>

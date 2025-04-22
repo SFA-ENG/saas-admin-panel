@@ -7,6 +7,8 @@ import { apiService } from '../services/apiService';
 const UserDashboard = () => {
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [totalRoles, setTotalRoles] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -15,14 +17,49 @@ const UserDashboard = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // Fetch users
-        const usersResponse = await apiService.users.getAll();
+        
+        // Fetch total users count (without pagination)
+        const totalUsersResponse = await apiService.users.getAll({}, {
+          headers: {
+            'x-channel-id': 'WEB'
+          }
+        });
+        if (totalUsersResponse && totalUsersResponse.data) {
+          setTotalUsers(totalUsersResponse.data.length);
+        }
+
+        // Fetch total roles count (without pagination)
+        const totalRolesResponse = await apiService.roles.getAll({}, {
+          headers: {
+            'x-channel-id': 'WEB'
+          }
+        });
+        if (totalRolesResponse && totalRolesResponse.data) {
+          setTotalRoles(totalRolesResponse.data.length);
+        }
+
+        // Fetch recently added users (with pagination)
+        const usersResponse = await apiService.users.getAll({
+          page: 1,
+          page_size: 5
+        }, {
+          headers: {
+            'x-channel-id': 'WEB'
+          }
+        });
         if (usersResponse && usersResponse.data) {
           setUsers(usersResponse.data);
         }
 
-        // Fetch roles
-        const rolesResponse = await apiService.roles.getAll();
+        // Fetch recently added roles (with pagination)
+        const rolesResponse = await apiService.roles.getAll({
+          page: 1,
+          page_size: 5
+        }, {
+          headers: {
+            'x-channel-id': 'WEB'
+          }
+        });
         if (rolesResponse && rolesResponse.data) {
           setRoles(rolesResponse.data);
         }
@@ -36,23 +73,6 @@ const UserDashboard = () => {
 
     fetchData();
   }, []);
-
-  const [recentlyAddedUsers, setRecentlyAddedUsers] = useState([]);
-
-  // Update recently added users when users data changes
-  useEffect(() => {
-    if (users.length > 0) {
-      // Sort users by creation date (assuming there's a created_at field)
-      // If not, we can sort by ID as a fallback
-      const sortedUsers = [...users].sort((a, b) => {
-        if (a.created_at && b.created_at) {
-          return new Date(b.created_at) - new Date(a.created_at);
-        }
-        return b.tenant_user_id - a.tenant_user_id;
-      });
-      setRecentlyAddedUsers(sortedUsers.slice(0, 5));
-    }
-  }, [users]);
 
   if (loading) {
     return (
@@ -86,7 +106,7 @@ const UserDashboard = () => {
           <Card bordered={false} className="shadow-sm">
             <Statistic
               title="Total Users"
-              value={users.length}
+              value={totalUsers}
               prefix={<UserOutlined className="text-blue-500 mr-2" />}
               valueStyle={{ color: '#3f8600' }}
             />
@@ -96,7 +116,7 @@ const UserDashboard = () => {
           <Card bordered={false} className="shadow-sm">
             <Statistic
               title="Active Roles"
-              value={roles.length}
+              value={totalRoles}
               prefix={<TeamOutlined className="text-green-500 mr-2" />}
               valueStyle={{ color: '#cf1322' }}
             />
@@ -152,7 +172,7 @@ const UserDashboard = () => {
           <Card title="Recently Added Users" bordered={false} className="shadow-sm">
             <List
               itemLayout="horizontal"
-              dataSource={recentlyAddedUsers}
+              dataSource={users}
               renderItem={user => (
                 <List.Item>
                   <List.Item.Meta
@@ -166,7 +186,7 @@ const UserDashboard = () => {
           </Card>
         </Col>
         <Col xs={24} lg={12}>
-          <Card title="Role Distribution" bordered={false} className="shadow-sm">
+          <Card title="Recently Added Roles" bordered={false} className="shadow-sm">
             <List
               itemLayout="horizontal"
               dataSource={roles}

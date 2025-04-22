@@ -270,6 +270,7 @@ const RolesManagement = () => {
             value={searchTerm}
             onChange={setSearchTerm}
             onSearch={handleSearch}
+            className="max-w-md"
           />
         </div>
         

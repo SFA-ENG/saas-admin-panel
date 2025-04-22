@@ -28,19 +28,12 @@ class ApiService {
      * @param {FormData} userData - User data to create including profile picture
      * @returns {Promise} Promise object representing the request
      */
-    create: (userData) => httpClient.post('/users', userData, {
-      headers: {
-        'accept': '*/*',
-        'x-channel-id': 'WEB',
-        // Don't set Content-Type here, it will be automatically set with boundary for FormData
-        'Authorization': `Bearer ${localStorage.getItem('sfa_admin_token') || ''}`
-      }
-    }),
+    create: (userData) => httpClient.post('/users', userData),
 
     /**
      * Update a user
      * @param {number|string} id - User ID
-     * @param {FormData} userData - User data to update including profile picture
+     * @param {Object} userData - User data to update
      * @returns {Promise} Promise object representing the request
      */
     update: (id, userData) => httpClient.patch(`/users`, userData),
@@ -72,14 +65,7 @@ class ApiService {
      * @param {string} data.type - Type of update (e.g., 'ADD' or 'REMOVE')
      * @returns {Promise} Promise object representing the request
      */
-    updatePermissions: (data) => httpClient.patch('/roles/role-permissions', data, {
-      headers: {
-        'accept': '*/*',
-        'x-channel-id': 'WEB',
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('sfa_admin_token') || ''}`
-      }
-    }),
+    updatePermissions: (data) => httpClient.patch('/roles/role-permissions', data),
 
     /**
      * Get role permissions
@@ -92,11 +78,7 @@ class ApiService {
      * @param {number|string} id - Role ID
      * @returns {Promise} Promise object representing the request
      */
-    getById: (id) => httpClient.get(`/roles/${id}`, {
-      headers: {
-        'x-channel-id': 'WEB'
-      }
-    }),
+    getById: (id) => httpClient.get(`/roles/${id}`),
 
     /**
      * Create a new role
@@ -269,6 +251,12 @@ class ApiService {
     login: (credentials) => httpClient.post('/login', credentials),
 
     /**
+     * Get all tenants
+     * @returns {Promise} Promise object representing the request
+     */
+    getTenants: () => httpClient.get('/tenants-list'),
+
+    /**
      * Register a new user
      * @param {Object} userData - User registration data
      * @returns {Promise} Promise object representing the request
@@ -326,26 +314,14 @@ class ApiService {
      * @param {Object} params - Query parameters for filtering/pagination
      * @returns {Promise} Promise object representing the request
      */
-    getAll: (params = {}) => httpClient.get('/privileges', params, {
-      headers: {
-        'accept': '*/*',
-        'x-channel-id': 'WEB',
-        'Authorization': `Bearer ${localStorage.getItem('sfa_admin_token') || ''}`
-      }
-    }),
+    getAll: (params = {}) => httpClient.get('/privileges', params),
 
     /**
      * Get privilege by ID
      * @param {string} id - Privilege UUID
      * @returns {Promise} Promise object representing the request
      */
-    getById: (id) => httpClient.get(`/privileges/${id}`, {
-      headers: {
-        'accept': '*/*',
-        'x-channel-id': 'WEB',
-        'Authorization': `Bearer ${localStorage.getItem('sfa_admin_token') || ''}`
-      }
-    }),
+    getById: (id) => httpClient.get(`/privileges/${id}`),
   };
 }
 

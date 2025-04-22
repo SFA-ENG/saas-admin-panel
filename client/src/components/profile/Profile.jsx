@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, Upload, message, Card, Row, Col, Avatar, Space, Typography, Select } from 'antd';
-import { UserOutlined, UploadOutlined, EditOutlined, SaveOutlined, CloseOutlined } from '@ant-design/icons';
+import { Form, Card, Row, Col, Typography, Button, message, Avatar } from 'antd';
+import { UserOutlined, EditOutlined } from '@ant-design/icons';
 import { apiService } from '../../services/apiService';
+import { useAuth } from '../../contexts/AuthContext';
+import ProfileEditForm from './ProfileEditForm';
 
 const { Title, Text } = Typography;
 
@@ -11,6 +13,7 @@ const Profile = () => {
   const [profileImage, setProfileImage] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [userData, setUserData] = useState(null);
+  const { user: currentUser } = useAuth();
 
   // Country code and ISD code options
   const countryCodeOptions = [
@@ -54,25 +57,33 @@ const Profile = () => {
 
   const fetchUserProfile = async () => {
     try {
-      const response = await apiService.user.getProfile();
-      const data = response.data;
-      setUserData(data);
-      form.setFieldsValue({
-        name: data.name,
-        email: data.email,
-        logo_url: data.logo_url,
-        address_line_1: data.address?.address_line_1,
-        address_line_2: data.address?.address_line_2,
-        city: data.address?.city,
-        state: data.address?.state,
-        country: data.address?.country,
-        zip_code: data.address?.zip_code,
-        country_code: data.contact_number?.country_code,
-        isd_code: data.contact_number?.isd_code,
-        number: data.contact_number?.number,
-      });
-      if (data.avatar) {
-        setProfileImage(data.avatar);
+      const response = await apiService.auth.getTenants();
+      // Find the current user's data from the tenants list using tenant_id
+      const currentUserData = response.data.find(
+        tenant => tenant.tenant_id === currentUser.tenant_id
+      );
+
+      if (currentUserData) {
+        setUserData(currentUserData);
+        form.setFieldsValue({
+          name: currentUserData.name,
+          email: currentUserData.root_email,
+          logo_url: currentUserData.logo_url,
+          address_line_1: currentUserData.address?.address_line_1 || '',
+          address_line_2: currentUserData.address?.address_line_2 || '',
+          city: currentUserData.address?.city || '',
+          state: currentUserData.address?.state || '',
+          country: currentUserData.address?.country || '',
+          zip_code: currentUserData.address?.zip_code || '',
+          country_code: currentUserData.contact_number?.country_code || '',
+          isd_code: currentUserData.contact_number?.isd_code || '',
+          number: currentUserData.contact_number?.number || '',
+        });
+        if (currentUserData.logo_url) {
+          setProfileImage(currentUserData.logo_url);
+        }
+      } else {
+        message.error('User data not found');
       }
     } catch (error) {
       message.error('Failed to fetch profile data');
@@ -89,8 +100,8 @@ const Profile = () => {
       console.error('Error setting profile picture:', error);
       message.error('Failed to set profile picture. Please try again.');
       // Revert to previous image if setting fails
-      if (userData?.avatar) {
-        setProfileImage(userData.avatar);
+      if (userData?.logo_url) {
+        setProfileImage(userData.logo_url);
       }
     }
     return false; // Prevent default upload behavior
@@ -102,7 +113,6 @@ const Profile = () => {
       // Prepare the payload according to the API structure
       const payload = {
         name: values.name,
-        root_email: values.email,
         logo_url: values.logo_url,
         address: {
           address_line_1: values.address_line_1,
@@ -121,7 +131,7 @@ const Profile = () => {
 
       // Make the API call
       const response = await apiService.auth.updateTenant(payload);
-      
+
       if (response.success) {
         message.success('Profile updated successfully');
         setIsEditing(false);
@@ -138,90 +148,97 @@ const Profile = () => {
   };
 
   const renderProfileView = () => (
-    <div className="space-y-8 p-4">
-      <div className="flex items-center space-x-8">
+    <div className="space-y-6 sm:p-4">
+      <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-8">
         <div className="relative">
           {profileImage ? (
             <img
               src={profileImage}
               alt="Profile"
-              className="w-40 h-40 rounded-full object-cover"
+              className="w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover"
             />
           ) : (
-            <div className="w-40 h-40 rounded-full bg-gray-200 flex items-center justify-center">
-              <UserOutlined className="text-5xl text-gray-400" />
+            <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gray-200 flex items-center justify-center">
+              <UserOutlined className="text-4xl sm:text-5xl text-gray-400" />
             </div>
           )}
         </div>
-        <div>
-          <Title level={2}>{userData?.name}</Title>
-          <Text type="secondary" className="text-lg">{userData?.email}</Text>
+        <div className="text-center sm:text-left">
+          <Title level={2} className="text-2xl sm:text-3xl">{userData?.name}</Title>
+          <Text type="secondary" className="text-base sm:text-lg">{userData?.root_email}</Text>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
         <Card title="Basic Information" className="h-full">
-          <div className="space-y-6">
-            <div>
-              <Text strong className="text-lg">Name:</Text>
-              <div className="text-lg mt-1">{userData?.name}</div>
+          <div className="space-y-3 sm:space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <Text strong className="text-base sm:text-lg">Name:</Text>
+              <Text className="text-base sm:text-lg break-all">{userData?.name}</Text>
             </div>
-            <div>
-              <Text strong className="text-lg">Email:</Text>
-              <div className="text-lg mt-1">{userData?.email}</div>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <Text strong className="text-base sm:text-lg">Email:</Text>
+              <Text className="text-base sm:text-lg break-all">{userData?.root_email}</Text>
             </div>
-            <div>
-              <Text strong className="text-lg">Logo URL:</Text>
-              <div className="text-lg mt-1">{userData?.logo_url}</div>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <Text strong className="text-base sm:text-lg">Logo:</Text>
+              {userData?.logo_url ? (
+                <Avatar
+                  src={userData.logo_url}
+                  size={72} 
+                  shape="circle"
+                  className="mt-2 sm:mt-0"
+                />
+              ) : (
+                <Text className="text-base sm:text-lg text-gray-500 mt-2 sm:mt-0">No logo</Text>
+              )}
             </div>
           </div>
         </Card>
 
         <Card title="Contact Information" className="h-full">
-          <div className="space-y-6">
-            <div className="grid grid-cols-3 gap-6">
-              <div>
-                <Text strong className="text-lg">Country Code:</Text>
-                <div className="text-lg mt-1">{userData?.contact_number?.country_code}</div>
-              </div>
-              <div>
-                <Text strong className="text-lg">ISD Code:</Text>
-                <div className="text-lg mt-1">{userData?.contact_number?.isd_code}</div>
-              </div>
-              <div>
-                <Text strong className="text-lg">Phone Number:</Text>
-                <div className="text-lg mt-1">{userData?.contact_number?.number}</div>
-              </div>
+          <div className="space-y-3 sm:space-y-4">
+            {/* <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <Text strong className="text-base sm:text-lg">Country Code:</Text>
+              <Text className="text-base sm:text-lg">{userData?.contact_number?.country_code || 'N/A'}</Text>
+            </div> */}
+            {/* <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <Text strong className="text-base sm:text-lg">ISD Code:</Text>
+              <Text className="text-base sm:text-lg">{userData?.contact_number?.isd_code ? `+${userData.contact_number.isd_code}` : 'N/A'}</Text>
+            </div> */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <Text strong className="text-base sm:text-lg">Phone Number:</Text>
+              <Text className="text-base sm:text-lg">{userData?.contact_number?.number}</Text>
             </div>
           </div>
         </Card>
 
-        <Card title="Address" className="h-full">
-          <div className="space-y-6">
-            <div>
-              <Text strong className="text-lg">Address Line 1:</Text>
-              <div className="text-lg mt-1">{userData?.address?.address_line_1}</div>
+        <Card title="Address" className="h-full lg:col-span-2">
+          <div className="space-y-3 sm:space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+              <Text strong className="text-base sm:text-lg min-w-[120px]">Address Line 1:</Text>
+              <Text className="text-base sm:text-lg break-all">{userData?.address?.address_line_1}</Text>
             </div>
-            <div>
-              <Text strong className="text-lg">Address Line 2:</Text>
-              <div className="text-lg mt-1">{userData?.address?.address_line_2}</div>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+              <Text strong className="text-base sm:text-lg min-w-[120px]">Address Line 2:</Text>
+              <Text className="text-base sm:text-lg break-all">{userData?.address?.address_line_2}</Text>
             </div>
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <Text strong className="text-lg">City:</Text>
-                <div className="text-lg mt-1">{userData?.address?.city}</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                <Text strong className="text-base sm:text-lg min-w-[120px]">City:</Text>
+                <Text className="text-base sm:text-lg">{userData?.address?.city}</Text>
               </div>
-              <div>
-                <Text strong className="text-lg">State:</Text>
-                <div className="text-lg mt-1">{userData?.address?.state}</div>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                <Text strong className="text-base sm:text-lg min-w-[120px]">State:</Text>
+                <Text className="text-base sm:text-lg">{userData?.address?.state}</Text>
               </div>
-              <div>
-                <Text strong className="text-lg">Country:</Text>
-                <div className="text-lg mt-1">{userData?.address?.country}</div>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                <Text strong className="text-base sm:text-lg min-w-[120px]">Country:</Text>
+                <Text className="text-base sm:text-lg">{userData?.address?.country}</Text>
               </div>
-              <div>
-                <Text strong className="text-lg">ZIP Code:</Text>
-                <div className="text-lg mt-1">{userData?.address?.zip_code}</div>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                <Text strong className="text-base sm:text-lg min-w-[120px]">ZIP Code:</Text>
+                <Text className="text-base sm:text-lg">{userData?.address?.zip_code}</Text>
               </div>
             </div>
           </div>
@@ -230,212 +247,39 @@ const Profile = () => {
     </div>
   );
 
-  const renderEditForm = () => (
-    <Form
-      form={form}
-      layout="vertical"
-      onFinish={onFinish}
-      className="space-y-4"
-    >
-      <Row gutter={16}>
-        <Col span={8}>
-          <div className="flex flex-col items-center mb-4">
-            <Upload
-              name="avatar"
-              showUploadList={false}
-              beforeUpload={handleImageUpload}
-              accept="image/*"
-            >
-              <div className="relative">
-                {profileImage ? (
-                  <img
-                    src={profileImage}
-                    alt="Profile"
-                    className="w-32 h-32 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center">
-                    <UserOutlined className="text-4xl text-gray-400" />
-                  </div>
-                )}
-                <Button
-                  icon={<UploadOutlined />}
-                  className="absolute bottom-0 right-4"
-                  size="small"
-                >
-                  Change
-                </Button>
-              </div>
-            </Upload>
-          </div>
-        </Col>
-        <Col span={16}>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="name"
-                label="Name"
-                rules={[{ required: true, message: 'Please input your name!' }]}
-              >
-                <Input size="middle" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="email"
-                label="Email"
-                rules={[{ required: true, message: 'Please input your email!' }]}
-              >
-                <Input disabled size="middle" />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="logo_url"
-                label="Logo URL"
-                rules={[{ required: true, message: 'Please input logo URL!' }]}
-              >
-                <Input size="middle" />
-              </Form.Item>
-            </Col>
-          </Row>
-        </Col>
-      </Row>
-
-      <div className="border-t pt-4">
-        <Title level={4}>Contact Information</Title>
-        <Row gutter={16}>
-          <Col span={8}>
-            <Form.Item
-              name="country_code"
-              label="Country Code"
-            >
-              <Select 
-                showSearch
-                optionFilterProp="children"
-                options={countryCodeOptions}
-                size="middle"
-                disabled
-              />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item
-              name="isd_code"
-              label="ISD Code"
-            >
-              <Select 
-                showSearch
-                optionFilterProp="children"
-                options={isdCodeOptions}
-                size="middle"
-                disabled
-              />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item
-              name="number"
-              label="Phone Number"
-            >
-              <Input size="middle" disabled />
-            </Form.Item>
-          </Col>
-        </Row>
-      </div>
-
-      <div className="border-t pt-4">
-        <Title level={4}>Address Information</Title>
-        <Row gutter={16}>
-          <Col span={24}>
-            <Form.Item
-              name="address_line_1"
-              label="Address Line 1"
-              rules={[{ required: true, message: 'Please input address line 1!' }]}
-            >
-              <Input size="middle" />
-            </Form.Item>
-          </Col>
-          <Col span={24}>
-            <Form.Item
-              name="address_line_2"
-              label="Address Line 2"
-              rules={[{ required: true, message: 'Please input address line 2!' }]}
-            >
-              <Input size="middle" />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item
-              name="city"
-              label="City"
-              rules={[{ required: true, message: 'Please input city!' }]}
-            >
-              <Input size="middle" />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item
-              name="state"
-              label="State"
-              rules={[{ required: true, message: 'Please input state!' }]}
-            >
-              <Input size="middle" />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item
-              name="country"
-              label="Country"
-              rules={[{ required: true, message: 'Please input country!' }]}
-            >
-              <Input size="middle" />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item
-              name="zip_code"
-              label="ZIP Code"
-              rules={[{ required: true, message: 'Please input ZIP code!' }]}
-            >
-              <Input size="middle" />
-            </Form.Item>
-          </Col>
-        </Row>
-      </div>
-
-      <div className="flex justify-end space-x-4 mt-4">
-        <Button onClick={() => setIsEditing(false)} size="middle">
-          Cancel
-        </Button>
-        <Button type="primary" htmlType="submit" loading={loading} size="middle">
-          Save Changes
-        </Button>
-      </div>
-    </Form>
-  );
-
   return (
-    <div className="p-8 min-h-screen">
-      <Card 
-        title="Profile" 
-        className="max-w-7xl mx-auto w-full"
-        bodyStyle={{ padding: '24px' }}
+    <div className="p-2 sm:p-4 md:p-8 min-h-screen">
+      <Card
+        title="Profile"
+        className="max-w-8xl mx-auto w-full"
+        bodyStyle={{ padding: '16px' }}
         extra={
           !isEditing ? (
-            <Button 
-              type="primary" 
+            <Button
+              type="primary"
               icon={<EditOutlined />}
               onClick={() => setIsEditing(true)}
+              className="w-full sm:w-auto"
             >
               Edit Profile
             </Button>
           ) : null
         }
       >
-        {isEditing ? renderEditForm() : renderProfileView()}
+        {isEditing ? (
+          <ProfileEditForm
+            form={form}
+            loading={loading}
+            profileImage={profileImage}
+            handleImageUpload={handleImageUpload}
+            onFinish={onFinish}
+            setIsEditing={setIsEditing}
+            countryCodeOptions={countryCodeOptions}
+            isdCodeOptions={isdCodeOptions}
+          />
+        ) : (
+          renderProfileView()
+        )}
       </Card>
     </div>
   );
