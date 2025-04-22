@@ -22,7 +22,6 @@ const UsersTable = ({
       key: 'name',
       render: (text, record) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Avatar src={record.profile_picture_url} size="small" />
           <span>{text}</span>
         </div>
       ),

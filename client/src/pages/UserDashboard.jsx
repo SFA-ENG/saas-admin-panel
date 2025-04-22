@@ -167,7 +167,7 @@ const UserDashboard = () => {
               renderItem={user => (
                 <List.Item>
                   <List.Item.Meta
-                    avatar={<Avatar src={`https://randomuser.me/api/portraits/${Math.random() > 0.5 ? 'men' : 'women'}/${user.id}.jpg`} />}
+                    avatar={<Avatar src={user.profile_picture_url} />}
                     title={<Link to={`/user-management/users?id=${user.id}`}>{user.name}</Link>}
                     description={`${user.email} • ${user.role}`}
                   />

@@ -112,12 +112,6 @@ const Auth = () => {
         name="password"
         rules={[
           { required: true, message: 'Please input your password!' },
-          { min: 8, message: 'Password must be at least 8 characters' },
-          { max: 16, message: 'Password must not exceed 16 characters' },
-          { 
-            pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}$/,
-            message: 'Password must contain at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character'
-          }
         ]}
       >
         <Input.Password 
@@ -315,6 +309,7 @@ const Auth = () => {
         <Form.Item
           name="address_line_2"
           label="Address Line 2"
+          rules={[{ required: true, message: 'Please enter address line 2' }]}
           className="w-full"
         >
           <Input 
@@ -451,11 +446,11 @@ const Auth = () => {
       </div>
 
       {/* Right side - Hero section */}
-      <div className="hidden md:flex md:w-1/2 bg-blue-600 text-white">
-        <div className="flex flex-col justify-center p-12">
-          <h2 className="text-4xl font-bold mb-6">Sports Federation Administration</h2>
-          <p className="text-xl mb-8">Manage your sports organization efficiently with our comprehensive dashboard</p>
-          <ul className="space-y-4 text-lg">
+      <div className="hidden h-screen md:flex md:w-1/2 bg-blue-600 text-white position fixed right-0 top-0 z-1">
+        <div className="flex flex-col justify-center p-8">
+          <h2 className="text-3xl font-bold mb-4">Sports Federation Administration</h2>
+          <p className="text-lg mb-6">Manage your sports organization efficiently with our comprehensive dashboard</p>
+          <ul className="space-y-3 text-base">
             <li className="flex items-center">
               <div className="mr-3 bg-blue-500 p-1 rounded-full">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
