@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useOutletContext } from "react-router-dom";
-
+import { apiService } from "../../services/apiService";
 const Sidebar = ({ user: propUser }) => {
   // Get user context from MainLayout or props
   const contextValue = useOutletContext() || {};
@@ -9,6 +9,7 @@ const Sidebar = ({ user: propUser }) => {
   const [userManagementExpanded, setUserManagementExpanded] = useState(
     location.pathname.startsWith('/user-management')
   );
+  const [userName, setUserName] = useState('');
 
   const isActive = (path) => {
     return location.pathname === path;
@@ -18,6 +19,25 @@ const Sidebar = ({ user: propUser }) => {
     return location.pathname.startsWith(path);
   };
   
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await apiService.auth.getTenants();
+        const currentUserData = response.data.find(
+          tenant => tenant.tenant_id === user?.tenant_id
+        );
+        if (currentUserData) {
+          setUserName(currentUserData.name);
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    if (user?.tenant_id) {
+      fetchUserData();
+    }
+  }, [user?.tenant_id]);
   // Check if user has any of the roles based on accessType
   const hasRole = (requiredRoles) => {
     if (!user || !user.accessType) return false;
@@ -206,12 +226,7 @@ const Sidebar = ({ user: propUser }) => {
         </div>
         <div>
           <p className="text-sm font-medium">{user?.name || 'User'}</p>
-          <p className="text-xs text-[#6B7280]">
-            {user?.accessType === 'super_admin' ? 'Super Admin' : 
-             user?.accessType === 'admin' ? 'Admin' : 
-             user?.accessType === 'manager' ? 'Manager' : 
-             user?.accessType === 'staff' ? 'Staff' : 'User'}
-          </p>
+          <p className="text-xs text-[#6B7280]">{userName}</p>
         </div>
       </div>
     </aside>

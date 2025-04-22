@@ -1,37 +1,88 @@
 import { useState, useEffect } from "react";
-import { Card, Row, Col, Statistic, List, Avatar, Button } from 'antd';
+import { Card, Row, Col, Statistic, List, Avatar, Button, Spin } from 'antd';
 import { UserOutlined, TeamOutlined, UsergroupAddOutlined, UserSwitchOutlined } from '@ant-design/icons';
 import { Link } from "react-router-dom";
+import { apiService } from '../services/apiService';
 
 const UserDashboard = () => {
-  // Mock data for users and roles
-  const dummyUsers = [
-    { id: 1, name: 'John Smith', email: 'john.smith@example.com', role: 'Administrator' },
-    { id: 2, name: 'Emily Johnson', email: 'emily.johnson@example.com', role: 'Manager' },
-    { id: 3, name: 'Michael Brown', email: 'michael.brown@example.com', role: 'Coach' },
-    { id: 4, name: 'Sarah Williams', email: 'sarah.williams@example.com', role: 'Analyst' },
-    { id: 5, name: 'David Lee', email: 'david.lee@example.com', role: 'Staff' }
-  ];
-
-  const dummyRoles = [
-    { id: 1, name: 'Administrator', users: 2, color: '#FF5733' },
-    { id: 2, name: 'Manager', users: 3, color: '#33A5FF' },
-    { id: 3, name: 'Coach', users: 5, color: '#33FF57' },
-    { id: 4, name: 'Analyst', users: 2, color: '#FF33E9' },
-    { id: 5, name: 'Staff', users: 3, color: '#FFBD33' }
-  ];
-
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
-  const [recentlyAddedUsers, setRecentlyAddedUsers] = useState([]);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [totalRoles, setTotalRoles] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Initialize with dummy data
+  // Fetch users and roles data
   useEffect(() => {
-    setUsers(dummyUsers);
-    setRoles(dummyRoles);
-    // Sort to get most recently added users (assuming higher IDs are more recent)
-    setRecentlyAddedUsers([...dummyUsers].sort((a, b) => b.id - a.id).slice(0, 5));
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch total users count (without pagination)
+        const totalUsersResponse = await apiService.users.getAll({
+          page: 1,
+          page_size: 50
+        });
+        if (totalUsersResponse && totalUsersResponse.data) {
+          setTotalUsers(totalUsersResponse.data.length);
+        }
+
+        // Fetch total roles count (without pagination)
+        const totalRolesResponse = await apiService.roles.getAll({});
+        if (totalRolesResponse && totalRolesResponse.data) {
+          setTotalRoles(totalRolesResponse.data.length);
+        }
+
+        // Fetch recently added users (with pagination)
+        const usersResponse = await apiService.users.getAll({
+          page: 1,
+          page_size: 5
+        });
+        if (usersResponse && usersResponse.data) {
+          setUsers(usersResponse.data);
+        }
+
+        // Fetch recently added roles (with pagination)
+        const rolesResponse = await apiService.roles.getAll({
+          page: 1,
+          page_size: 5
+        }, {
+          headers: {
+            'x-channel-id': 'WEB'
+          }
+        });
+        if (rolesResponse && rolesResponse.data) {
+          setRoles(rolesResponse.data);
+        }
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        setError(err.message || 'Failed to fetch data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="text-red-500 mb-4">Error: {error}</div>
+        <Button type="primary" onClick={() => window.location.reload()}>
+          Retry
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
@@ -46,7 +97,7 @@ const UserDashboard = () => {
           <Card bordered={false} className="shadow-sm">
             <Statistic
               title="Total Users"
-              value={users.length}
+              value={totalUsers}
               prefix={<UserOutlined className="text-blue-500 mr-2" />}
               valueStyle={{ color: '#3f8600' }}
             />
@@ -56,7 +107,7 @@ const UserDashboard = () => {
           <Card bordered={false} className="shadow-sm">
             <Statistic
               title="Active Roles"
-              value={roles.length}
+              value={totalRoles}
               prefix={<TeamOutlined className="text-green-500 mr-2" />}
               valueStyle={{ color: '#cf1322' }}
             />
@@ -112,7 +163,7 @@ const UserDashboard = () => {
           <Card title="Recently Added Users" bordered={false} className="shadow-sm">
             <List
               itemLayout="horizontal"
-              dataSource={recentlyAddedUsers}
+              dataSource={users}
               renderItem={user => (
                 <List.Item>
                   <List.Item.Meta
@@ -126,7 +177,7 @@ const UserDashboard = () => {
           </Card>
         </Col>
         <Col xs={24} lg={12}>
-          <Card title="Role Distribution" bordered={false} className="shadow-sm">
+          <Card title="Recently Added Roles" bordered={false} className="shadow-sm">
             <List
               itemLayout="horizontal"
               dataSource={roles}

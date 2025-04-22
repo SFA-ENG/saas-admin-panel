@@ -18,6 +18,11 @@ export const AuthProvider = ({ children }) => {
     const checkAuthStatus = () => {
       if (authService.isAuthenticated()) {
         const currentUser = authService.getCurrentUser();
+        // Ensure user has proper accessType
+        if (currentUser && !currentUser.accessType) {
+          currentUser.accessType = 'admin'; // Default to admin for demo
+          console.log('Added admin accessType in checkAuthStatus:', currentUser);
+        }
         setUser(currentUser);
       }
       setLoading(false);
@@ -30,6 +35,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       const response = await apiService.auth.login(credentials);
+      console.log("response", response);
       const { data } = response;
       const { access_token, meta } = data;
       const isSuperAdmin = meta.roles?.find(

@@ -25,7 +25,7 @@ class ApiService {
 
     /**
      * Create a new user
-     * @param {Object} userData - User data to create
+     * @param {FormData} userData - User data to create including profile picture
      * @returns {Promise} Promise object representing the request
      */
     create: (userData) => httpClient.post('/users', userData),
@@ -36,14 +36,14 @@ class ApiService {
      * @param {Object} userData - User data to update
      * @returns {Promise} Promise object representing the request
      */
-    update: (id, userData) => httpClient.put(`/users/${id}`, userData),
+    update: (id, userData) => httpClient.patch(`/users`, userData),
 
     /**
      * Delete a user
      * @param {number|string} id - User ID
      * @returns {Promise} Promise object representing the request
      */
-    delete: (id) => httpClient.delete(`/users/${id}`),
+    delete: (id) => httpClient.delete(`/users/${id}`)
   };
 
   /**
@@ -56,6 +56,22 @@ class ApiService {
      * @returns {Promise} Promise object representing the request
      */
     getAll: (params = {}) => httpClient.get('/roles', params),
+
+    /**
+     * Update role permissions
+     * @param {Object} data - Role permissions data
+     * @param {string} data.tenant_role_id - Role ID
+     * @param {string[]} data.tenant_privilege_ids - Array of privilege IDs
+     * @param {string} data.type - Type of update (e.g., 'ADD' or 'REMOVE')
+     * @returns {Promise} Promise object representing the request
+     */
+    updatePermissions: (data) => httpClient.patch('/roles/role-permissions', data),
+
+    /**
+     * Get role permissions
+     * @returns {Promise} Promise object representing the request
+     */
+    getPermissions: () => httpClient.get('/roles/role-permissions'),
 
     /**
      * Get role by ID
@@ -77,7 +93,7 @@ class ApiService {
      * @param {Object} roleData - Role data to update
      * @returns {Promise} Promise object representing the request
      */
-    update: (id, roleData) => httpClient.put(`/roles/${id}`, roleData),
+    // update: (roleData) => httpClient.patch(`/roles-permissions`, roleData),
 
     /**
      * Delete a role
@@ -85,8 +101,7 @@ class ApiService {
      * @returns {Promise} Promise object representing the request
      */
     delete: (id) => httpClient.delete(`/roles/${id}`),
-  };
-
+  }
   /**
    * User-Role mapping API endpoints
    */
@@ -100,10 +115,10 @@ class ApiService {
 
     /**
      * Assign roles to a user
-     * @param {Object} mappingData - Mapping data with userId and roleIds
+     * @param {Object} mappingData - Mapping data with tenant_user_id and tenant_role_ids
      * @returns {Promise} Promise object representing the request
      */
-    assign: (mappingData) => httpClient.post('/user-roles', mappingData),
+    assign: (mappingData) => httpClient.patch('/users/user-role', mappingData),
 
     /**
      * Update a user-role mapping
@@ -236,6 +251,12 @@ class ApiService {
     login: (credentials) => httpClient.post('/login', credentials),
 
     /**
+     * Get all tenants
+     * @returns {Promise} Promise object representing the request
+     */
+    getTenants: () => httpClient.get('/tenants-list'),
+
+    /**
      * Register a new user
      * @param {Object} userData - User registration data
      * @returns {Promise} Promise object representing the request
@@ -243,10 +264,24 @@ class ApiService {
     register: (userData) => httpClient.post('/auth/register', userData),
 
     /**
+     * Register a new tenant
+     * @param {Object} tenantData - Tenant registration data
+     * @returns {Promise} Promise object representing the request
+     */
+    registerTenant: (tenantData) => httpClient.post('/onboard-tenant', tenantData),
+
+    /**
+     * Update tenant information
+     * @param {Object} tenantData - Tenant update data
+     * @returns {Promise} Promise object representing the request
+     */
+    updateTenant: (tenantData) => httpClient.patch('/tenant', tenantData),
+
+    /**
      * Logout the current user
      * @returns {Promise} Promise object representing the request
      */
-    logout: () => httpClient.post('/auth/logout'),
+    logout: () => httpClient.post('/logout'),
 
     /**
      * Get the current user's profile
@@ -268,6 +303,25 @@ class ApiService {
      * @returns {Promise} Promise object representing the request
      */
     resetPassword: (data) => httpClient.post('/auth/reset-password', data),
+  };
+
+  /**
+   * Privilege API endpoints
+   */
+  privileges = {
+    /**
+     * Get all privileges
+     * @param {Object} params - Query parameters for filtering/pagination
+     * @returns {Promise} Promise object representing the request
+     */
+    getAll: (params = {}) => httpClient.get('/privileges', params),
+
+    /**
+     * Get privilege by ID
+     * @param {string} id - Privilege UUID
+     * @returns {Promise} Promise object representing the request
+     */
+    getById: (id) => httpClient.get(`/privileges/${id}`),
   };
 }
 

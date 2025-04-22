@@ -33,10 +33,10 @@ const MainLayout = () => {
 
   // If the user doesn't have an accessType, assign the admin role for demo credentials
   useEffect(() => {
-    if (user && user.email === 'admin@sfa.com' && !user.accessType) {
+    if (user && !user.accessType) {
       // Only for demo user, ensure accessType is set
       user.accessType = 'admin';
-      console.log('Updated user with admin access type:', user);
+      console.log('Updated user with admin access type in MainLayout:', user);
     }
   }, [user]);
 

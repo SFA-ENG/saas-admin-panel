@@ -1,23 +1,56 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, Button, Dropdown, Menu, Space } from 'antd';
 import { UserOutlined, LogoutOutlined, SettingOutlined, BellOutlined, MenuOutlined } from '@ant-design/icons';
+import { apiService } from '../../services/apiService';
 
 const Header = ({ user, handleMenuClick }) => {
   const navigate = useNavigate();
+  const [userName, setUserName] = useState('');
 
-  const handleLogout = () => {
-    // Clear authentication data
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    
-    // Redirect to login page
-    navigate('/auth');
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await apiService.auth.getTenants();
+        const currentUserData = response.data.find(
+          tenant => tenant.tenant_id === user?.tenant_id
+        );
+        if (currentUserData) {
+          setUserName(currentUserData.name);
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    if (user?.tenant_id) {
+      fetchUserData();
+    }
+  }, [user?.tenant_id]);
+
+  const handleLogout = async () => {
+    try {
+      // Call the logout API
+      await apiService.auth.logout();
+      
+      // Clear authentication data
+      localStorage.removeItem('sfa_admin_token');
+      localStorage.removeItem('user');
+      
+      // Force a hard navigation to ensure complete logout
+      window.location.href = '/auth';
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Even if API call fails, we should still clear local storage and redirect
+      localStorage.removeItem('sfa_admin_token');
+      localStorage.removeItem('user');
+      window.location.href = '/auth';
+    }
   };
 
   const userMenu = (
     <Menu>
-      <Menu.Item key="profile" icon={<UserOutlined />} onClick={() => navigate('/settings')}>
+      <Menu.Item key="profile" icon={<UserOutlined />} onClick={() => navigate('/profile')}>
         Profile
       </Menu.Item>
       <Menu.Item key="settings" icon={<SettingOutlined />} onClick={() => navigate('/settings')}>
@@ -63,7 +96,7 @@ const Header = ({ user, handleMenuClick }) => {
                 icon={!user?.avatar && <UserOutlined />} 
                 size="small"
               />
-              <span className="hidden md:inline">{user?.name || 'User'}</span>
+              <span className="hidden md:inline">{userName || 'User'}</span>
             </Space>
           </Dropdown>
         </div>
