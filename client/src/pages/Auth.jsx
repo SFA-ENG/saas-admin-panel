@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Form, Input, Button, Tabs, message, Select, Divider } from 'antd';
-import { UserOutlined, LockOutlined, MailOutlined, PhoneOutlined, PictureOutlined, EnvironmentOutlined } from '@ant-design/icons';
+import { Form, Input, Button, Tabs, message, Select, Divider, Upload, Typography } from 'antd';
+import { UserOutlined, LockOutlined, MailOutlined, PhoneOutlined, PictureOutlined, EnvironmentOutlined, LinkOutlined, UploadOutlined } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import { apiService } from '../services/apiService';
 
+const { Title } = Typography;
+const { TabPane } = Tabs;
 const Auth = () => {
   const [activeTab, setActiveTab] = useState('login');
+  const [logoActiveTab, setLogoActiveTab] = useState('url');
+  const [logoFile, setLogoFile] = useState(null);
+
   const [loading, setLoading] = useState(false);
   const { login, register, isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -33,6 +38,24 @@ const Auth = () => {
     }
   };
 
+
+  const handleTabChange = (key) => {
+    setLogoActiveTab(key);
+    // Clear the other field when switching tabs
+    if (key === 'url') {
+      form.setFieldValue('logo_file', null);
+      setLogoFile(null);
+    } else {
+      form.setFieldValue('logo_url', '');
+    }
+  };
+
+  const customHandleLogoUpload = (file) => {
+    setLogoFile(file);
+    form.setFieldValue('logo_file', file);
+    return false; //
+  }
+
   const handleRegister = async (values) => {
     setLoading(true);
     try {
@@ -40,17 +63,17 @@ const Auth = () => {
         name: values.name,
         root_email: values.root_email,
         password: values.password,
-        logo_url: values.logo_url,
-        tenant_code: values.tenant_code,
-        created_by: values.root_email,
-        address: {
-          address_line_1: values.address_line_1,
-          address_line_2: values.address_line_2,
-          city: values.city,
-          state: values.state,
-          country: values.country,
-          zip_code: values.zip_code
-        },
+        // logo_url: values.logo_url,
+        // tenant_code: values.tenant_code,
+        // created_by: values.root_email,
+        // address: {
+        //   address_line_1: values.address_line_1,
+        //   address_line_2: values.address_line_2,
+        //   city: values.city,
+        //   state: values.state,
+        //   country: values.country,
+        //   zip_code: values.zip_code
+        // },
         contact_number: {
           country_code: values.country_code,
           isd_code: values.isd_code,
@@ -101,9 +124,9 @@ const Auth = () => {
           { type: 'email', message: 'Please enter a valid email address' }
         ]}
       >
-        <Input 
-          prefix={<UserOutlined />} 
-          placeholder="Email" 
+        <Input
+          prefix={<UserOutlined />}
+          placeholder="Email"
           size="large"
         />
       </Form.Item>
@@ -114,26 +137,26 @@ const Auth = () => {
           { required: true, message: 'Please input your password!' },
         ]}
       >
-        <Input.Password 
-          prefix={<LockOutlined />} 
-          placeholder="Password" 
+        <Input.Password
+          prefix={<LockOutlined />}
+          placeholder="Password"
           size="large"
         />
       </Form.Item>
 
       <Form.Item>
-        <Button 
-          type="primary" 
-          htmlType="submit" 
-          size="large" 
-          block 
+        <Button
+          type="primary"
+          htmlType="submit"
+          size="large"
+          block
           loading={loading}
           className="bg-blue-600 hover:bg-blue-700"
         >
           Log in
         </Button>
       </Form.Item>
-      
+
       <div className="text-center text-gray-500 text-sm">
         <p>Demo credentials:</p>
         <p>Email: admin@sfa.com</p>
@@ -156,9 +179,9 @@ const Auth = () => {
           label="Name"
           rules={[{ required: true, message: 'Please enter name' }]}
         >
-          <Input 
-            prefix={<UserOutlined />} 
-            placeholder="Enter name" 
+          <Input
+            prefix={<UserOutlined />}
+            placeholder="Enter name"
             size="large"
             className="w-full"
           />
@@ -173,14 +196,13 @@ const Auth = () => {
           ]}
           className="w-full"
         >
-          <Input 
-            prefix={<MailOutlined />} 
-            placeholder="Enter email address" 
+          <Input
+            prefix={<MailOutlined />}
+            placeholder="Enter email address"
             size="large"
             className="w-full"
           />
         </Form.Item>
-
         <Form.Item
           name="password"
           label="Password"
@@ -188,53 +210,46 @@ const Auth = () => {
             { required: true, message: 'Please enter password' },
             { min: 8, message: 'Password must be at least 8 characters' },
             { max: 16, message: 'Password must not exceed 16 characters' },
-            { 
+            {
               pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}$/,
               message: 'Password must contain at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character'
             }
           ]}
           className="w-full"
         >
-          <Input.Password 
-            prefix={<LockOutlined />} 
-            placeholder="Enter password" 
+          <Input.Password
+            prefix={<LockOutlined />}
+            placeholder="Enter password"
             size="large"
             className="w-full"
           />
         </Form.Item>
 
         <Form.Item
-          name="tenant_code"
-          label="Tenant Code"
-          rules={[{ required: true, message: 'Please enter tenant code' }]}
+          name="confirm_password"
+          label="Confirm Password"
+          dependencies={['password']}
+          rules={[
+            { required: true, message: 'Please confirm your password' },
+            ({ getFieldValue }) => ({
+              validator(_, value) {
+                if (!value || getFieldValue('password') === value) {
+                  return Promise.resolve();
+                }
+                return Promise.reject(new Error('Passwords do not match'));
+              },
+            }),
+          ]}
           className="w-full"
         >
-          <Input 
-            placeholder="Enter tenant code" 
+          <Input.Password
+            prefix={<LockOutlined />}
+            placeholder="Confirm password"
             size="large"
             className="w-full"
           />
         </Form.Item>
 
-        <Form.Item
-          name="logo_url"
-          label="Logo URL"
-          rules={[
-            { required: true, message: 'Please enter logo URL' },
-            { 
-              pattern: /^(https?:\/\/|www\.)[\w-]+(\.[\w-]+)+([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?$/,
-              message: 'Please enter a valid URL starting with http://, https://, or www.'
-            }
-          ]}
-          className="w-full md:col-span-2"
-        >
-          <Input 
-            prefix={<PictureOutlined />} 
-            placeholder="Enter logo URL" 
-            size="large"
-            className="w-full"
-          />
-        </Form.Item>
       </div>
 
       <Divider>Contact Information</Divider>
@@ -279,9 +294,9 @@ const Auth = () => {
           ]}
           className="w-full"
         >
-          <Input 
-            prefix={<PhoneOutlined />} 
-            placeholder="Enter phone number" 
+          <Input
+            prefix={<PhoneOutlined />}
+            placeholder="Enter phone number"
             size="large"
             maxLength={10}
             className="w-full"
@@ -289,122 +304,13 @@ const Auth = () => {
         </Form.Item>
       </div>
 
-      <Divider>Address Information</Divider>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Form.Item
-          name="address_line_1"
-          label="Address Line 1"
-          rules={[{ required: true, message: 'Please enter address line 1' }]}
-          className="w-full"
-        >
-          <Input 
-            prefix={<EnvironmentOutlined />} 
-            placeholder="Enter address line 1" 
-            size="large"
-            className="w-full"
-          />
-        </Form.Item>
-
-        <Form.Item
-          name="address_line_2"
-          label="Address Line 2"
-          rules={[{ required: true, message: 'Please enter address line 2' }]}
-          className="w-full"
-        >
-          <Input 
-            prefix={<EnvironmentOutlined />} 
-            placeholder="Enter address line 2" 
-            size="large"
-            className="w-full"
-          />
-        </Form.Item>
-
-        <Form.Item
-          name="city"
-          label="City"
-          rules={[
-            { required: true, message: 'Please enter city' }
-          ]}
-          className="w-full"
-        >
-          <Input 
-            placeholder="Enter city" 
-            size="large"
-            onKeyPress={handleAlphabeticalInput}
-            className="w-full"
-          />
-        </Form.Item>
-
-        <Form.Item
-          name="state"
-          label="State"
-          rules={[
-            { required: true, message: 'Please enter state' }
-          ]}
-          className="w-full"
-        >
-          <Input 
-            placeholder="Enter state" 
-            size="large"
-            onKeyPress={handleAlphabeticalInput}
-            className="w-full"
-          />
-        </Form.Item>
-
-        <Form.Item
-          name="country"
-          label="Country"
-          rules={[
-            { required: true, message: 'Please enter country' },
-            { 
-              pattern: /^[A-Z]+$/,
-              message: 'Country must be in uppercase letters only'
-            }
-          ]}
-          className="w-full"
-        >
-          <Input 
-            placeholder="Enter country" 
-            size="large"
-            onKeyPress={(e) => {
-              const char = e.key;
-              if (!/^[A-Z]$/.test(char)) {
-                e.preventDefault();
-              }
-            }}
-            onChange={(e) => {
-              e.target.value = e.target.value.toUpperCase();
-            }}
-            className="w-full"
-          />
-        </Form.Item>
-
-        <Form.Item
-          name="zip_code"
-          label="ZIP Code"
-          rules={[
-            { required: true, message: 'Please enter ZIP code' },
-            { max: 10, message: 'ZIP code should be maximum 10 digits' }
-          ]}
-          className="w-full"
-        >
-          <Input 
-            placeholder="Enter ZIP code" 
-            size="large"
-            maxLength={10}
-            onKeyPress={handleNumericInput}
-            className="w-full"
-          />
-        </Form.Item>
-      </div>
 
       <Form.Item className="mt-8">
-        <Button 
-          type="primary" 
-          htmlType="submit" 
-          size="large" 
-          block 
+        <Button
+          type="primary"
+          htmlType="submit"
+          size="large"
+          block
           loading={loading}
           className="bg-blue-600 hover:bg-blue-700"
         >
@@ -437,8 +343,8 @@ const Auth = () => {
             <p className="text-gray-600 mt-2">Sports Federation Administration</p>
           </div>
 
-          <Tabs 
-            activeKey={activeTab} 
+          <Tabs
+            activeKey={activeTab}
             onChange={setActiveTab}
             items={tabItems}
           />

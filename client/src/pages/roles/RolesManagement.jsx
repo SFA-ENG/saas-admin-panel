@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { message, Spin } from 'antd';
-import SearchBar from '../components/common/SearchBar';
-import { apiService } from '../services/apiService';
-import RolesTable from '../components/roles/RolesTable';
-import RoleFormModal from '../components/roles/RoleFormModal';
+import SearchBar from '../../components/common/SearchBar';
+import { apiService } from '../../services/apiService';
+import RolesTable from './RolesTable';
+import RoleFormModal from './RoleFormModal';
 
 const RolesManagement = () => {
   const queryClient = useQueryClient();

@@ -8,15 +8,15 @@ import Academy from "./pages/Academy";
 import SFANext from "./pages/SFANext";
 import SportsCamps from "./pages/SportsCamps";
 import UserDashboard from "./pages/UserDashboard";
-import UsersManagement from "./pages/UsersManagement";
-import RolesManagement from "./pages/RolesManagement";
+import UsersManagement from "./pages/users/UsersManagement";
+import RolesManagement from "./pages/roles/RolesManagement";
 import ModulesList from "./pages/modules/ModulesList";
 import TiersList from "./pages/modules/TiersList";
 import SubModulesList from "./pages/modules/SubModulesList";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import AuthPage from "./pages/auth-page";
-import Profile from "./components/profile/Profile";
+import Profile from "./pages/profile/Profile";
 
 function App() {
   return (

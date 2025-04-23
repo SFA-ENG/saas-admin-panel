@@ -23,6 +23,7 @@ const Sidebar = ({ user: propUser }) => {
     const fetchUserData = async () => {
       try {
         const response = await apiService.auth.getTenants();
+        console.log("side bar",response.data);
         const currentUserData = response.data.find(
           tenant => tenant.tenant_id === user?.tenant_id
         );

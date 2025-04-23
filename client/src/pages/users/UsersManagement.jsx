@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { message, Spin } from 'antd';
-import SearchBar from '../components/common/SearchBar';
-import { apiService } from '../services/apiService';
-import UsersTable from '../components/users/UsersTable';
-import UserFormModal from '../components/users/UserFormModal';
-import RoleAssignmentModal from '../components/users/RoleAssignmentModal';
+import SearchBar from '../../components/common/SearchBar';
+import { apiService } from '../../services/apiService';
+import UsersTable from './UsersTable';
+import UserFormModal from './UserFormModal';
+import RoleAssignmentModal from './RoleAssignmentModal';
 
 const UsersManagement = () => {
   const [users, setUsers] = useState([]);
