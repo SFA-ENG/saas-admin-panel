@@ -1,0 +1,94 @@
+html {
+  box-sizing: border-box;
+  height: 100%;
+  /* scroll-behavior: smooth; */
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+body {
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  background-color: #f4f4f4;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+.ant-picker .ant-picker-input > input-disabled,
+.ant-select-disabled.ant-select-multiple .ant-select-selection-item,
+.ant-picker .ant-picker-input > input[disabled],
+.ant-input-disabled,
+.ant-input[disabled],
+.ant-select-disabled.ant-select:not(.ant-select-customize-input)
+  .ant-select-selector {
+  color: rgba(0, 0, 0, 0.65);
+}
+
+/* [TODO] Lets revisit */
+
+img {
+  max-width: 100%;
+}
+
+.hide {
+  display: none !important;
+}
+
+.ant-notification-notice-with-icon[role="alert"]
+  .ant-notification-notice-description {
+  font-size: 10px !important;
+}
+
+.ant-notification-notice-with-icon[role="alert"]
+  .ant-notification-notice-message {
+  font-size: 14px !important;
+}
+
+.main-navigation-drawer .ant-drawer-body {
+  padding: 0 !important;
+}
+
+/* Responsive classes */
+.desktop-only {
+  display: none !important;
+}
+@media only screen and (min-width: 1023px) {
+  .desktop-only {
+    display: block !important;
+  }
+}
+.mobile-only {
+  display: block !important;
+}
+@media only screen and (min-width: 1023px) {
+  .mobile-only {
+    display: none !important;
+  }
+}
+/* Responsive classes */
+
+/*Antd table css overide if table has call tca-responsive-table*/
+@media only screen and (max-width: 1023px) {
+  .ant-table-wrapper.tca-responsive-table .ant-table {
+    background: transparent;
+  }
+  .ant-table-wrapper.tca-responsive-table table {
+    border-collapse: separate;
+    border-spacing: 0 1em;
+  }
+  .ant-table-wrapper.tca-responsive-table .ant-table-thead {
+    display: none;
+  }
+  .ant-table-wrapper.tca-responsive-table .ant-table-row {
+    background: #fff;
+  }
+  .ant-table-wrapper.tca-responsive-table ol {
+    margin-top: 0;
+  }
+}

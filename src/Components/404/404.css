@@ -1,0 +1,15 @@
+.error-page .error-message-container {
+  text-align: center;
+}
+
+.error-page .error-message-container h1 {
+  font-size: 36px;
+}
+
+.error-page .error-message-container p {
+  font-size: 20px;
+}
+
+.error-page .error-message-container .error {
+  color: #d11818;
+}

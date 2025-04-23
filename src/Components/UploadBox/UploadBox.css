@@ -1,0 +1,12 @@
+.receipt-upload-button div.ant-upload {
+    width: 100% !important;
+  }
+  
+.receipt-upload-button .ant-upload-list-item-actions>a {
+    pointer-events: all !important;
+    opacity: 1 !important;
+}
+
+.receipt-upload-button div.ant-upload-list-item-container{
+    width: 100% !important;
+}

@@ -1,0 +1,54 @@
+.Navigation {
+  position: fixed;
+  z-index: 999;
+  width: 100px;
+  overflow-y: scroll;
+  background-color: #fff;
+}
+
+.Navigation .ant-menu-light {
+  height: calc(100vh - 80px);
+}
+
+.Navigation .ant-menu-inline-collapsed {
+  width: 100%;
+}
+
+.Navigation .ant-menu-inline-collapsed > .ant-menu-item .ant-menu-item-icon + span,
+.Navigation .ant-menu-inline-collapsed > .ant-menu-item-group > .ant-menu-item-group-list > .ant-menu-item .ant-menu-item-icon + span,
+.Navigation .ant-menu-inline-collapsed > .ant-menu-item-group > .ant-menu-item-group-list > .ant-menu-submenu > .ant-menu-submenu-title .ant-menu-item-icon + span,
+.Navigation .ant-menu-inline-collapsed > .ant-menu-submenu > .ant-menu-submenu-title .ant-menu-item-icon + span,
+.Navigation .ant-menu-inline-collapsed > .ant-menu-item .anticon + span,
+.Navigation .ant-menu-inline-collapsed > .ant-menu-item-group > .ant-menu-item-group-list > .ant-menu-item .anticon + span,
+.Navigation .ant-menu-inline-collapsed > .ant-menu-item-group > .ant-menu-item-group-list > .ant-menu-submenu > .ant-menu-submenu-title .anticon + span,
+.Navigation .ant-menu-inline-collapsed > .ant-menu-submenu > .ant-menu-submenu-title .anticon + span {
+  display: block;
+  opacity: 1;
+  margin-inline-start: 0;
+  text-align: center;
+  padding-top: 2px;
+  font-size: 12px;
+}
+
+.Navigation .ant-menu-vertical > .ant-menu-item,
+.Navigation .ant-menu-vertical > .ant-menu-submenu > .ant-menu-submenu-title {
+  height: auto;
+  padding-inline: 0;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: normal;
+  white-space: normal;
+  margin-bottom: 4px;
+  padding: 10px;
+}
+
+.Navigation .ant-menu-submenu-popup .ant-menu-vertical > .ant-menu-item,
+.Navigation .ant-menu-submenu-popup .ant-menu-vertical > .ant-menu-submenu > .ant-menu-submenu-title {
+  line-height: initial;
+}
+
+.Navigation .ant-menu-inline-collapsed-tooltip {
+  display: none !important;
+}
