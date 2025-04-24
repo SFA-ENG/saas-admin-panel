@@ -1,5 +1,71 @@
 @import "tailwindcss";
 
+/* Define CSS variables for theming */
+:root {
+  --primary-color: #4f46e5;
+  --secondary-color: #8b5cf6;
+  --accent-color: #ec4899;
+  --menu-bg: linear-gradient(145deg, #f8faff, #eef4ff);
+  --text-color: #555;
+  --hover-bg: linear-gradient(
+    135deg,
+    rgba(79, 70, 229, 0.08),
+    rgba(139, 92, 246, 0.08)
+  );
+  --selected-bg: linear-gradient(
+    135deg,
+    rgba(79, 70, 229, 0.15),
+    rgba(139, 92, 246, 0.15)
+  );
+  --shadow-color: rgba(79, 70, 229, 0.1);
+  --border-color: rgba(79, 70, 229, 0.1);
+  --icon-color: #666;
+}
+
+/* Dark theme variables */
+.dark-theme {
+  --primary-color: #818cf8;
+  --secondary-color: #a78bfa;
+  --accent-color: #f472b6;
+  --menu-bg: linear-gradient(145deg, #1f2937, #111827);
+  --text-color: #e5e7eb;
+  --hover-bg: linear-gradient(
+    135deg,
+    rgba(129, 140, 248, 0.1),
+    rgba(167, 139, 250, 0.1)
+  );
+  --selected-bg: linear-gradient(
+    135deg,
+    rgba(129, 140, 248, 0.2),
+    rgba(167, 139, 250, 0.2)
+  );
+  --shadow-color: rgba(0, 0, 0, 0.2);
+  --border-color: rgba(129, 140, 248, 0.2);
+  --icon-color: #a0a0a0;
+}
+
+/* Sports theme (green and orange) */
+.sports-theme {
+  --primary-color: #10b981;
+  --secondary-color: #f59e0b;
+  --accent-color: #f97316;
+  --menu-bg: linear-gradient(145deg, #f0fdf4, #ecfdf5);
+  --text-color: #374151;
+  --hover-bg: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.08),
+    rgba(245, 158, 11, 0.08)
+  );
+  --selected-bg: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.15),
+    rgba(245, 158, 11, 0.15)
+  );
+  --shadow-color: rgba(16, 185, 129, 0.1);
+  --border-color: rgba(16, 185, 129, 0.1);
+  --icon-color: #4b5563;
+}
+
 html {
   box-sizing: border-box;
   height: 100%;

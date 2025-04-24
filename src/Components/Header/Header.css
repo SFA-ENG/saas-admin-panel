@@ -1,8 +1,7 @@
 header {
-  height: 80px;
-  background: #fff;
-  border-bottom: 1px solid rgba(5, 5, 5, 0.06);
-  box-shadow: 1px 1px 1px rgb(169 167 167 / 6%);
+  height: 56px;
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -11,12 +10,32 @@ header {
   width: 100%;
   left: 0px;
   z-index: 99;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Apply dark theme to header */
+.dark-theme header {
+  background: linear-gradient(145deg, #1f2937, #111827);
+}
+
+/* Apply sports theme to header */
+.sports-theme header {
+  background: linear-gradient(145deg, #f0fdf4, #ecfdf5);
 }
 
 header .page-title {
   font-weight: 600;
-  color: rgba(0, 0, 0, 0.88);
+  color: var(--text-color, rgba(0, 0, 0, 0.88));
   margin-left: 12px;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.dark-theme header .page-title {
+  color: #e5e7eb;
+}
+
+.sports-theme header .page-title {
+  color: #374151;
 }
 
 header .user-details-section {
@@ -26,7 +45,7 @@ header .user-details-section {
 
 header .user-details-section .user-details {
   font-size: 12px;
-  color: #7c807c;
+  color: var(--text-color, #7c807c);
   padding-top: 6px;
 }
 
@@ -36,11 +55,17 @@ header .header-container {
 
 header .logo-link {
   display: flex;
+  align-items: center;
+  transition: all 0.3s;
+}
+
+header .logo-link:hover {
+  transform: scale(1.02);
 }
 
 header .outlet-name {
   font-weight: 600;
-  color: rgba(0, 0, 0, 0.88);
+  color: var(--primary-color, #4f46e5);
   font-size: large;
 }
 
@@ -49,7 +74,7 @@ header .outlet-name {
   cursor: pointer;
   padding: 3px;
   border-radius: 50%;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: 2px solid transparent;
   display: flex;
   align-items: center;
@@ -57,20 +82,30 @@ header .outlet-name {
 }
 
 .profile-avatar-container:hover {
-  border-color: #1890ff;
-  transform: scale(1.05);
-  box-shadow: 0 0 10px rgba(24, 144, 255, 0.3);
+  border-color: var(--primary-color, #4f46e5);
+  transform: scale(1.08);
+  box-shadow: 0 0 15px var(--shadow-color, rgba(79, 70, 229, 0.15));
 }
 
 .profile-avatar-active {
-  border-color: #1890ff;
-  box-shadow: 0 0 12px rgba(24, 144, 255, 0.4);
-  transform: scale(1.05);
+  border-color: var(--primary-color, #4f46e5);
+  box-shadow: 0 0 18px var(--shadow-color, rgba(79, 70, 229, 0.2));
+  transform: scale(1.08);
+  animation: pulseGlow 2.5s infinite;
 }
 
 .profile-avatar {
   border: 2px solid #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s;
+}
+
+.dark-theme .profile-avatar {
+  border-color: #1f2937;
+}
+
+.sports-theme .profile-avatar {
+  border-color: #f0fdf4;
 }
 
 .profile-dropdown-item {
@@ -78,27 +113,41 @@ header .outlet-name {
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  border-radius: 4px;
-  transition: all 0.2s ease;
+  border-radius: 8px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   font-weight: 500;
+  color: var(--text-color, #555);
 }
 
 .profile-dropdown-item:hover {
-  background-color: #f0f5ff;
-  color: #1890ff;
+  background: var(
+    --hover-bg,
+    linear-gradient(135deg, rgba(79, 70, 229, 0.08), rgba(139, 92, 246, 0.08))
+  );
+  color: var(--primary-color, #4f46e5);
+  transform: translateX(3px);
 }
 
 .profile-dropdown-item.text-danger {
-  color: #ff4d4f;
+  color: #f43f5e;
 }
 
 .profile-dropdown-item.text-danger:hover {
-  background-color: #fff1f0;
-  color: #ff4d4f;
+  background: linear-gradient(
+    135deg,
+    rgba(244, 63, 94, 0.08),
+    rgba(251, 113, 133, 0.08)
+  );
+  color: #e11d48;
 }
 
 .profile-dropdown-item .anticon {
   font-size: 16px;
+  transition: transform 0.3s;
+}
+
+.profile-dropdown-item:hover .anticon {
+  transform: scale(1.1);
 }
 
 /* Badge styling tweaks */
@@ -106,4 +155,109 @@ header .outlet-name {
   width: 10px;
   height: 10px;
   box-shadow: 0 0 0 2px white;
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-avatar-container .ant-badge-status-dot::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, #10b981, #4f46e5, #ec4899);
+  animation: gradientShift 8s infinite alternate;
+  border-radius: 50%;
+}
+
+/* Button styling */
+header .ant-btn-primary {
+  background: linear-gradient(
+    to right,
+    var(--primary-color, #4f46e5),
+    var(--secondary-color, #8b5cf6)
+  );
+  border: none;
+  box-shadow: 0 2px 10px var(--shadow-color, rgba(79, 70, 229, 0.15));
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+header .ant-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px var(--shadow-color, rgba(79, 70, 229, 0.25));
+  background: linear-gradient(
+    to right,
+    var(--secondary-color, #8b5cf6),
+    var(--primary-color, #4f46e5)
+  );
+}
+
+header .menu-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+}
+
+/* Animation keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseGlow {
+  0% {
+    box-shadow: 0 0 0 var(--shadow-color, rgba(79, 70, 229, 0.15));
+  }
+  50% {
+    box-shadow: 0 0 15px var(--shadow-color, rgba(79, 70, 229, 0.25));
+  }
+  100% {
+    box-shadow: 0 0 0 var(--shadow-color, rgba(79, 70, 229, 0.15));
+  }
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Theme toggle button */
+.theme-toggle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(
+    45deg,
+    var(--primary-color, #4f46e5),
+    var(--accent-color, #ec4899)
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 3px 12px var(--shadow-color, rgba(79, 70, 229, 0.15));
+  transition: all 0.3s;
+  margin-right: 16px;
+}
+
+.theme-toggle:hover {
+  transform: scale(1.15);
+  box-shadow: 0 4px 15px var(--shadow-color, rgba(79, 70, 229, 0.25));
 }

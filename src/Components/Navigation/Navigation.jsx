@@ -1,9 +1,12 @@
+/* eslint-disable unused-imports/no-unused-vars */
 import { Menu } from "antd";
 import _ from "lodash";
-import { useState } from "react";
+import { Trophy } from "lucide-react";
+import { useEffect, useState } from "react";
 import { NavLink, matchPath, useLocation } from "react-router-dom";
 import { HEADER_TITLES, sideMenuConfig } from "../../routing";
 import useAuthStore from "../../stores/AuthStore/AuthStore";
+import useThemeStore from "../../stores/ThemeStore/ThemeStore";
 import "./Navigation.css";
 
 const getHideClassValue = ({
@@ -84,9 +87,10 @@ const getItems = ({ permissions, userType, accessType, isCollapsed }) => {
   return processMenuItems(sideMenuConfig);
 };
 
-const Navigation = ({ closeMenu, isCollapsed }) => {
+export const Navigation = ({ closeMenu, isCollapsed, onCollapse }) => {
   const { pathname } = useLocation();
   const { userData } = useAuthStore();
+  const { theme } = useThemeStore();
 
   const getHeaderTitle = () => {
     const ROUTING_PATTRNS = Object.keys(HEADER_TITLES.headerTitles);
@@ -107,8 +111,38 @@ const Navigation = ({ closeMenu, isCollapsed }) => {
     closeMenu && closeMenu();
   };
 
+  // Apply theme class to navigation element when theme changes
+  useEffect(() => {
+    const navElement = document.querySelector(".Navigation");
+    const headerElement = document.querySelector("header");
+
+    // Remove theme classes from both elements
+    if (navElement) {
+      navElement.classList.remove("dark-theme", "sports-theme");
+    }
+
+    if (headerElement) {
+      headerElement.classList.remove("dark-theme", "sports-theme");
+    }
+
+    // Add the new theme class if not default
+    if (theme !== "default") {
+      navElement?.classList.add(theme);
+      headerElement?.classList.add(theme);
+    }
+  }, [theme]);
+
   return (
-    <div className="Navigation">
+    <div className={`Navigation ${isCollapsed ? "collapsed" : ""}`}>
+      <div className="menu-logo">
+        {!isCollapsed && (
+          <>
+            <Trophy size={20} color="#1890ff" style={{ marginRight: "8px" }} />
+            <span>Sports SAAS</span>
+          </>
+        )}
+        {isCollapsed && <Trophy size={20} color="#1890ff" />}
+      </div>
       <Menu
         onClick={onClick}
         selectedKeys={[current]}

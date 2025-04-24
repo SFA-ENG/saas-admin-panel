@@ -6,27 +6,20 @@ import {
   SettingOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import {
-  Avatar,
-  Badge,
-  Button,
-  Col,
-  Dropdown,
-  Grid,
-  Image,
-  Row,
-  Tooltip,
-} from "antd";
+import { Avatar, Badge, Button, Col, Dropdown, Grid, Row, Tooltip } from "antd";
 import _ from "lodash";
+import { Moon, Sun, Zap } from "lucide-react";
 import { useState } from "react";
 import { NavLink, matchPath, useLocation } from "react-router-dom";
-import sfalogo from "../../assets/sfa-logo.png";
 import { HEADER_TITLES } from "../../routing";
 import useAuthStore from "../../stores/AuthStore/AuthStore";
+import useThemeStore from "../../stores/ThemeStore/ThemeStore";
 import "./Header.css";
+
 const Header = ({ handleMenuClick, isCollapsed, toggleCollapse }) => {
   const { pathname } = useLocation();
   const { clearUserData, userData } = useAuthStore();
+  const { theme, toggleTheme } = useThemeStore();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const { xs } = Grid.useBreakpoint();
 
@@ -47,6 +40,17 @@ const Header = ({ handleMenuClick, isCollapsed, toggleCollapse }) => {
       }
     }
     return "";
+  };
+
+  const getThemeIcon = () => {
+    switch (theme) {
+      case "dark-theme":
+        return <Moon size={16} />;
+      case "sports-theme":
+        return <Zap size={16} />;
+      default:
+        return <Sun size={16} />;
+    }
   };
 
   const profileMenuItems = [
@@ -86,41 +90,13 @@ const Header = ({ handleMenuClick, isCollapsed, toggleCollapse }) => {
     <header>
       <div className="header-container">
         <Row justify={"space-between"} align={"middle"} gutter={[16]}>
-          {/* <Col xs={4} sm={12}>
-            <Row>
-              <Col xs={12} sm={2}>
-                <NavLink className={"logo-link desktop-only"} to={"/"}>
-                  <img src={sfalogo} width={40} alt="Sports For All" />
-                </NavLink>
-                <Button
-                  type="primary"
-                  className="menu-btn mobile-only"
-                  onClick={handleMenuClick}
-                >
-                  <MenuOutlined />
-                </Button>
-              </Col>
-              {!xs && <Col
-                xs={0}
-                sm={20}
-                offset={2}
-                style={{ display: "flex", alignItems: "center" }}
-              >
-                <h1 className="page-title">{getHeaderTitle()}</h1>
-              </Col>}
-            </Row>
-          </Col> */}
           <Col xs={12} sm={12}>
             <Row align="middle" justify="space-between">
-              <Col xs={6} sm={1}>
+              <Col xs={6} sm={7}>
                 <NavLink className={"logo-link desktop-only"} to={"/"}>
-                  <Image
-                    src={sfalogo}
-                    height={50}
-                    width={50}
-                    alt="Altcase"
-                    preview={false}
-                  />
+                  <div className="text-lg font-medium text-gray-800">
+                    Sports Administration
+                  </div>{" "}
                 </NavLink>
                 <Button
                   type="primary"
@@ -129,24 +105,41 @@ const Header = ({ handleMenuClick, isCollapsed, toggleCollapse }) => {
                   icon={<MenuOutlined />}
                 />
               </Col>
-              <Col xs={0} sm={22}>
-                <Button
-                  type="primary"
-                  onClick={toggleCollapse}
-                  className="ml-3"
-                  icon={
-                    isCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />
-                  }
-                />
-              </Col>
-              {/* <Col xs={18} sm={18}>
+              {xs && (
+                <Col xs={0} sm={3}>
+                  <Button
+                    type="primary"
+                    onClick={toggleCollapse}
+                    className="ml-3"
+                    icon={
+                      isCollapsed ? (
+                        <MenuUnfoldOutlined />
+                      ) : (
+                        <MenuFoldOutlined />
+                      )
+                    }
+                  />
+                </Col>
+              )}
+              <Col xs={18} sm={14}>
                 <h1 className="page-title">{getHeaderTitle()}</h1>
-              </Col> */}
+              </Col>
             </Row>
           </Col>
 
           <Col xs={12} sm={12}>
             <Row justify={"end"} align={"middle"} gutter={16}>
+              <Col>
+                <Tooltip title="Change Theme" placement="bottom">
+                  <div
+                    className="theme-toggle"
+                    onClick={toggleTheme}
+                    title="Change theme"
+                  >
+                    {getThemeIcon()}
+                  </div>
+                </Tooltip>
+              </Col>
               <Col>
                 <Tooltip title="Profile Menu" placement="bottom">
                   <Dropdown
