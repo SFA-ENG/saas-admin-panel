@@ -1,76 +1,32 @@
-/* Navigation component styles */
 .Navigation {
   position: fixed;
   z-index: 999;
   width: var(--sidebar-width);
-  height: calc(100vh - var(--header-height));
-  overflow-y: none;
-  background: var(--gradient-background);
-  backdrop-filter: blur(10px);
-  box-shadow: var(--shadow-md);
-  transition: all var(--transition-normal);
-  top: var(--header-height);
+  height: calc(100vh - 56px);
+  overflow-y: auto;
+  background-color: #fff;
+  transition: all 0.3s;
+  top: 56px;
   left: 0;
 }
 
 .Navigation.collapsed {
-  width: var(--sidebar-width-collapsed);
+  width: 80px;
 }
 
 /* Add this to fix the white space issue */
 .MainLayout aside.collapsed .Navigation {
-  width: var(--sidebar-width-collapsed);
+  width: 80px;
 }
 
 .Navigation .ant-menu {
   height: 100%;
   border-right: none;
   width: 100%;
-  background: transparent;
-  color: var(--color-text-secondary);
 }
 
 .Navigation .ant-menu-inline-collapsed {
-  width: var(--sidebar-width-collapsed);
-}
-
-/* Menu item styling */
-.Navigation .ant-menu-item,
-.Navigation .ant-menu-submenu-title {
-  height: 44px !important;
-  line-height: 44px !important;
-  margin: 6px 10px !important;
-  border-radius: var(--radius-md);
-  color: var(--color-text-secondary);
-  transition: all var(--transition-normal);
-  overflow: visible;
-  animation: fadeIn 0.3s ease-out;
-}
-
-/* Hover effects with colorful gradient */
-.Navigation .ant-menu-item:hover,
-.Navigation .ant-menu-submenu-title:hover {
-  color: var(--color-primary);
-  background: rgba(var(--color-primary), var(--state-hover-opacity));
-  box-shadow: var(--shadow-sm);
-  transform: translateX(-1px);
-}
-
-/* Selected item styling with colorful gradient */
-.Navigation .ant-menu-item-selected {
-  background: rgba(
-    var(--color-primary),
-    var(--state-active-opacity)
-  ) !important;
-  color: var(--color-primary) !important;
-  font-weight: 500;
-  box-shadow: var(--shadow-md);
-  animation: pulseGlow 2.5s infinite;
-}
-
-/* Active submenu title */
-.Navigation .ant-menu-submenu-active > .ant-menu-submenu-title {
-  color: var(--color-primary) !important;
+  width: 80px;
 }
 
 /* Fix for collapsed menu items */
@@ -78,8 +34,14 @@
 .Navigation .ant-menu-inline-collapsed .ant-menu-submenu-title {
   padding: 0 !important;
   text-align: center;
-  margin: 8px auto !important;
-  width: 50px;
+}
+
+/* Adjust item heights and spacing */
+.Navigation .ant-menu-item,
+.Navigation .ant-menu-submenu-title {
+  height: 50px !important;
+  line-height: 50px !important;
+  margin: 4px 0 !important;
 }
 
 /* Fix submenu items */
@@ -89,132 +51,39 @@
 
 .Navigation .ant-menu-sub.ant-menu-inline .ant-menu-item {
   padding-left: 48px !important;
-  height: 38px !important;
-  line-height: 38px !important;
-  margin: 4px 12px !important;
-  border-radius: var(--radius-md);
 }
 
 /* Fix third level items */
-.Navigation
-  .ant-menu-sub.ant-menu-inline
-  .ant-menu-sub.ant-menu-inline
-  .ant-menu-item {
-  padding-left: 60px !important;
+.Navigation .ant-menu-sub.ant-menu-inline .ant-menu-sub.ant-menu-inline .ant-menu-item {
+  padding-left: 72px !important;
 }
 
 /* Remove unwanted spaces in collapsed mode */
 .Navigation .ant-menu-inline-collapsed > .ant-menu-item,
-.Navigation
-  .ant-menu-inline-collapsed
-  > .ant-menu-submenu
-  > .ant-menu-submenu-title {
+.Navigation .ant-menu-inline-collapsed > .ant-menu-submenu > .ant-menu-submenu-title {
   padding: 0 calc(50% - 16px) !important;
 }
 
 /* Fix icon and label alignment */
 .Navigation .ant-menu-item .anticon,
-.Navigation .ant-menu-submenu-title .anticon,
-.Navigation .ant-menu-item svg,
-.Navigation .ant-menu-submenu-title svg {
+.Navigation .ant-menu-submenu-title .anticon {
   min-width: 14px;
-  font-size: 18px;
-  margin-right: 10px;
-  color: var(--color-text-tertiary);
-  transition: all var(--transition-normal);
-}
-
-/* Icon color for selected and hover states */
-.Navigation .ant-menu-item-selected .anticon,
-.Navigation .ant-menu-item:hover .anticon,
-.Navigation .ant-menu-submenu-title:hover .anticon,
-.Navigation .ant-menu-submenu-active > .ant-menu-submenu-title .anticon,
-.Navigation .ant-menu-item-selected svg,
-.Navigation .ant-menu-item:hover svg,
-.Navigation .ant-menu-submenu-title:hover svg,
-.Navigation .ant-menu-submenu-active > .ant-menu-submenu-title svg {
-  color: var(--color-primary);
-  transform: scale(1.1);
-}
-
-/* Colorful hover indicators */
-.Navigation .ant-menu-item::after,
-.Navigation .ant-menu-submenu-title::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 0;
-  background: var(--gradient-primary);
-  opacity: 0;
-  border-radius: 0 4px 4px 0;
-  transition: all var(--transition-normal);
-}
-
-.Navigation .ant-menu-item:hover::after,
-.Navigation .ant-menu-submenu-title:hover::after {
-  width: 4px;
-  opacity: 1;
-}
-
-.Navigation .ant-menu-item-selected::after {
-  width: 4px;
-  opacity: 1;
-  background: var(--gradient-accent);
-}
-
-/* Active item icon animation */
-.Navigation .ant-menu-item-selected .anticon,
-.Navigation .ant-menu-item-selected svg {
-  transform: scale(1.2);
-  transition: transform var(--transition-normal);
-}
-
-/* Add transition for better visual feedback */
-.Navigation .ant-menu-submenu-title .ant-menu-submenu-arrow {
-  transition: transform var(--transition-normal);
-}
-
-.Navigation
-  .ant-menu-submenu-open
-  > .ant-menu-submenu-title
-  .ant-menu-submenu-arrow {
-  transform: rotate(225deg);
-}
-
-/* Logo area in the menu if needed */
-.Navigation .menu-logo {
-  padding: 16px;
-  margin-bottom: 12px;
-  text-align: center;
-  color: var(--color-primary);
-  font-weight: bold;
-  letter-spacing: 1px;
-  background: rgba(0, 0, 0, 0.03);
-  border-bottom: 1px solid var(--color-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-/* Add a colorful top border to menu */
-.Navigation::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--gradient-primary);
-  background-size: 200% 200%;
-  animation: gradientShift 8s infinite alternate;
+  font-size: 16px;
+  transition: none;
 }
 
 /* Adjust scrollbar */
 .Navigation::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
+}
+
+.Navigation::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.Navigation::-webkit-scrollbar-track {
+  background-color: transparent;
 }
 
 /* Mobile adjustments */
@@ -224,76 +93,8 @@
     height: 100%;
     width: 100%;
   }
-
+  
   .Navigation .ant-menu {
     width: 100% !important;
   }
-}
-
-/* Define keyframes for animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes pulseGlow {
-  0% {
-    box-shadow: 0 0 0 var(--shadow-color);
-  }
-  50% {
-    box-shadow: 0 0 15px var(--shadow-color);
-  }
-  100% {
-    box-shadow: 0 0 0 var(--shadow-color);
-  }
-}
-
-@keyframes gradientShift {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-/* Add animation to menu items when they appear */
-.Navigation .ant-menu-item,
-.Navigation .ant-menu-submenu {
-  animation: fadeIn 0.3s ease-out;
-}
-
-/* Add staggered animation for menu items */
-.Navigation .ant-menu-item:nth-child(1) {
-  animation-delay: 0.05s;
-}
-.Navigation .ant-menu-item:nth-child(2) {
-  animation-delay: 0.1s;
-}
-.Navigation .ant-menu-item:nth-child(3) {
-  animation-delay: 0.15s;
-}
-.Navigation .ant-menu-item:nth-child(4) {
-  animation-delay: 0.2s;
-}
-.Navigation .ant-menu-item:nth-child(5) {
-  animation-delay: 0.25s;
-}
-.Navigation .ant-menu-item:nth-child(6) {
-  animation-delay: 0.3s;
-}
-.Navigation .ant-menu-item:nth-child(7) {
-  animation-delay: 0.35s;
-}
-.Navigation .ant-menu-item:nth-child(8) {
-  animation-delay: 0.4s;
 }

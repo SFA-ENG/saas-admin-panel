@@ -1,10 +1,8 @@
 /* eslint-disable unused-imports/no-unused-vars */
 import { Menu } from "antd";
-import _ from "lodash";
-import { Trophy } from "lucide-react";
-import { useState } from "react";
-import { NavLink, matchPath, useLocation } from "react-router-dom";
-import { HEADER_TITLES, sideMenuConfig } from "../../routing";
+import { useState, useEffect } from "react";
+import { NavLink, useLocation } from "react-router-dom";
+import { sideMenuConfig } from "../../routing";
 import useAuthStore from "../../stores/AuthStore/AuthStore";
 import useThemeStore from "../../stores/ThemeStore/ThemeStore";
 import "./Navigation.css";
@@ -92,42 +90,46 @@ export const Navigation = ({ closeMenu, isCollapsed, onCollapse }) => {
   const { userData } = useAuthStore();
   const { theme } = useThemeStore();
 
-  const getHeaderTitle = () => {
-    const ROUTING_PATTRNS = Object.keys(HEADER_TITLES.headerTitles);
+  // Track both selected keys and open keys
+  const [selectedKeys, setSelectedKeys] = useState([pathname]);
+  const [openKeys, setOpenKeys] = useState([]);
 
-    for (let i = 0; i < ROUTING_PATTRNS.length; i++) {
-      const element = ROUTING_PATTRNS[i];
-      const match = matchPath(element, pathname);
-      if (!_.isEmpty(match)) {
-        return match.pattern.path;
-      }
+  // Update open keys when pathname changes to ensure correct submenu expansion
+  useEffect(() => {
+    // Extract path segments to determine which submenus should be open
+    const pathSegments = pathname.split("/").filter(Boolean);
+    const newOpenKeys = [];
+
+    // Build open keys from path segments
+    let currentPath = "";
+    pathSegments.forEach((segment) => {
+      currentPath = currentPath ? `${currentPath}/${segment}` : segment;
+      newOpenKeys.push(`/${currentPath}`);
+    });
+
+    setSelectedKeys([pathname]);
+    if (!isCollapsed) {
+      setOpenKeys(newOpenKeys);
     }
-    return "";
+  }, [pathname, isCollapsed]);
+
+  const onClick = (e) => {
+    setSelectedKeys([e.key]);
+    closeMenu && closeMenu();
   };
 
-  const [current, setCurrent] = useState(getHeaderTitle());
-  const onClick = (e) => {
-    setCurrent(e.key);
-    closeMenu && closeMenu();
+  // Handle submenu open/close
+  const onOpenChange = (keys) => {
+    setOpenKeys(keys);
   };
 
   return (
     <div className={`Navigation ${isCollapsed ? "collapsed" : ""}`}>
-      <div className="menu-logo">
-        {!isCollapsed && (
-          <>
-            <Trophy
-              size={20}
-              color="var(--color-primary)"
-            />
-            <span>Sports SAAS</span>
-          </>
-        )}
-        {isCollapsed && <Trophy size={20} color="var(--color-primary)" />}
-      </div>
       <Menu
         onClick={onClick}
-        selectedKeys={[current]}
+        selectedKeys={selectedKeys}
+        openKeys={isCollapsed ? [] : openKeys}
+        onOpenChange={onOpenChange}
         mode="inline"
         inlineCollapsed={isCollapsed}
         items={getItems({

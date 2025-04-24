@@ -1,5 +1,7 @@
+import { Outlet } from "react-router-dom";
+
 const Hotels = () => {
-  return <div>Hotels</div>;
+  return <Outlet />;
 };
 
 export default Hotels;
