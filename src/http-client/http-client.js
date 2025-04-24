@@ -28,7 +28,6 @@ const axiosCall = async ({
       method,
       data: body,
       params: {
-        // channel: X_CHANNEL_ID,
         ...params,
       },
       headers,

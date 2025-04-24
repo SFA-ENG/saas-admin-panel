@@ -2,17 +2,15 @@ import { LogoutOutlined, MenuOutlined } from "@ant-design/icons";
 import { Button, Col, Row } from "antd";
 import _ from "lodash";
 import { NavLink, matchPath, useLocation } from "react-router-dom";
-import "./Header.css";
-import { HEADER_TITLES } from "../../routing";
-import { withAuthContext } from "contexts/AuthContext/AuthContext";
 import sfalogo from "../../assets/sfa-logo.png";
-const HeaderWithoutContext = ({ handleMenuClick, authContext }) => {
+import { HEADER_TITLES } from "../../routing";
+import "./Header.css";
+import useAuthStore from "stores/AuthStore/AuthStore";
+const Header = ({ handleMenuClick }) => {
   const { pathname } = useLocation();
-  const { userData, setUserMasterData } = authContext;
-
+  const { clearUser, userData } = useAuthStore();
   const handleLogout = () => {
-    setUserMasterData({ token: null, user_data: null });
-    localStorage.clear();
+    clearUser();
     window.location.href = "/login";
   };
 
@@ -56,7 +54,9 @@ const HeaderWithoutContext = ({ handleMenuClick, authContext }) => {
           <Col xs={19} sm={12}>
             <Row justify={"end"} align={"middle"}>
               <Col className="user-details-section">
-                <span className="outlet-name">{userData?.stakeholder_type}</span>
+                <span className="outlet-name">
+                  {userData?.stakeholder_type}
+                </span>
                 <div className="user-details">
                   {userData?.fullname} |{" "}
                   {userData?.phone_number || userData?.mobile_no}
@@ -80,7 +80,5 @@ const HeaderWithoutContext = ({ handleMenuClick, authContext }) => {
     </header>
   );
 };
-
-const Header = withAuthContext(HeaderWithoutContext);
 
 export default Header;

@@ -1,9 +1,8 @@
-import ReactDOM from "react-dom/client";
-import "./index.css";
 import { ConfigProvider } from "antd";
-import { routing } from "./routing";
+import ReactDOM from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
-import { AuthContextProvider } from "contexts/AuthContext/AuthContext";
+import "./index.css";
+import { routing } from "./routing";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <ConfigProvider
@@ -17,14 +16,12 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       },
     }}
   >
-    <AuthContextProvider>
-      <RouterProvider
-        router={routing}
-        future={{
-          v7_startTransition: true,
-          v7_relativeSplatPath: true,
-        }}
-      />
-    </AuthContextProvider>
+    <RouterProvider
+      router={routing}
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      }}
+    />
   </ConfigProvider>
 );

@@ -1,12 +1,11 @@
 /* eslint-disable no-unreachable */
-import { useState } from "react";
 import { Menu } from "antd";
+import _ from "lodash";
+import { useState } from "react";
 import { NavLink, matchPath, useLocation } from "react-router-dom";
 import { HEADER_TITLES, sideMenuConfig } from "../../routing";
 import "./Navigation.css";
-import _ from "lodash";
-import { withAuthContext } from "contexts/AuthContext/AuthContext";
-import { userAccessTypes } from "../../commons/constants";
+import useAuthStore from "stores/AuthStore/AuthStore";
 
 const getHideClassValue = ({
   array,
@@ -16,15 +15,16 @@ const getHideClassValue = ({
   accessType,
   is_superadmin,
 }) => {
+  return ""
   if (hideInMenuInRouting) {
     return hideInMenuInRouting ? "hide" : "";
   }
 
   if (is_superadmin) return "";
 
-  if (accessType === userAccessTypes.SUPER_ADMIN) return "";
-  if (accessType === userAccessTypes.ADMIN) {
-    return childpath === "roles-permission" ? "hide" : "";
+  if (accessType === "SUPER_ADMIN") return "";   //TODO: Remove this
+  if (accessType === "ADMIN") {
+    return childpath === "roles-permission" ? "hide" : "";  //TODO: Remove this
   }
   return _.intersection(array, input).length > 0 ? "" : "hide";
 };
@@ -85,9 +85,9 @@ const getItems = ({ permissions, userType, accessType, is_superadmin }) => {
   return routing;
 };
 
-const NavigationWithoutContext = ({ closeMenu, authContext }) => {
+const Navigation = ({ closeMenu }) => {
   const { pathname } = useLocation();
-  const { userData } = authContext;
+  const { userData } = useAuthStore();
 
   const getHeaderTitle = () => {
     const ROUTING_PATTRNS = Object.keys(HEADER_TITLES.headerTitles);
@@ -126,5 +126,4 @@ const NavigationWithoutContext = ({ closeMenu, authContext }) => {
   );
 };
 
-const Navigation = withAuthContext(NavigationWithoutContext);
 export default Navigation;

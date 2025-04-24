@@ -2,7 +2,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "contexts/*": ["src/contexts/*"],
+      "contexts/*": ["src/stores/*"],
       "Components/*": ["src/Components/*"],
       "helpers/*": ["src/helpers/*"],
       "http-client/*": ["src/http-client/*"],

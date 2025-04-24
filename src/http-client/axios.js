@@ -1,7 +1,8 @@
 import axios from "axios";
+import useAuthStore from "stores/AuthStore/AuthStore";
 
-const AXIOS_TIMEOUT = 80 * 1000; //80 seconds
-export const X_CHANNEL_ID = "RECEIPT-TRACKER";
+const AXIOS_TIMEOUT = 100 * 1000; //100 seconds
+export const X_CHANNEL_ID = "ADMIN-PANEL";
 const ACCESS_TOKEN = localStorage.getItem("token");
 
 const API_ENDPOINTS = {
@@ -27,26 +28,9 @@ const api = axios.create({
 });
 
 api.defaults.headers.common["origin"] = "tcaplay.com";
-// api.defaults.headers.common["x-app-id"] = "RECEIPT-TRACKER";
-
-// api.interceptors.request.use(
-//   (config) => {
-//     const { url } = config;
-
-//     if (ACCESS_TOKEN && !url.includes("login") && !url.includes("logout")) {
-//       api.defaults.headers.common["Authorization"] = `Bearer ${ACCESS_TOKEN}`;
-//     }
-
-//     return config;
-//   },
-//   (error) => {
-//     return Promise.reject(error);
-//   }
-// );
 
 api.interceptors.response.use(
   (response) => {
-    //NO RESPONSE MANIPULATION
     return Promise.resolve(response);
   },
   async (error) => {
@@ -58,7 +42,7 @@ api.interceptors.response.use(
       !url.includes("login") &&
       !url.includes("logout")
     ) {
-      localStorage.clear();
+      useAuthStore.getState().clearUserData();
       window.location.href = "/login";
     } else {
       //IF AUTH API RETURN THE ERROR
