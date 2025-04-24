@@ -1,10 +1,22 @@
 import {
   LogoutOutlined,
+  MenuFoldOutlined,
   MenuOutlined,
+  MenuUnfoldOutlined,
   SettingOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { Avatar, Badge, Button, Col, Dropdown, Row, Tooltip, Grid } from "antd";
+import {
+  Avatar,
+  Badge,
+  Button,
+  Col,
+  Dropdown,
+  Grid,
+  Image,
+  Row,
+  Tooltip,
+} from "antd";
 import _ from "lodash";
 import { useState } from "react";
 import { NavLink, matchPath, useLocation } from "react-router-dom";
@@ -12,8 +24,7 @@ import sfalogo from "../../assets/sfa-logo.png";
 import { HEADER_TITLES } from "../../routing";
 import useAuthStore from "../../stores/AuthStore/AuthStore";
 import "./Header.css";
-
-const Header = ({ handleMenuClick }) => {
+const Header = ({ handleMenuClick, isCollapsed, toggleCollapse }) => {
   const { pathname } = useLocation();
   const { clearUserData, userData } = useAuthStore();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -75,7 +86,7 @@ const Header = ({ handleMenuClick }) => {
     <header>
       <div className="header-container">
         <Row justify={"space-between"} align={"middle"} gutter={[16]}>
-          <Col xs={4} sm={12}>
+          {/* <Col xs={4} sm={12}>
             <Row>
               <Col xs={12} sm={2}>
                 <NavLink className={"logo-link desktop-only"} to={"/"}>
@@ -98,19 +109,44 @@ const Header = ({ handleMenuClick }) => {
                 <h1 className="page-title">{getHeaderTitle()}</h1>
               </Col>}
             </Row>
+          </Col> */}
+          <Col xs={12} sm={12}>
+            <Row align="middle" justify="space-between">
+              <Col xs={6} sm={1}>
+                <NavLink className={"logo-link desktop-only"} to={"/"}>
+                  <Image
+                    src={sfalogo}
+                    height={50}
+                    width={50}
+                    alt="Altcase"
+                    preview={false}
+                  />
+                </NavLink>
+                <Button
+                  type="primary"
+                  className="menu-btn mobile-only"
+                  onClick={handleMenuClick}
+                  icon={<MenuOutlined />}
+                />
+              </Col>
+              <Col xs={0} sm={22}>
+                <Button
+                  type="primary"
+                  onClick={toggleCollapse}
+                  className="ml-3"
+                  icon={
+                    isCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />
+                  }
+                />
+              </Col>
+              {/* <Col xs={18} sm={18}>
+                <h1 className="page-title">{getHeaderTitle()}</h1>
+              </Col> */}
+            </Row>
           </Col>
 
-          <Col xs={19} sm={12}>
+          <Col xs={12} sm={12}>
             <Row justify={"end"} align={"middle"} gutter={16}>
-              <Col className="user-details-section">
-                <span className="outlet-name">
-                  {userData?.name}
-                </span>
-                <div className="user-details">
-                  {userData?.tenant_code}
-                </div>
-              </Col>
-
               <Col>
                 <Tooltip title="Profile Menu" placement="bottom">
                   <Dropdown

@@ -1,20 +1,43 @@
 .MainLayout {
-  display: flex;
+  min-height: 100vh;
+  background-color: #f4f4f4;
 }
 
 .MainLayout main {
-  display: flex;
   padding-top: 80px;
-  width: 100%;
+  min-height: calc(100vh - 80px);
+  display: flex;
 }
 
 .MainLayout aside {
-  width: 120px;
+  width: 200px;
+  transition: width 0.3s;
+}
+
+.MainLayout aside.collapsed {
+  width: 80px;
 }
 
 .MainLayout .main-content {
-  margin: 16px 10px;
   flex: 1;
+  margin-left: 200px;
+  transition: margin 0.3s;
+}
+
+/* Mobile styles */
+@media only screen and (max-width: 1023px) {
+  .MainLayout aside {
+    display: none;
+  }
+
+  .MainLayout .main-content {
+    margin-left: 0;
+    padding: 16px;
+  }
+
+  .MainLayout .main-content.content-collapsed {
+    margin-left: 0;
+  }
 }
 
 @media only screen and (min-width: 1023px) {

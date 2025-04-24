@@ -1,11 +1,10 @@
-/* eslint-disable no-unreachable */
 import { Menu } from "antd";
 import _ from "lodash";
 import { useState } from "react";
 import { NavLink, matchPath, useLocation } from "react-router-dom";
 import { HEADER_TITLES, sideMenuConfig } from "../../routing";
+import useAuthStore from "../../stores/AuthStore/AuthStore";
 import "./Navigation.css";
-import useAuthStore from "stores/AuthStore/AuthStore";
 
 const getHideClassValue = ({
   array,
@@ -13,81 +12,79 @@ const getHideClassValue = ({
   hideInMenuInRouting,
   childpath,
   accessType,
-  is_superadmin,
 }) => {
   if (hideInMenuInRouting) {
     return hideInMenuInRouting ? "hide" : "";
   }
 
-  return ""
+  return "";
 
-
-  if (is_superadmin) return "";
-
-  if (accessType === "SUPER_ADMIN") return "";   //TODO: Remove this
-  if (accessType === "ADMIN") {
-    return childpath === "roles-permission" ? "hide" : "";  //TODO: Remove this
-  }
-  return _.intersection(array, input).length > 0 ? "" : "hide";
+  // if (accessType === userAccessTypes.SUPER_ADMIN) return "";
+  // if (accessType === userAccessTypes.ADMIN) {
+  //   return childpath === "roles-permission" ? "hide" : "";
+  // }
+  // return _.intersection(array, input).length > 0 ? "" : "hide";
 };
 
-const getItems = ({ permissions, userType, accessType, is_superadmin }) => {
-  const routing = sideMenuConfig.map(
-    ({ label, path, icon, children, allowed_permisions, hideInMenu }) => {
-      if (!children) {
+const getItems = ({ permissions, userType, accessType, isCollapsed }) => {
+  const processMenuItems = (items, parentPath = "") => {
+    return items.map(
+      ({ label, path, icon, children, allowed_permisions, hideInMenu }) => {
+        // Handle items without path
+        if (!path && children?.length) {
+          return {
+            label,
+            key: parentPath,
+            icon,
+            className: getHideClassValue({
+              array: allowed_permisions,
+              input: permissions,
+              hideInMenuInRouting: hideInMenu,
+              userType,
+              accessType,
+            }),
+            children: processMenuItems(children, parentPath),
+          };
+        }
+
+        const fullPath = parentPath ? `${parentPath}/${path}` : path;
+
+        if (!children?.length) {
+          return {
+            label: <NavLink to={fullPath}>{label}</NavLink>,
+            key: `/${fullPath}`,
+            icon,
+            className: getHideClassValue({
+              array: allowed_permisions,
+              input: permissions,
+              hideInMenuInRouting: hideInMenu,
+              userType,
+              accessType,
+            }),
+          };
+        }
+
         return {
-          label: <NavLink to={path}>{label}</NavLink>,
-          key: `/${path}`,
-          icon: icon,
+          label: isCollapsed ? <NavLink to={fullPath}>{label}</NavLink> : label,
+          key: `/${fullPath}`,
+          icon,
           className: getHideClassValue({
             array: allowed_permisions,
             input: permissions,
             hideInMenuInRouting: hideInMenu,
             userType,
             accessType,
-            is_superadmin,
           }),
-        };
-      } else {
-        return {
-          label,
-          key: `/${path}`,
-          icon: icon,
-          className: getHideClassValue({
-            array: allowed_permisions,
-            input: permissions,
-            hideInMenuInRouting: hideInMenu,
-            userType,
-            path,
-            accessType,
-            is_superadmin,
-          }),
-          children: children.map(
-            ({ label, path: childpath, allowed_permisions, hideInMenu }) => {
-              return {
-                label: <NavLink to={`${path}/${childpath}`}>{label}</NavLink>,
-                key: `/${path}/${childpath}`,
-                className: getHideClassValue({
-                  array: allowed_permisions,
-                  input: permissions,
-                  hideInMenuInRouting: hideInMenu,
-                  userType,
-                  childpath,
-                  accessType,
-                  is_superadmin,
-                }),
-              };
-            }
-          ),
+          children: processMenuItems(children, fullPath),
         };
       }
-    }
-  );
+    );
+  };
 
-  return routing;
+  return processMenuItems(sideMenuConfig);
 };
 
-const Navigation = ({ closeMenu }) => {
+const Navigation = ({ closeMenu, isCollapsed }) => {
   const { pathname } = useLocation();
   const { userData } = useAuthStore();
 
@@ -107,7 +104,7 @@ const Navigation = ({ closeMenu }) => {
   const [current, setCurrent] = useState(getHeaderTitle());
   const onClick = (e) => {
     setCurrent(e.key);
-    closeMenu();
+    closeMenu && closeMenu();
   };
 
   return (
@@ -116,12 +113,12 @@ const Navigation = ({ closeMenu }) => {
         onClick={onClick}
         selectedKeys={[current]}
         mode="inline"
-        inlineCollapsed={true}
+        inlineCollapsed={isCollapsed}
         items={getItems({
           permissions: userData?.permissions,
           userType: userData?.user_type,
           accessType: userData?.access_type,
-          is_superadmin: userData?.is_superadmin,
+          isCollapsed,
         })}
       />
     </div>
