@@ -2,24 +2,24 @@
 .Navigation {
   position: fixed;
   z-index: 999;
-  width: 200px;
-  height: calc(100vh);
+  width: var(--sidebar-width);
+  height: calc(100vh - var(--header-height));
   overflow-y: none;
-  background: var(--menu-bg);
+  background: var(--gradient-background);
   backdrop-filter: blur(10px);
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.04);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  top: 56px;
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-normal);
+  top: var(--header-height);
   left: 0;
 }
 
 .Navigation.collapsed {
-  width: 80px;
+  width: var(--sidebar-width-collapsed);
 }
 
 /* Add this to fix the white space issue */
 .MainLayout aside.collapsed .Navigation {
-  width: 80px;
+  width: var(--sidebar-width-collapsed);
 }
 
 .Navigation .ant-menu {
@@ -27,11 +27,11 @@
   border-right: none;
   width: 100%;
   background: transparent;
-  color: var(--text-color);
+  color: var(--color-text-secondary);
 }
 
 .Navigation .ant-menu-inline-collapsed {
-  width: 80px;
+  width: var(--sidebar-width-collapsed);
 }
 
 /* Menu item styling */
@@ -40,34 +40,37 @@
   height: 44px !important;
   line-height: 44px !important;
   margin: 6px 10px !important;
-  border-radius: 10px;
-  color: var(--text-color);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: none;
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  transition: all var(--transition-normal);
+  overflow: visible;
   animation: fadeIn 0.3s ease-out;
 }
 
 /* Hover effects with colorful gradient */
 .Navigation .ant-menu-item:hover,
 .Navigation .ant-menu-submenu-title:hover {
-  color: var(--primary-color);
-  background: var(--hover-bg);
-  box-shadow: 0 2px 10px var(--shadow-color);
+  color: var(--color-primary);
+  background: rgba(var(--color-primary), var(--state-hover-opacity));
+  box-shadow: var(--shadow-sm);
   transform: translateX(3px);
 }
 
 /* Selected item styling with colorful gradient */
 .Navigation .ant-menu-item-selected {
-  background: var(--selected-bg) !important;
-  color: var(--primary-color) !important;
+  background: rgba(
+    var(--color-primary),
+    var(--state-active-opacity)
+  ) !important;
+  color: var(--color-primary) !important;
   font-weight: 500;
-  box-shadow: 0 3px 10px var(--shadow-color);
+  box-shadow: var(--shadow-md);
   animation: pulseGlow 2.5s infinite;
 }
 
 /* Active submenu title */
 .Navigation .ant-menu-submenu-active > .ant-menu-submenu-title {
-  color: var(--primary-color) !important;
+  color: var(--color-primary) !important;
 }
 
 /* Fix for collapsed menu items */
@@ -89,7 +92,7 @@
   height: 38px !important;
   line-height: 38px !important;
   margin: 4px 12px !important;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 /* Fix third level items */
@@ -117,8 +120,8 @@
   min-width: 14px;
   font-size: 18px;
   margin-right: 10px;
-  color: var(--icon-color);
-  transition: all 0.3s;
+  color: var(--color-text-tertiary);
+  transition: all var(--transition-normal);
 }
 
 /* Icon color for selected and hover states */
@@ -130,7 +133,7 @@
 .Navigation .ant-menu-item:hover svg,
 .Navigation .ant-menu-submenu-title:hover svg,
 .Navigation .ant-menu-submenu-active > .ant-menu-submenu-title svg {
-  color: var(--primary-color);
+  color: var(--color-primary);
   transform: scale(1.1);
 }
 
@@ -143,10 +146,10 @@
   left: 0;
   height: 100%;
   width: 0;
-  background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+  background: var(--gradient-primary);
   opacity: 0;
   border-radius: 0 4px 4px 0;
-  transition: all 0.3s;
+  transition: all var(--transition-normal);
 }
 
 .Navigation .ant-menu-item:hover::after,
@@ -158,19 +161,19 @@
 .Navigation .ant-menu-item-selected::after {
   width: 4px;
   opacity: 1;
-  background: linear-gradient(0deg, var(--primary-color), var(--accent-color));
+  background: var(--gradient-accent);
 }
 
 /* Active item icon animation */
 .Navigation .ant-menu-item-selected .anticon,
 .Navigation .ant-menu-item-selected svg {
   transform: scale(1.2);
-  transition: transform 0.3s;
+  transition: transform var(--transition-normal);
 }
 
 /* Add transition for better visual feedback */
 .Navigation .ant-menu-submenu-title .ant-menu-submenu-arrow {
-  transition: transform 0.3s ease;
+  transition: transform var(--transition-normal);
 }
 
 .Navigation
@@ -185,11 +188,11 @@
   padding: 16px;
   margin-bottom: 12px;
   text-align: center;
-  color: var(--primary-color);
+  color: var(--color-primary);
   font-weight: bold;
   letter-spacing: 1px;
   background: rgba(0, 0, 0, 0.03);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--color-border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -204,6 +207,8 @@
   left: 0;
   right: 0;
   height: 3px;
+  background: var(--gradient-primary);
+  background-size: 200% 200%;
   animation: gradientShift 8s infinite alternate;
 }
 

@@ -1,10 +1,11 @@
-import { Button, Checkbox, Form, Input } from "antd";
+import { Button, Checkbox, Form, Input, Select } from "antd";
 import { useState } from "react";
 import useAuthStore from "../../stores/AuthStore/AuthStore";
 import LoginCarousel from "./LoginCarousel";
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
   const { setUserData } = useAuthStore();
+  const [form] = Form.useForm();
 
   const onFinish = () => {
     setUserData({
@@ -18,19 +19,26 @@ const Login = () => {
     window.location.href = "/";
   };
 
+  // Function to validate phone number format
+  const validatePhoneNumber = (phone) => {
+    // Basic validation - can be enhanced with more complex patterns
+    const phoneRegex = /^\d{10}$/;
+    return phoneRegex.test(phone);
+  };
+
   return (
     <div className="min-h-screen flex bg-soft-purple">
       <div className="w-full max-w-[1440px] mx-auto flex flex-col md:flex-row items-center justify-center shadow-xl">
         {/* Login/Register Form Section */}
-        <div className="w-full  md:w-1/2  flex flex-col justify-center">
+        <div className="w-full md:w-1/2 flex flex-col justify-center">
           <div className="max-w-md mx-auto w-full">
             <h2 className="text-3xl font-bold mb-8 text-center text-primary-purple">
               {isLogin ? "Welcome Back" : "Create Account"}
             </h2>
 
             <Form
+              form={form}
               name="login-register"
-              // initialValues={{ remember: true }}
               initialValues={{
                 full_name: "Sumit",
                 tenant_code: "1234567890",
@@ -44,6 +52,7 @@ const Login = () => {
             >
               {!isLogin && (
                 <Form.Item
+                  label="Full Name"
                   name="full_name"
                   rules={[
                     { required: true, message: "Please input your full name!" },
@@ -55,19 +64,8 @@ const Login = () => {
                   />
                 </Form.Item>
               )}
-
               <Form.Item
-                name="tenant_code"
-                rules={[
-                  { required: true, message: "Please input your tenant code!" },
-                ]}
-              >
-                <Input
-                  placeholder="Tenant Code"
-                  className="py-3 rounded-lg border-gray-300"
-                />
-              </Form.Item>
-              <Form.Item
+                label="Email"
                 name="email"
                 rules={[
                   {
@@ -82,8 +80,70 @@ const Login = () => {
                   className="py-3 rounded-lg border-gray-300"
                 />
               </Form.Item>
+              {!isLogin && (
+                <>
+                  <Form.Item
+                    label="Country Code"
+                    name="countryCode"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please select your country code!",
+                      },
+                    ]}
+                    style={{ marginBottom: 0 }}
+                  >
+                    <Select
+                      placeholder="Country"
+                      style={{ width: "100%" }}
+                      options={[
+                        {
+                          value: "91",
+                          label: "+91 (IN)",
+                        },
+                        {
+                          value: "1",
+                          label: "+1 (US)",
+                        },
+                        {
+                          value: "44",
+                          label: "+44 (UK)",
+                        },
+                        // Add more countries as needed
+                      ]}
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    label="Phone Number"
+                    name="phoneNumber"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please enter your phone number!",
+                      },
+                      {
+                        validator: (_, value) => {
+                          if (!value) return Promise.resolve();
+                          if (validatePhoneNumber(value)) {
+                            return Promise.resolve();
+                          }
+                          return Promise.reject(
+                            "Please enter a valid 10-digit phone number"
+                          );
+                        },
+                      },
+                    ]}
+                  >
+                    <Input
+                      placeholder="Phone number (10 digits)"
+                      maxLength={10}
+                    />
+                  </Form.Item>
+                </>
+              )}
 
               <Form.Item
+                label="Password"
                 name="password"
                 rules={[
                   { required: true, message: "Please input your password!" },

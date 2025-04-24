@@ -2,7 +2,7 @@
 import { Menu } from "antd";
 import _ from "lodash";
 import { Trophy } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { NavLink, matchPath, useLocation } from "react-router-dom";
 import { HEADER_TITLES, sideMenuConfig } from "../../routing";
 import useAuthStore from "../../stores/AuthStore/AuthStore";
@@ -111,37 +111,23 @@ export const Navigation = ({ closeMenu, isCollapsed, onCollapse }) => {
     closeMenu && closeMenu();
   };
 
-  // Apply theme class to navigation element when theme changes
-  useEffect(() => {
-    const navElement = document.querySelector(".Navigation");
-    const headerElement = document.querySelector("header");
-
-    // Remove theme classes from both elements
-    if (navElement) {
-      navElement.classList.remove("dark-theme", "sports-theme");
-    }
-
-    if (headerElement) {
-      headerElement.classList.remove("dark-theme", "sports-theme");
-    }
-
-    // Add the new theme class if not default
-    if (theme !== "default") {
-      navElement?.classList.add(theme);
-      headerElement?.classList.add(theme);
-    }
-  }, [theme]);
+  // No need to manually apply theme classes since we now use global CSS variables
+  // and apply themes at the body level
 
   return (
     <div className={`Navigation ${isCollapsed ? "collapsed" : ""}`}>
       <div className="menu-logo">
         {!isCollapsed && (
           <>
-            <Trophy size={20} color="#1890ff" style={{ marginRight: "8px" }} />
+            <Trophy
+              size={20}
+              color="var(--color-primary)"
+              style={{ marginRight: "8px" }}
+            />
             <span>Sports SAAS</span>
           </>
         )}
-        {isCollapsed && <Trophy size={20} color="#1890ff" />}
+        {isCollapsed && <Trophy size={20} color="var(--color-primary)" />}
       </div>
       <Menu
         onClick={onClick}
