@@ -1,0 +1,89 @@
+.settings-container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.settings-title {
+  text-align: center;
+  margin-bottom: 32px;
+  color: #1890ff;
+  font-weight: 600;
+}
+
+.settings-card {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.settings-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+}
+
+.settings-tab .anticon {
+  font-size: 18px;
+}
+
+.tab-title {
+  margin-top: 0;
+  color: #1890ff;
+  font-weight: 500;
+}
+
+/* Override Ant Design tab styles for a better look */
+.settings-card .ant-tabs-tab {
+  margin: 0;
+  padding: 16px 24px;
+  transition: all 0.3s ease;
+}
+
+.settings-card .ant-tabs-tab:hover {
+  background-color: rgba(24, 144, 255, 0.08);
+}
+
+.settings-card .ant-tabs-tab-active {
+  background-color: rgba(24, 144, 255, 0.12);
+}
+
+.settings-card .ant-tabs-content {
+  padding: 24px;
+}
+
+/* Form element styling */
+.settings-card .ant-form-item-label > label {
+  font-weight: 500;
+}
+
+.settings-card .ant-switch-checked {
+  background-color: #1890ff;
+}
+
+.settings-card .ant-select-selector {
+  border-radius: 4px;
+}
+
+.settings-card .ant-select-selector:hover {
+  border-color: #1890ff;
+}
+
+.settings-card .ant-btn-primary {
+  background-color: #1890ff;
+  border-color: #1890ff;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 24px;
+  height: 38px;
+}
+
+.settings-card .ant-btn-primary:hover {
+  background-color: #40a9ff;
+  border-color: #40a9ff;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.3);
+}

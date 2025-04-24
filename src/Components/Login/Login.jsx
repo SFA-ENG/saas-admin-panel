@@ -1,134 +1,85 @@
-import {
-  FacebookOutlined,
-  GoogleOutlined,
-  LockOutlined,
-  MailOutlined,
-} from "@ant-design/icons";
-import {
-  Button,
-  Card,
-  Carousel,
-  Col,
-  Divider,
-  Form,
-  Input,
-  Row,
-  Typography,
-} from "antd";
+import { Button, Checkbox, Form, Input } from "antd";
 import { useState } from "react";
-import "./Login.css";
-
-const { Title, Text } = Typography;
-
+import useAuthStore from "../../stores/AuthStore/AuthStore";
+import LoginCarousel from "./LoginCarousel";
 const Login = () => {
-  const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
+  const { setUserData } = useAuthStore();
 
-  const onFinish = (values) => {
-    setLoading(true);
-    console.log("Success:", values);
-    // Add your login logic here
-    setLoading(false);
+  const onFinish = () => {
+    setUserData({
+      user: {
+        name: "Sumit",
+        email: "sumit@gmail.com",
+        tenant_code: "1234567890",
+      },
+      token: "1234567890",
+    });
+    window.location.href = "/";
   };
-
-  const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
-  };
-
-  const onRegisterFinish = (values) => {
-    setLoading(true);
-    console.log("Register Success:", values);
-    // Add your register logic here
-    setLoading(false);
-  };
-
-  const carouselContent = [
-    {
-      title: "Welcome to Our Platform",
-      description: "Experience seamless management and control",
-      image: "https://source.unsplash.com/random/800x600?business",
-    },
-    {
-      title: "Powerful Features",
-      description: "All the tools you need in one place",
-      image: "https://source.unsplash.com/random/800x600?technology",
-    },
-    {
-      title: "Stay Connected",
-      description: "Manage everything from anywhere",
-      image: "https://source.unsplash.com/random/800x600?office",
-    },
-  ];
 
   return (
-    <div className="login-container">
-      <Row className="login-row">
-        <Col xs={24} md={12} className="banner-col">
-          <div className="banner-content">
-            <Carousel autoplay dots={false}>
-              {carouselContent.map((item, index) => (
-                <div key={index} className="banner-content">
-                  <Title level={1} className="banner-title">
-                    {item.title}
-                  </Title>
-                  <Text className="banner-text">{item.description}</Text>
-                </div>
-              ))}
-            </Carousel>
-          </div>
-        </Col>
-        <Col xs={24} md={12} className="form-col">
-          <Card className="auth-card">
-            <div className="auth-header">
-              <Title level={2} className="auth-title">
-                {isLogin ? "Sign In" : "Create Account"}
-              </Title>
-              <Text className="auth-subtitle">
-                {isLogin
-                  ? "Welcome back! Please enter your details."
-                  : "Join us today! Create your account to get started."}
-              </Text>
-            </div>
+    <div className="min-h-screen flex bg-soft-purple">
+      <div className="w-full max-w-[1440px] mx-auto flex flex-col md:flex-row items-center justify-center shadow-xl">
+        {/* Login/Register Form Section */}
+        <div className="w-full  md:w-1/2  flex flex-col justify-center">
+          <div className="max-w-md mx-auto w-full">
+            <h2 className="text-3xl font-bold mb-8 text-center text-primary-purple">
+              {isLogin ? "Welcome Back" : "Create Account"}
+            </h2>
 
             <Form
-              form={form}
+              name="login-register"
+              // initialValues={{ remember: true }}
+              initialValues={{
+                full_name: "Sumit",
+                tenant_code: "1234567890",
+                email: "sumit@gmail.com",
+                password: "1234567890",
+              }}
+              onFinish={onFinish}
               layout="vertical"
-              name={isLogin ? "login" : "register"}
-              initialValues={{ remember: true }}
-              onFinish={isLogin ? onFinish : onRegisterFinish}
-              onFinishFailed={onFinishFailed}
-              autoComplete="off"
-              className="auth-form"
+              size="large"
+              className="space-y-5"
             >
               {!isLogin && (
                 <Form.Item
-                  name="name"
+                  name="full_name"
                   rules={[
-                    { required: true, message: "Please input your name!" },
+                    { required: true, message: "Please input your full name!" },
                   ]}
                 >
                   <Input
-                    prefix={<MailOutlined />}
                     placeholder="Full Name"
-                    size="large"
-                    className="auth-input"
+                    className="py-3 rounded-lg border-gray-300"
                   />
                 </Form.Item>
               )}
 
               <Form.Item
-                name="email"
+                name="tenant_code"
                 rules={[
-                  { required: true, message: "Please input your email!" },
-                  { type: "email", message: "Please enter a valid email!" },
+                  { required: true, message: "Please input your tenant code!" },
                 ]}
               >
                 <Input
-                  prefix={<MailOutlined />}
+                  placeholder="Tenant Code"
+                  className="py-3 rounded-lg border-gray-300"
+                />
+              </Form.Item>
+              <Form.Item
+                name="email"
+                rules={[
+                  {
+                    required: true,
+                    type: "email",
+                    message: "Please input a valid email!",
+                  },
+                ]}
+              >
+                <Input
                   placeholder="Email"
-                  size="large"
-                  className="auth-input"
+                  className="py-3 rounded-lg border-gray-300"
                 />
               </Form.Item>
 
@@ -136,96 +87,62 @@ const Login = () => {
                 name="password"
                 rules={[
                   { required: true, message: "Please input your password!" },
-                  {
-                    min: 6,
-                    message: "Password must be at least 6 characters!",
-                  },
                 ]}
               >
                 <Input.Password
-                  prefix={<LockOutlined />}
                   placeholder="Password"
-                  size="large"
-                  className="auth-input"
+                  className="py-3 rounded-lg border-gray-300"
                 />
               </Form.Item>
 
-              {!isLogin && (
-                <Form.Item
-                  name="confirmPassword"
-                  dependencies={["password"]}
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please confirm your password!",
-                    },
-                    ({ getFieldValue }) => ({
-                      validator(_, value) {
-                        if (!value || getFieldValue("password") === value) {
-                          return Promise.resolve();
-                        }
-                        return Promise.reject(
-                          new Error("The two passwords do not match!")
-                        );
-                      },
-                    }),
-                  ]}
-                >
-                  <Input.Password
-                    prefix={<LockOutlined />}
-                    placeholder="Confirm Password"
-                    size="large"
-                    className="auth-input"
-                  />
+              {isLogin && (
+                <Form.Item>
+                  <div className="flex justify-between items-center">
+                    <Checkbox>Remember me</Checkbox>
+                    <a
+                      href="#"
+                      className="text-primary-purple hover:text-secondary-purple transition-colors"
+                    >
+                      Forgot password?
+                    </a>
+                  </div>
                 </Form.Item>
               )}
 
-              {isLogin && (
-                <div className="form-actions">
-                  <a href="#" className="forgot-password">
-                    Forgot password?
-                  </a>
-                </div>
-              )}
-
               <Form.Item>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  loading={loading}
-                  block
-                  size="large"
-                  className="submit-button"
-                >
-                  {isLogin ? "Sign In" : "Create Account"}
+                <Button type="primary" htmlType="submit" block>
+                  {isLogin ? "Log In" : "Sign Up"}
                 </Button>
               </Form.Item>
 
-              <Divider className="divider">or continue with</Divider>
-
-              <div className="social-login">
-                <Button icon={<GoogleOutlined />} className="social-button">
-                  Google
-                </Button>
-                <Button icon={<FacebookOutlined />} className="social-button">
-                  Facebook
-                </Button>
-              </div>
-
-              <div className="auth-footer">
-                <Text>
+              <div className="text-center">
+                <p className="mt-6 text-gray-600">
                   {isLogin
-                    ? "Don't have an account?"
-                    : "Already have an account?"}
-                </Text>
-                <a onClick={() => setIsLogin(!isLogin)} className="auth-switch">
-                  {isLogin ? "Sign up" : "Sign in"}
-                </a>
+                    ? "Don't have an account? "
+                    : "Already have an account? "}
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setIsLogin(!isLogin);
+                    }}
+                    className="text-primary-purple font-medium hover:text-secondary-purple transition-colors"
+                  >
+                    {isLogin ? "Sign Up" : "Log In"}
+                  </a>
+                </p>
               </div>
             </Form>
-          </Card>
-        </Col>
-      </Row>
+          </div>
+        </div>
+
+        {/* Carousel Section */}
+        <div className="hidden md:block md:w-1/2 h-screen">
+          <div className="h-full">
+            <LoginCarousel />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

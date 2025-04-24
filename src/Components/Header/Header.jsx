@@ -1,16 +1,27 @@
-import { LogoutOutlined, MenuOutlined } from "@ant-design/icons";
-import { Button, Col, Row } from "antd";
+import {
+  LogoutOutlined,
+  MenuOutlined,
+  SettingOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
+import { Avatar, Badge, Button, Col, Dropdown, Row, Tooltip, Grid } from "antd";
 import _ from "lodash";
+import { useState } from "react";
 import { NavLink, matchPath, useLocation } from "react-router-dom";
 import sfalogo from "../../assets/sfa-logo.png";
 import { HEADER_TITLES } from "../../routing";
+import useAuthStore from "../../stores/AuthStore/AuthStore";
 import "./Header.css";
-import useAuthStore from "stores/AuthStore/AuthStore";
+
 const Header = ({ handleMenuClick }) => {
   const { pathname } = useLocation();
-  const { clearUser, userData } = useAuthStore();
+  const { clearUserData, userData } = useAuthStore();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const { xs } = Grid.useBreakpoint();
+
   const handleLogout = () => {
-    clearUser();
+    console.log("logout");
+    clearUserData();
     window.location.href = "/login";
   };
 
@@ -27,6 +38,39 @@ const Header = ({ handleMenuClick }) => {
     return "";
   };
 
+  const profileMenuItems = [
+    {
+      key: "profile",
+      label: (
+        <NavLink to="/profile" className="profile-dropdown-item">
+          <UserOutlined /> My Profile
+        </NavLink>
+      ),
+    },
+    {
+      key: "settings",
+      label: (
+        <NavLink to="/settings" className="profile-dropdown-item">
+          <SettingOutlined /> Settings
+        </NavLink>
+      ),
+    },
+    {
+      type: "divider",
+    },
+    {
+      key: "logout",
+      label: (
+        <div
+          onClick={handleLogout}
+          className="profile-dropdown-item text-danger"
+        >
+          <LogoutOutlined /> Logout
+        </div>
+      ),
+    },
+  ];
+
   return (
     <header>
       <div className="header-container">
@@ -35,7 +79,7 @@ const Header = ({ handleMenuClick }) => {
             <Row>
               <Col xs={12} sm={2}>
                 <NavLink className={"logo-link desktop-only"} to={"/"}>
-                  <img src={sfalogo} height={50} alt="Sports For All" />
+                  <img src={sfalogo} width={40} alt="Sports For All" />
                 </NavLink>
                 <Button
                   type="primary"
@@ -45,33 +89,53 @@ const Header = ({ handleMenuClick }) => {
                   <MenuOutlined />
                 </Button>
               </Col>
-              <Col xs={0} sm={20} offset={2}>
+              {!xs && <Col
+                xs={0}
+                sm={20}
+                offset={2}
+                style={{ display: "flex", alignItems: "center" }}
+              >
                 <h1 className="page-title">{getHeaderTitle()}</h1>
-              </Col>
+              </Col>}
             </Row>
           </Col>
 
           <Col xs={19} sm={12}>
-            <Row justify={"end"} align={"middle"}>
+            <Row justify={"end"} align={"middle"} gutter={16}>
               <Col className="user-details-section">
                 <span className="outlet-name">
-                  {userData?.stakeholder_type}
+                  {userData?.name}
                 </span>
                 <div className="user-details">
-                  {userData?.fullname} |{" "}
-                  {userData?.phone_number || userData?.mobile_no}
+                  {userData?.tenant_code}
                 </div>
               </Col>
 
               <Col>
-                <Button
-                  onClick={handleLogout}
-                  className="logout-button"
-                  type="primary"
-                  danger
-                >
-                  <LogoutOutlined />
-                </Button>
+                <Tooltip title="Profile Menu" placement="bottom">
+                  <Dropdown
+                    menu={{ items: profileMenuItems }}
+                    placement="bottomRight"
+                    arrow={{ pointAtCenter: true }}
+                    trigger={["click"]}
+                    onOpenChange={setDropdownOpen}
+                  >
+                    <div
+                      className={`profile-avatar-container ${
+                        dropdownOpen ? "profile-avatar-active" : ""
+                      }`}
+                    >
+                      <Badge dot status="success" offset={[-4, 36]}>
+                        <Avatar
+                          size={42}
+                          src={userData?.profile_image}
+                          icon={!userData?.profile_image && <UserOutlined />}
+                          className="profile-avatar"
+                        />
+                      </Badge>
+                    </div>
+                  </Dropdown>
+                </Tooltip>
               </Col>
             </Row>
           </Col>

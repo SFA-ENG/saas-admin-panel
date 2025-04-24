@@ -51,13 +51,14 @@ const MainLayout = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log(userData, token);
     if (!token) {
       navigate("/login");
     } else {
       setTokenVerified(true);
     }
     //eslint-disable-next-line
-  }, []);
+  }, [userData, token]);
 
   useEffect(() => {
     if (!tokenVerified || !userData) return;
@@ -76,7 +77,7 @@ const MainLayout = () => {
           permissions: userData.permissions,
           pathname,
         });
-        setAuthorized(authzFlag);
+        setAuthorized(true);
       }
       setLoading(false);
     }

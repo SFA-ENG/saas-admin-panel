@@ -1,14 +1,20 @@
-import { DashboardOutlined } from "@ant-design/icons";
+import {
+  DashboardOutlined,
+  SettingOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import Custom404 from "Components/404/404";
 import Login from "Components/Login/Login";
+import Profile from "Components/Profile/Profile";
+import Settings from "Components/Settings/Settings";
 
-import { Hotel } from "lucide-react";
-import Hotels from "pages/HotelsPage/Hotels/Hotels";
-import HotelsPage from "pages/HotelsPage/HotelsPage";
+import Hotels from "pages/UsersAdminstration/Hotels/Hotels";
+import HotelsPage from "pages/UsersAdminstration/HotelsPage";
 import { createBrowserRouter } from "react-router-dom";
 import MainLayout from "./Components/MainLayout/MainLayout";
 import WelcomePage from "./pages/WelcomePage/WelcomePage";
 import { generateHeaderTitles, getPermision } from "./routing.helpers";
+import { UsersRound } from "lucide-react";
 
 export const sideMenuConfig = [
   {
@@ -20,9 +26,9 @@ export const sideMenuConfig = [
     allowed_permisions: [...getPermision("WELCOME")],
   },
   {
-    label: "Hotels",
-    path: "hotels-administration",
-    icon: <Hotel />,
+    label: "Users",
+    path: "users-administration",
+    icon: <UsersRound />,
     element: <HotelsPage />,
     allowed_permisions: [...getPermision("HOTELS")],
     children: [
@@ -33,6 +39,22 @@ export const sideMenuConfig = [
         allowed_permisions: [...getPermision("HOTELS")],
       },
     ],
+  },
+  {
+    label: "Profile",
+    path: "profile",
+    icon: <UserOutlined />,
+    element: <Profile />,
+    hideInMenu: true,
+    allowed_permisions: [...getPermision("PROFILE")],
+  },
+  {
+    label: "Settings",
+    path: "settings",
+    icon: <SettingOutlined />,
+    element: <Settings />,
+    hideInMenu: true,
+    allowed_permisions: [...getPermision("SETTINGS")],
   },
 ];
 

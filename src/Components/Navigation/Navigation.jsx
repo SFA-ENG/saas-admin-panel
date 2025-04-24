@@ -15,10 +15,12 @@ const getHideClassValue = ({
   accessType,
   is_superadmin,
 }) => {
-  return ""
   if (hideInMenuInRouting) {
     return hideInMenuInRouting ? "hide" : "";
   }
+
+  return ""
+
 
   if (is_superadmin) return "";
 

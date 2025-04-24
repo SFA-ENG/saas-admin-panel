@@ -3,11 +3,20 @@ import { persist } from "zustand/middleware";
 
 const useAuthStore = create(
   persist(
-    (set) => ({
+    (set, get) => ({
       userData: null,
       token: null,
       setUserData: ({ user, token }) => {
         set({ userData: user, token: token });
+      },
+      updateProfileData: (profileData) => {
+        const currentUserData = get().userData;
+        set({
+          userData: {
+            ...currentUserData,
+            ...profileData,
+          },
+        });
       },
       clearUserData: () => {
         set({ userData: null, token: null });
