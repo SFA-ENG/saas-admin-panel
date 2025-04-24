@@ -111,9 +111,6 @@ export const Navigation = ({ closeMenu, isCollapsed, onCollapse }) => {
     closeMenu && closeMenu();
   };
 
-  // No need to manually apply theme classes since we now use global CSS variables
-  // and apply themes at the body level
-
   return (
     <div className={`Navigation ${isCollapsed ? "collapsed" : ""}`}>
       <div className="menu-logo">
@@ -122,7 +119,6 @@ export const Navigation = ({ closeMenu, isCollapsed, onCollapse }) => {
             <Trophy
               size={20}
               color="var(--color-primary)"
-              style={{ marginRight: "8px" }}
             />
             <span>Sports SAAS</span>
           </>

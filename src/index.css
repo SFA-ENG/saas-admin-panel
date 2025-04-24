@@ -126,6 +126,10 @@
   --gradient-background: linear-gradient(145deg, #f0fdf4, #ecfdf5);
 }
 
+.text-theme-color{
+  color: var(--color-primary);
+}
+
 /* Apply the theme to the entire app */
 body {
   color: var(--color-text-primary);

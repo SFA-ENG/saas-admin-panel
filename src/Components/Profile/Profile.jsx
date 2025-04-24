@@ -50,7 +50,6 @@ const Profile = () => {
 
   return (
     <div className="profile-container">
-      <h1 className="profile-title">My Profile</h1>
       <Row gutter={[24, 24]} justify="center">
         <Col xs={24} md={8}>
           <Card className="profile-card text-center">
