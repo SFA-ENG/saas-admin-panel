@@ -30,7 +30,6 @@ const Settings = () => {
 
   return (
     <div className="settings-container">
-
       <Card className="settings-card">
         <Tabs defaultActiveKey="notifications" tabPosition="left">
           <TabPane
@@ -217,14 +216,6 @@ const Settings = () => {
                   <Select.Option value="es">Spanish</Select.Option>
                   <Select.Option value="fr">French</Select.Option>
                   <Select.Option value="de">German</Select.Option>
-                </Select>
-              </Form.Item>
-
-              <Form.Item name="theme" label="Theme">
-                <Select defaultValue="light">
-                  <Select.Option value="light">Light</Select.Option>
-                  <Select.Option value="dark">Dark</Select.Option>
-                  <Select.Option value="system">System Default</Select.Option>
                 </Select>
               </Form.Item>
 

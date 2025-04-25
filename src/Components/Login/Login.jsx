@@ -30,7 +30,7 @@ const Login = () => {
     <div className="min-h-screen flex bg-soft-purple">
       <div className="w-full max-w-[1440px] mx-auto flex flex-col md:flex-row items-center justify-center shadow-xl">
         {/* Login/Register Form Section */}
-        <div className="w-full md:w-1/2 flex flex-col justify-center">
+        <div className="w-full md:w-1/2 flex flex-col justify-center p-6">
           <div className="max-w-md mx-auto w-full">
             <h2 className="text-3xl font-bold mb-8 text-center text-primary-purple">
               {isLogin ? "Welcome Back" : "Create Account"}

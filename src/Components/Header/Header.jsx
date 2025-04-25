@@ -8,18 +8,15 @@ import {
 } from "@ant-design/icons";
 import { Avatar, Badge, Button, Col, Dropdown, Grid, Row, Tooltip } from "antd";
 import _ from "lodash";
-import { Moon, Sun, Zap } from "lucide-react";
 import { useState } from "react";
 import { NavLink, matchPath, useLocation } from "react-router-dom";
 import { HEADER_TITLES } from "../../routing";
 import useAuthStore from "../../stores/AuthStore/AuthStore";
-import useThemeStore from "../../stores/ThemeStore/ThemeStore";
 import "./Header.css";
 
 const Header = ({ handleMenuClick, isCollapsed, toggleCollapse }) => {
   const { pathname } = useLocation();
   const { clearUserData, userData } = useAuthStore();
-  const { theme, toggleTheme } = useThemeStore();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const { xs } = Grid.useBreakpoint();
 
@@ -40,17 +37,6 @@ const Header = ({ handleMenuClick, isCollapsed, toggleCollapse }) => {
       }
     }
     return "";
-  };
-
-  const getThemeIcon = () => {
-    switch (theme) {
-      case "dark-theme":
-        return <Moon size={16} />;
-      case "sports-theme":
-        return <Zap size={16} />;
-      default:
-        return <Sun size={16} />;
-    }
   };
 
   const profileMenuItems = [
@@ -94,7 +80,7 @@ const Header = ({ handleMenuClick, isCollapsed, toggleCollapse }) => {
             <Row align="middle" justify="space-between">
               <Col xs={6} sm={7}>
                 <NavLink className={"logo-link desktop-only"} to={"/"}>
-                  <div className="text-theme-color font-bold text-lg">
+                  <div className="text-primary font-bold text-lg">
                     Sports Administration
                   </div>{" "}
                 </NavLink>
@@ -129,17 +115,6 @@ const Header = ({ handleMenuClick, isCollapsed, toggleCollapse }) => {
 
           <Col xs={12} sm={12}>
             <Row justify={"end"} align={"middle"} gutter={16}>
-              <Col>
-                <Tooltip title="Change Theme" placement="bottom">
-                  <div
-                    className="theme-toggle"
-                    onClick={toggleTheme}
-                    title="Change theme"
-                  >
-                    {getThemeIcon()}
-                  </div>
-                </Tooltip>
-              </Col>
               <Col>
                 <Tooltip title="Profile Menu" placement="bottom">
                   <Dropdown

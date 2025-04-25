@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Base theme variables with semantic naming */
+/* Base variables with semantic naming */
 :root {
   /* Colors */
   --color-primary: #4f46e5;
@@ -59,78 +59,11 @@
   --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Dark theme */
-.dark-theme {
-  /* Colors */
-  --color-primary: #818cf8;
-  --color-primary-light: #a5b4fc;
-  --color-primary-dark: #4f46e5;
-  --color-secondary: #a78bfa;
-  --color-secondary-light: #c4b5fd;
-  --color-secondary-dark: #7c3aed;
-  --color-accent: #f472b6;
-  --color-accent-light: #fb7185;
-  --color-accent-dark: #e11d48;
-
-  /* Neutral colors */
-  --color-text-primary: #f9fafb;
-  --color-text-secondary: #e5e7eb;
-  --color-text-tertiary: #9ca3af;
-  --color-background-primary: #111827;
-  --color-background-secondary: #1f2937;
-  --color-background-tertiary: #374151;
-  --color-border: rgba(75, 85, 99, 0.8);
-
-  /* UI Elements */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3), 0 4px 6px rgba(0, 0, 0, 0.3);
-
-  /* Gradients */
-  --gradient-background: linear-gradient(145deg, #1f2937, #111827);
-}
-
-/* Sports theme */
-.sports-theme {
-  /* Colors */
-  --color-primary: #10b981;
-  --color-primary-light: #34d399;
-  --color-primary-dark: #059669;
-  --color-secondary: #f59e0b;
-  --color-secondary-light: #fbbf24;
-  --color-secondary-dark: #d97706;
-  --color-accent: #f97316;
-  --color-accent-light: #fb923c;
-  --color-accent-dark: #ea580c;
-
-  /* Neutral colors */
-  --color-text-primary: #374151;
-  --color-text-secondary: #4b5563;
-  --color-text-tertiary: #9ca3af;
-  --color-background-primary: #ffffff;
-  --color-background-secondary: #f0fdf4;
-  --color-background-tertiary: #ecfdf5;
-  --color-border: rgba(209, 250, 229, 0.8);
-
-  /* Gradients */
-  --gradient-primary: linear-gradient(
-    135deg,
-    var(--color-primary),
-    var(--color-secondary)
-  );
-  --gradient-accent: linear-gradient(
-    135deg,
-    var(--color-secondary),
-    var(--color-accent)
-  );
-  --gradient-background: linear-gradient(145deg, #f0fdf4, #ecfdf5);
-}
-
-.text-theme-color{
+.text-primary {
   color: var(--color-primary);
 }
 
-/* Apply the theme to the entire app */
+/* Apply styles to the entire app */
 body {
   color: var(--color-text-primary);
   background-color: var(--color-background-secondary);
@@ -247,23 +180,18 @@ img {
   .ant-table-wrapper.tca-responsive-table .ant-table-row {
     background: var(--color-background-primary);
   }
-  .ant-table-wrapper.tca-responsive-table ol {
-    margin-top: 0;
-  }
 }
 
-/* Ant Design overrides */
+/* Additional styles for disabled controls */
 .ant-picker .ant-picker-input > input-disabled,
-.ant-select-disabled.ant-select-multiple .ant-select-selection-item,
-.ant-picker .ant-picker-input > input[disabled],
-.ant-input-disabled,
-.ant-input[disabled],
-.ant-select-disabled.ant-select:not(.ant-select-customize-input)
-  .ant-select-selector {
-  color: var(--color-text-tertiary);
+.ant-input[disabled] {
+  color: rgba(0, 0, 0, 0.45);
+  background-color: rgba(0, 0, 0, 0.04);
+  cursor: not-allowed;
+  opacity: 1;
 }
 
-/* Scrollbar styling */
+/* Styling scrollbars */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -271,13 +199,14 @@ img {
 
 ::-webkit-scrollbar-track {
   background: transparent;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--gradient-primary);
-  border-radius: var(--radius-full);
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--gradient-accent);
+  background: rgba(0, 0, 0, 0.3);
 }

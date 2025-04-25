@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { sideMenuConfig } from "../../routing";
 import useAuthStore from "../../stores/AuthStore/AuthStore";
-import useThemeStore from "../../stores/ThemeStore/ThemeStore";
 import "./Navigation.css";
 
 const getHideClassValue = ({
@@ -88,7 +87,6 @@ const getItems = ({ permissions, userType, accessType, isCollapsed }) => {
 export const Navigation = ({ closeMenu, isCollapsed, onCollapse }) => {
   const { pathname } = useLocation();
   const { userData } = useAuthStore();
-  const { theme } = useThemeStore();
 
   // Track both selected keys and open keys
   const [selectedKeys, setSelectedKeys] = useState([pathname]);

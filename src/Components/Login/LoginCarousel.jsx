@@ -1,9 +1,15 @@
 import { Carousel, Image } from "antd";
 import "./Login.css";
 
+import banner1 from "../../assets/banners/Login/banner1.png";
 import banner2 from "../../assets/banners/Login/banner2.png";
 const LoginCarousel = () => {
   const banners = [
+    {
+      title: "Easy Access",
+      description: "Login seamlessly across multiple devices.",
+      image: banner1,
+    },
     {
       title: "Easy Access",
       description: "Login seamlessly across multiple devices.",
