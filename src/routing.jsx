@@ -2,15 +2,13 @@ import { DashboardOutlined } from "@ant-design/icons";
 import Custom404 from "Components/404/404";
 import Login from "Components/Login/Login";
 import Profile from "Components/Profile/Profile";
-
-import Hotels from "pages/UsersAdminstration/Hotels/Hotels";
-import HotelsPage from "pages/UsersAdminstration/HotelsPage";
 import { createBrowserRouter } from "react-router-dom";
 import MainLayout from "./Components/MainLayout/MainLayout";
 import WelcomePage from "./pages/WelcomePage/WelcomePage";
 import { generateHeaderTitles, getPermision } from "./routing.helpers";
 import { UsersRound } from "lucide-react";
-import Test from "pages/Test/Test";
+import Users from "pages/UsersAdminstration/Users";
+import UsersList from "pages/UsersAdminstration/UsersManagement/UsersList";
 
 export const sideMenuConfig = [
   {
@@ -25,34 +23,14 @@ export const sideMenuConfig = [
     label: "Users",
     path: "users-administration",
     icon: <UsersRound />,
-    element: <HotelsPage />,
-    allowed_permisions: [...getPermision("USERS")],
+    element: <Users />,
+    allowed_permisions: [...getPermision("USERS_LIST")],
     children: [
       {
-        label: "Sumit",
-        path: "sumit",
-        element: <Hotels />,
-        allowed_permisions: [...getPermision("USERS")],
-        children: [
-          {
-            label: "1st User",
-            path: "one",
-            element: <h1>1st User</h1>,
-            allowed_permisions: [...getPermision("USERS")],
-          },
-          {
-            label: "2nd User",
-            path: "two",
-            element: <h1>2nd User</h1>,
-            allowed_permisions: [...getPermision("USERS")],
-          },
-          {
-            label: "Test",
-            path: "test",
-            element: <Test />,
-            allowed_permisions: [...getPermision("TESTING")],
-          },
-        ],
+        label: "Users List",
+        path: "users-list",
+        element: <UsersList />,
+        allowed_permisions: [...getPermision("USERS_LIST")],
       },
     ],
   },
@@ -66,20 +44,6 @@ export const sideMenuConfig = [
       {
         label: "Test1",
         path: "test1",
-        element: <Profile />,
-      },
-    ],
-  },
-  {
-    label: "Test2",
-    path: "test2",
-    icon: <UsersRound />,
-    element: <Profile />,
-    allowed_permisions: [...getPermision("PROFILE")],
-    children: [
-      {
-        label: "Test3",
-        path: "test3",
         element: <Profile />,
       },
     ],

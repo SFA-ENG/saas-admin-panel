@@ -1,7 +1,7 @@
 import { Outlet } from "react-router-dom";
 
-const Hotels = () => {
+const Users = () => {
   return <Outlet />;
 };
 
-export default Hotels;
+export default Users;
