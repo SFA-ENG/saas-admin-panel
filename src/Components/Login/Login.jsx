@@ -1,13 +1,15 @@
 import { Button, Checkbox, Form, Input, Select } from "antd";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useAuthStore from "../../stores/AuthStore/AuthStore";
 import LoginCarousel from "./LoginCarousel";
 import { countryCodeOptions, countryCodes } from "../../commons/constants";
 import { useApiMutation } from "../../hooks/useApiQuery/useApiQuery";
 import { renderErrorNotifications } from "helpers/error.helpers";
+import { useNavigate } from "react-router-dom";
 const Login = () => {
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
-  const { setUserData } = useAuthStore();
+  const { setUserData, userData, token } = useAuthStore();
   const [form] = Form.useForm();
 
   const { mutate: onboardTenant, isPending: isOnboardingTenantPending } =
@@ -28,7 +30,11 @@ const Login = () => {
     url: "/iam/login",
     method: "POST",
     onSuccess: (data) => {
-      console.log("Successfully logged in", data);
+      setUserData({
+        user: data.data.meta,
+        token: data.data.access_token,
+      });
+      navigate("/");
     },
     onError: (error) => {
       renderErrorNotifications(error.errors);
@@ -62,6 +68,12 @@ const Login = () => {
     const phoneRegex = /^\d{10}$/;
     return phoneRegex.test(phone);
   };
+
+  useEffect(() => {
+    if (userData && token) {
+      navigate("/");
+    }
+  }, [userData, token, navigate]);
 
   return (
     <div className="min-h-screen flex bg-soft-purple">
