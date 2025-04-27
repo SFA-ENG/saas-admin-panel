@@ -11,6 +11,7 @@ const queryClient = new QueryClient();
 ReactDOM.createRoot(document.getElementById("root")).render(
   <QueryClientProvider client={queryClient}>
     <ConfigProvider
+      virtual={true}
       theme={{
         hashed: false,
         token: {

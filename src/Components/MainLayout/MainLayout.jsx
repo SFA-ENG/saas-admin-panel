@@ -1,11 +1,11 @@
-import { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Outlet, useNavigate } from "react-router-dom";
 import Custom401 from "../401/401";
 import Header from "../Header/Header";
 import "./MainLayout.css";
-
 import { Drawer } from "antd";
 import Navigation from "Components/Navigation/Navigation";
+import useAuthStore from "../../stores/AuthStore/AuthStore";
 
 // const getPermissions = ({ pathname, permissions }) => {
 //   const urlToPermisison = generatePermissionToURLMapping({
@@ -37,12 +37,23 @@ import Navigation from "Components/Navigation/Navigation";
 // };
 
 const MainLayout = () => {
+  const navigate = useNavigate();
   // const pathname = window.location.pathname;
   const [collapsed, setCollapsed] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isTokenVerified, setTokenVerified] = useState(true);
   const [isAuthorized, setAuthorized] = useState(true);
   const [loading, setLoading] = useState(false);
+  const { userData, token } = useAuthStore();
+
+  useEffect(() => {
+    setLoading(true);
+    if (!token || !userData?.tenant_user_id) {
+      navigate("/login");
+      return;
+    }
+    setLoading(false);
+  }, [navigate, token, userData?.tenant_user_id]);
 
   // useEffect(() => {
   //   if (loading) return;
