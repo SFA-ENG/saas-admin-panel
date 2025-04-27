@@ -3,19 +3,18 @@ import useAuthStore from "stores/AuthStore/AuthStore";
 
 const AXIOS_TIMEOUT = 100 * 1000; //100 seconds
 export const X_CHANNEL_ID = "ADMIN-PANEL";
-const ACCESS_TOKEN = localStorage.getItem("token");
-
+const ACCESS_TOKEN = JSON.parse(localStorage.getItem("user-data"))?.state
+  ?.token;
 const API_ENDPOINTS = {
-  PROD: `https://dsaadmin.in/act`,
-  STAGE: `https://dsaadmin.in/act`,
-  LOCAL: `https://dsaadmin.in/act`,
+  PROD: `https://something.in`,
+  STAGE: `http://34.93.87.73:3003/api/v1`,
+  LOCAL: `http://localhost:4000/api/v1`,
 };
-
 //BASE URL MAP
 const BASE_URI_MAP = {
-  "act-module-prod.netlify.app": API_ENDPOINTS.STAGE,
-  "act-module.netlify.app": API_ENDPOINTS.PROD,
-  localhost: API_ENDPOINTS.LOCAL,
+  "domain.in": API_ENDPOINTS.STAGE,
+  "domain.com": API_ENDPOINTS.PROD,
+  localhost: API_ENDPOINTS.STAGE,
 };
 
 export const hostName = window.location.hostname;
@@ -27,7 +26,7 @@ const api = axios.create({
   timeout: AXIOS_TIMEOUT,
 });
 
-api.defaults.headers.common["origin"] = "tcaplay.com";
+api.defaults.headers.common["origin"] = "something.in";
 
 api.interceptors.response.use(
   (response) => {

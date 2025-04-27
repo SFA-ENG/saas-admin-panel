@@ -2,21 +2,58 @@ import { Button, Checkbox, Form, Input, Select } from "antd";
 import { useState } from "react";
 import useAuthStore from "../../stores/AuthStore/AuthStore";
 import LoginCarousel from "./LoginCarousel";
+import { countryCodeOptions, countryCodes } from "../../commons/constants";
+import { useApiMutation } from "../../hooks/useApiQuery/useApiQuery";
+import { renderErrorNotifications } from "helpers/error.helpers";
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
   const { setUserData } = useAuthStore();
   const [form] = Form.useForm();
 
-  const onFinish = () => {
-    setUserData({
-      user: {
-        name: "Sumit",
-        email: "sumit@gmail.com",
-        tenant_code: "1234567890",
+  const { mutate: onboardTenant, isPending: isOnboardingTenantPending } =
+    useApiMutation({
+      queryKey: ["onboard-tenant"],
+      url: "/iam/onboard-tenant",
+      method: "POST",
+      onSuccess: (data) => {
+        console.log("Successfully onboarded tenant", data);
       },
-      token: "1234567890",
+      onError: (error) => {
+        renderErrorNotifications(error.errors);
+      },
     });
-    window.location.href = "/";
+
+  const { mutate: login, isPending: isLoginPending } = useApiMutation({
+    queryKey: ["login"],
+    url: "/iam/login",
+    method: "POST",
+    onSuccess: (data) => {
+      console.log("Successfully logged in", data);
+    },
+    onError: (error) => {
+      renderErrorNotifications(error.errors);
+    },
+  });
+
+  const onFinish = async (values) => {
+    if (isLogin) {
+      login({
+        // tenant_code: values.tenant_code,
+        email: values.email,
+        password: "password",
+      });
+    } else {
+      onboardTenant({
+        name: values.name,
+        root_email: values.email,
+        password: values.password,
+        contact_number: {
+          country_code: values.countryCode,
+          isd_code: countryCodes[values.countryCode],
+          number: values.phoneNumber,
+        },
+      });
+    }
   };
 
   // Function to validate phone number format
@@ -40,10 +77,12 @@ const Login = () => {
               form={form}
               name="login-register"
               initialValues={{
-                full_name: "Sumit",
+                name: "Sumit",
                 tenant_code: "1234567890",
                 email: "sumit@gmail.com",
                 password: "1234567890",
+                countryCode: "IN",
+                phoneNumber: "1234567890",
               }}
               onFinish={onFinish}
               layout="vertical"
@@ -53,15 +92,26 @@ const Login = () => {
               {!isLogin && (
                 <Form.Item
                   label="Full Name"
-                  name="full_name"
+                  name="name"
                   rules={[
                     { required: true, message: "Please input your full name!" },
                   ]}
                 >
-                  <Input
-                    placeholder="Full Name"
-                    className="py-3 rounded-lg border-gray-300"
-                  />
+                  <Input placeholder="Full Name" />
+                </Form.Item>
+              )}
+              {isLogin && (
+                <Form.Item
+                  label="Tenant Code"
+                  name="tenant_code"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input your tenant code!",
+                    },
+                  ]}
+                >
+                  <Input placeholder="Tenant Code" />
                 </Form.Item>
               )}
               <Form.Item
@@ -75,10 +125,7 @@ const Login = () => {
                   },
                 ]}
               >
-                <Input
-                  placeholder="Email"
-                  className="py-3 rounded-lg border-gray-300"
-                />
+                <Input placeholder="Email" />
               </Form.Item>
               {!isLogin && (
                 <>
@@ -91,26 +138,10 @@ const Login = () => {
                         message: "Please select your country code!",
                       },
                     ]}
-                    style={{ marginBottom: 0 }}
                   >
                     <Select
                       placeholder="Country"
-                      style={{ width: "100%" }}
-                      options={[
-                        {
-                          value: "91",
-                          label: "+91 (IN)",
-                        },
-                        {
-                          value: "1",
-                          label: "+1 (US)",
-                        },
-                        {
-                          value: "44",
-                          label: "+44 (UK)",
-                        },
-                        // Add more countries as needed
-                      ]}
+                      options={countryCodeOptions}
                     />
                   </Form.Item>
                   <Form.Item
@@ -149,10 +180,7 @@ const Login = () => {
                   { required: true, message: "Please input your password!" },
                 ]}
               >
-                <Input.Password
-                  placeholder="Password"
-                  className="py-3 rounded-lg border-gray-300"
-                />
+                <Input.Password placeholder="Password" />
               </Form.Item>
 
               {isLogin && (
@@ -170,7 +198,13 @@ const Login = () => {
               )}
 
               <Form.Item>
-                <Button type="primary" htmlType="submit" block>
+                <Button
+                  loading={isLoginPending || isOnboardingTenantPending}
+                  type="primary"
+                  htmlType="submit"
+                  block
+                  disabled={isLoginPending || isOnboardingTenantPending}
+                >
                   {isLogin ? "Log In" : "Sign Up"}
                 </Button>
               </Form.Item>

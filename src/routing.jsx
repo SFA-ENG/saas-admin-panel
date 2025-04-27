@@ -10,6 +10,7 @@ import MainLayout from "./Components/MainLayout/MainLayout";
 import WelcomePage from "./pages/WelcomePage/WelcomePage";
 import { generateHeaderTitles, getPermision } from "./routing.helpers";
 import { UsersRound } from "lucide-react";
+import Test from "pages/Test/Test";
 
 export const sideMenuConfig = [
   {
@@ -45,13 +46,19 @@ export const sideMenuConfig = [
             element: <h1>2nd User</h1>,
             allowed_permisions: [...getPermision("USERS")],
           },
+          {
+            label: "Test",
+            path: "test",
+            element: <Test />,
+            allowed_permisions: [...getPermision("TESTING")],
+          },
         ],
       },
     ],
   },
   {
-    label: "Test",
-    path: "test",
+    label: "Profile",
+    path: "profile",
     icon: <UsersRound />,
     element: <Profile />,
     allowed_permisions: [...getPermision("PROFILE")],

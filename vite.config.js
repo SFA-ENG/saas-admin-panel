@@ -22,7 +22,6 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      contexts: path.resolve(__dirname, "./src/contexts"),
       stores: path.resolve(__dirname, "./src/stores"),
       Components: path.resolve(__dirname, "./src/Components"),
       helpers: path.resolve(__dirname, "./src/helpers"),
@@ -30,6 +29,7 @@ export default defineConfig({
       pages: path.resolve(__dirname, "./src/pages"),
       assets: path.resolve(__dirname, "./src/assets"),
       hoc: path.resolve(__dirname, "./src/hoc"),
+      hooks: path.resolve(__dirname, "./src/hooks"),
     },
     extensions: [".js", ".jsx", ".json"],
   },

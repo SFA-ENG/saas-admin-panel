@@ -6,7 +6,7 @@ const ERROR_CONSTANTS = {
 
 const getErrorMessageListFromApiResponse = (error) => {
   return (
-    error?.response?.data?.message || [
+    error?.response?.data?.errors || [
       { message: ERROR_CONSTANTS.GENERIC_ERROR },
     ]
   );
