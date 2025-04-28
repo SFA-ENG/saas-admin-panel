@@ -34,7 +34,7 @@ const Login = () => {
         user: data.data.meta,
         token: data.data.access_token,
       });
-      navigate("/");
+      window.location.href = "/";
     },
     onError: (error) => {
       renderErrorNotifications(error.errors);

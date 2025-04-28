@@ -51,6 +51,7 @@ api.interceptors.response.use(
 );
 
 if (ACCESS_TOKEN) {
+  console.log("ACCESS_TOKEN", ACCESS_TOKEN);
   api.defaults.headers.common["Authorization"] = `Bearer ${ACCESS_TOKEN}`;
 }
 
