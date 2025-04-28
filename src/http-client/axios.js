@@ -1,10 +1,10 @@
 import axios from "axios";
-import useAuthStore from "stores/AuthStore/AuthStore";
+import useAuthStore from "../stores/AuthStore/AuthStore";
 
 const AXIOS_TIMEOUT = 100 * 1000; //100 seconds
 export const X_CHANNEL_ID = "ADMIN-PANEL";
-const ACCESS_TOKEN = JSON.parse(localStorage.getItem("user-data"))?.state
-  ?.token;
+const ACCESS_TOKEN = useAuthStore.getState()?.token;
+
 const API_ENDPOINTS = {
   PROD: `https://something.in`,
   STAGE: `http://34.93.87.73:3003/api/v1`,

@@ -2,7 +2,7 @@ import { Button, Checkbox, Form, Input, Select } from "antd";
 import { useEffect, useState } from "react";
 import useAuthStore from "../../stores/AuthStore/AuthStore";
 import LoginCarousel from "./LoginCarousel";
-import { countryCodeOptions, countryCodes } from "../../commons/constants";
+import { CACHE_KEYS, countryCodeOptions, countryCodes } from "../../commons/constants";
 import { useApiMutation } from "../../hooks/useApiQuery/useApiQuery";
 import { renderErrorNotifications } from "helpers/error.helpers";
 import { useNavigate } from "react-router-dom";
@@ -14,7 +14,7 @@ const Login = () => {
 
   const { mutate: onboardTenant, isPending: isOnboardingTenantPending } =
     useApiMutation({
-      queryKey: ["onboard-tenant"],
+      queryKey: [CACHE_KEYS.ONBOARD_TENANT],
       url: "/iam/onboard-tenant",
       method: "POST",
       onSuccess: (data) => {
@@ -26,7 +26,7 @@ const Login = () => {
     });
 
   const { mutate: login, isPending: isLoginPending } = useApiMutation({
-    queryKey: ["login"],
+    queryKey: [CACHE_KEYS.LOGIN],
     url: "/iam/login",
     method: "POST",
     onSuccess: (data) => {
@@ -44,9 +44,9 @@ const Login = () => {
   const onFinish = async (values) => {
     if (isLogin) {
       login({
-        // tenant_code: values.tenant_code,
+        tenant_code: values.tenant_code,
         email: values.email,
-        password: "password",
+        password: values.password,
       });
     } else {
       onboardTenant({
@@ -90,9 +90,9 @@ const Login = () => {
               name="login-register"
               initialValues={{
                 name: "Sumit",
-                tenant_code: "1234567890",
+                tenant_code: "SUM1901",
                 email: "sumit@gmail.com",
-                password: "1234567890",
+                password: "password",
                 countryCode: "IN",
                 phoneNumber: "1234567890",
               }}

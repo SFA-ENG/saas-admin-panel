@@ -9,6 +9,7 @@ import useAuthStore from "../../../stores/AuthStore/AuthStore";
 import { renderErrorNotifications } from "helpers/error.helpers";
 import responsiveTable from "hoc/resposive-table.helper";
 import { userListColumns } from "../Users.helper";
+import { CACHE_KEYS } from "../../../commons/constants";
 
 const pageSize = 10;
 
@@ -26,7 +27,7 @@ const UsersList = () => {
     isFetching: usersLoading,
     refetch,
   } = useApiQuery({
-    queryKey: ["users-list"],
+    queryKey: [CACHE_KEYS.USERS_LIST],
     url: "/iam/users",
     params: { tenant_id: userData?.tenant_id },
     staleTimeInMinutes: 1,
@@ -37,6 +38,7 @@ const UsersList = () => {
       renderErrorNotifications(error.errors);
     },
   });
+
   const usersData = usersResponse?.data || [];
   const totalUsers = usersResponse?.meta?.pagination?.total || 0;
 
@@ -57,7 +59,6 @@ const UsersList = () => {
 
   // Filter data based on search text
   useEffect(() => {
-    console.log("useEffect");
     if (!usersData || !usersData.length) return;
 
     if (!searchText) {

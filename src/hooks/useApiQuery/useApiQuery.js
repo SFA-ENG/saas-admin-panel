@@ -66,56 +66,6 @@ export const useApiQuery = ({
   };
 };
 
-// export const useApiQuery = ({
-//   queryKey,
-//   url,
-//   method = "GET",
-//   params = {},
-//   headers = {},
-//   enabled = true,
-//   select,
-//   retry = false,
-//   staleTime = 0,
-//   onSuccess,
-//   onError,
-// }) => {
-//   const actualQueryKey = [queryKey, method, params];
-//   const query = useQuery({
-//     queryKey: actualQueryKey,
-//     queryFn: async () => {
-//       const httpMethod = method.toLowerCase();
-//       if (!httpClient[httpMethod]) {
-//         throw new Error(`Unsupported HTTP method: ${method}`);
-//       }
-
-//       const response = await httpClient[httpMethod]({
-//         url,
-//         headers,
-//         params,
-//       });
-
-//       // Check if response has error status code
-//       if (response.status >= 400) {
-//         throw response;
-//       }
-
-//       return response;
-//     },
-//     enabled,
-//     select,
-//     retry,
-//     staleTime,
-//     onSuccess: (data) => {
-//       console.log(data, "onSuccess");
-//     },
-//     onError: (error) => {
-//       console.log(error, "onError");
-//     },
-//   });
-
-//   return query;
-// };
-
 export const useApiMutation = ({
   url,
   method = "POST",

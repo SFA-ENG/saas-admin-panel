@@ -18,4 +18,7 @@ export const countryCodeOptions = Object.entries(countryCodes).map(
 
 export const CACHE_KEYS = {
   TENANTS_LIST: "tenants_list",
+  ONBOARD_TENANT: "onboard_tenant",
+  LOGIN: "login",
+  USERS_LIST: "users_list",
 };
