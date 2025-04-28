@@ -83,3 +83,44 @@ export const userListColumns = [
     ),
   },
 ];
+
+export const roleListColumns = [
+  {
+    title: "Role",
+    key: "name",
+    align: "center",
+    responsive: ["sm"],
+    render: ({ name }) => (
+      <Row justify={"center"}>
+        <span>{name}</span>
+      </Row>
+    ),
+  },
+  {
+    title: "Permissions",
+    key: "permissions",
+    align: "center",
+    responsive: ["sm"],
+    render: ({ permissions }) => (
+      <Row justify={"center"}>
+        <span>{(permissions || []).map((permission) => permission.name).join(", ")}</span>
+      </Row>
+    ),
+  },
+  {
+    title: "Actions",
+    key: "actions",
+    align: "center",
+    responsive: ["sm"],
+    render: (record) => (
+      <Row justify={"center"}>
+        <Space size="middle">
+          <Tooltip title="Edit Role">
+            <Button icon={<EditOutlined />} shape="circle" />
+          </Tooltip>
+        </Space>
+      </Row>
+    ),
+  },
+];
+

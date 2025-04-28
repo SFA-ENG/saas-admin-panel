@@ -9,7 +9,7 @@ import { generateHeaderTitles, getPermision } from "./routing.helpers";
 import { UsersRound } from "lucide-react";
 import Users from "pages/UsersAdminstration/Users";
 import UsersList from "pages/UsersAdminstration/UsersManagement/UsersList";
-
+import RolesList from "pages/UsersAdminstration/UsersManagement/RolesList";
 export const sideMenuConfig = [
   {
     label: "Welcome Page",
@@ -31,6 +31,12 @@ export const sideMenuConfig = [
         path: "users-list",
         element: <UsersList />,
         allowed_permisions: [...getPermision("USERS_LIST")],
+      },
+      {
+        label: "Roles List",
+        path: "roles-list",
+        element: <RolesList />,
+        allowed_permisions: [...getPermision("ROLES_LIST")],
       },
     ],
   },
