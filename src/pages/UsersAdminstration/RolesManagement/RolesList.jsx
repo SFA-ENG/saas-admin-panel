@@ -6,7 +6,7 @@ import useAuthStore from "../../../stores/AuthStore/AuthStore";
 import { renderErrorNotifications } from "helpers/error.helpers";
 import responsiveTable from "hoc/resposive-table.helper";
 import { roleListColumns } from "../Users.helper";
-import { CACHE_KEYS, permissionList } from "../../../commons/constants";
+import { CACHE_KEYS, getAllPermissionsList } from "../../../commons/constants";
 
 const pageSize = 10;
 
@@ -206,13 +206,9 @@ const RolesList = () => {
               placeholder="Select permissions"
               loading={permissionsLoading}
               notFoundContent={permissionsLoading ? "Loading..." : "No permissions found"}
-            >
-                {permissionList.map((permission) => (
-                  <Select.Option key={permission.id} value={permission.id}>
-                    {permission.name}
-                  </Select.Option>
-                ))}
-            </Select>
+              options={getAllPermissionsList()}
+            />
+             
           </Form.Item>
 
           <div className="flex justify-end gap-3 mt-4">

@@ -23,9 +23,15 @@ export const generateHeaderTitles = ({ sideMenuConfig }) => {
   return { headerTitles };
 };
 
-export const getPermision = (input) => {
+export const getPermision = (input, publish = false) => {
   const permission = stantizedString(input);
-  return [`VIEW:${permission}`, `UPDATE:${permission}`];
+  return [
+    `VIEW:${permission}`,
+    `UPDATE:${permission}`,
+    `CREATE:${permission}`,
+    `DELETE:${permission}`,
+    ...(publish ? [`PUBLISH:${permission}`] : []),
+  ];
 };
 
 export const generatePermissionToURLMapping = ({ sideMenuConfig }) => {

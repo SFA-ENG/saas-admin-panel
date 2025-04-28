@@ -21,7 +21,6 @@ const Header = ({ handleMenuClick, isCollapsed, toggleCollapse }) => {
   const { xs } = Grid.useBreakpoint();
 
   const handleLogout = () => {
-    console.log("logout");
     clearUserData();
     window.location.href = "/login";
   };
