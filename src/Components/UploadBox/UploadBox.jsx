@@ -4,15 +4,21 @@ import { renderErrorNotifications } from "../../helpers/error.helpers";
 import "./UploadBox.css";
 
 const acceptanceTpye = {
-  image:[".jpg", ".jpeg", ".png"],
-  video:[".mp4"]
-}
+  image: [".jpg", ".jpeg", ".png"],
+  video: [".mp4"],
+  pdf: [".pdf"],
+  audio: [".mp3", ".wav", ".m4a"],
+};
 
 const AttachmentBox = ({
   setPreviewImage,
   fileList,
   setFileList,
   previewOnSelect = true,
+  applyCss = true,
+  maxCount = 1,
+  showPreviewIcon = true,
+  showRemoveIcon = true,
   type = "image", // Include video formats
 }) => {
   const getBase64 = (file) => {
@@ -33,7 +39,7 @@ const AttachmentBox = ({
       if (file.type.includes("video")) {
         // Handle video preview
         const videoUrl = URL.createObjectURL(file.originFileObj || file);
-        setPreviewImage(
+        setPreviewImage && setPreviewImage(
           <video
             src={videoUrl}
             controls
@@ -44,7 +50,7 @@ const AttachmentBox = ({
         // Handle image preview
         const preview =
           file.url || (await getBase64(file.originFileObj || file));
-        setPreviewImage(
+        setPreviewImage && setPreviewImage(
           <img src={preview} alt="Preview" style={{ width: "100%" }} />
         );
       }
@@ -56,13 +62,16 @@ const AttachmentBox = ({
   return (
     <Upload
       style={{
-        minWidth: "100%",
         border: "5px solid red",
       }}
+      showUploadList={{
+        showPreviewIcon: showPreviewIcon,
+        showRemoveIcon: showRemoveIcon,
+      }}
       accept={acceptanceTpye[type].join(",")}
-      className="receipt-upload-button"
+      className={applyCss ? "saas-upload-button" : ""}
       defaultFileList={fileList}
-      listType="picture-card"
+      listType="picture-circle"
       beforeUpload={(file) => {
         previewOnSelect && handlePreview(file);
         setFileList([file]);
@@ -72,12 +81,12 @@ const AttachmentBox = ({
         handlePreview(file);
       }}
       onRemove={() => {
-        setPreviewImage(null);
+        setPreviewImage &&setPreviewImage(null);
         setFileList([]);
       }}
-      maxCount={1}
+      maxCount={maxCount}
     >
-      {fileList.length < 2 && (
+      {fileList.length < maxCount && (
         <Row>
           <Col lg={24}>
             <PlusOutlined />

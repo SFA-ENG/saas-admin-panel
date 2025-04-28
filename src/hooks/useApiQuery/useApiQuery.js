@@ -50,14 +50,16 @@ export const useApiQuery = ({
     if (query.isSuccess) {
       onSuccess?.(query.data?.data);
     }
-  }, [query.isSuccess, query.data, onSuccess]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query.isSuccess, query.data]);
 
   // Call user-defined onError when query fails
   useEffect(() => {
     if (query.isError) {
       onError?.(query.error?.errors);
     }
-  }, [query.isError, query.error, onError]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query.isError, query.error]);
 
   return {
     ...query,

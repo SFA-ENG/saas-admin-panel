@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Input, Button, Table, Modal, Form, Select, message } from "antd";
+import { Input, Button, Table, Form, message } from "antd";
 import { SearchOutlined, UserAddOutlined } from "@ant-design/icons";
 import {
   useApiQuery,
@@ -8,18 +8,17 @@ import {
 import useAuthStore from "../../../stores/AuthStore/AuthStore";
 import { renderErrorNotifications } from "helpers/error.helpers";
 import responsiveTable from "hoc/resposive-table.helper";
-import { userListColumns } from "../Users.helper";
+import { getColumnsForUsersList } from "../Users.helper";
 import { CACHE_KEYS } from "../../../commons/constants";
-
-const pageSize = 10;
+import NewUserModal from "./_blocks/NewUserModal";
 
 const UsersList = () => {
   const { userData } = useAuthStore();
+  const [form] = Form.useForm();
   const [searchText, setSearchText] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [form] = Form.useForm();
   const [filteredData, setFilteredData] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedRow, setSelectedRow] = useState(null);
 
   // Fetch users data
   const {
@@ -75,7 +74,6 @@ const UsersList = () => {
     );
 
     setFilteredData(filtered);
-    setCurrentPage(1); // Reset to first page when filtering
   }, [searchText, usersData]);
 
   // Set initial filtered data when users data loads
@@ -111,31 +109,22 @@ const UsersList = () => {
     });
   };
 
+  const editAndDeleteActions = {
+    handleEdit: (rowData) => {
+      console.log(rowData);
+      setSelectedRow(rowData);
+      setIsModalOpen(true);
+    },
+    handleDelete: ({ receipt_id }) => {
+      // navigate(`/receipt/receipt-approval/${receipt_id}`);
+    },
+  };
   // Table columns configuration
   const usersTableColumns = responsiveTable({
-    input: userListColumns,
+    input: getColumnsForUsersList({editAndDeleteActions}),
     labelCol: 9,
     valueCol: 15,
   });
-
-  // Calculate pagination
-  const paginatedData = filteredData?.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
-
-  // Handle pagination change
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
-  // Country options for the form
-  const countryOptions = [
-    { label: "India", value: "IN", isd: "+91" },
-    { label: "United States", value: "US", isd: "+1" },
-    { label: "United Kingdom", value: "UK", isd: "+44" },
-    // Add more countries as needed
-  ];
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm">
@@ -170,16 +159,14 @@ const UsersList = () => {
       <div className="overflow-x-auto">
         <Table
           loading={usersLoading}
-          dataSource={paginatedData}
+          dataSource={filteredData}
           columns={usersTableColumns}
           rowKey="tenant_user_id"
           pagination={{
-            current: currentPage,
-            pageSize: pageSize,
+            defaultPageSize: 10,
+            pageSizeOptions: [10, 20, 30, 40, 50],
+            showSizeChanger: true,
             showQuickJumper: true,
-            total: filteredData?.length,
-            onChange: handlePageChange,
-            showSizeChanger: false,
             showTotal: (total) => `Total ${total} items`,
           }}
           className="border border-gray-100 rounded-lg"
@@ -188,90 +175,13 @@ const UsersList = () => {
       </div>
 
       {/* Add User Modal */}
-      <Modal
-        title="Add New User"
-        open={isModalOpen}
-        onCancel={handleCancel}
-        footer={null}
-        width={600}
-        className="user-modal"
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleSubmit}
-          className="mt-4"
-        >
-          <Form.Item
-            name="name"
-            label="Full Name"
-            rules={[{ required: true, message: "Please enter user's name" }]}
-          >
-            <Input placeholder="John Doe" />
-          </Form.Item>
-
-          <Form.Item
-            name="email"
-            label="Email Address"
-            rules={[
-              { required: true, message: "Please enter email address" },
-              { type: "email", message: "Please enter a valid email" },
-            ]}
-          >
-            <Input placeholder="john.doe@example.com" />
-          </Form.Item>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Form.Item
-              name="country_code"
-              label="Country"
-              rules={[{ required: true, message: "Required" }]}
-            >
-              <Select
-                placeholder="Select country"
-                options={countryOptions}
-                onChange={(value) => {
-                  const isd = countryOptions.find(
-                    (c) => c.value === value
-                  )?.isd;
-                  form.setFieldsValue({ isd_code: isd });
-                }}
-              />
-            </Form.Item>
-
-            <Form.Item
-              name="isd_code"
-              label="ISD Code"
-              rules={[{ required: true, message: "Required" }]}
-            >
-              <Input placeholder="+91" disabled />
-            </Form.Item>
-
-            <Form.Item
-              name="phone_number"
-              label="Phone Number"
-              rules={[
-                { required: true, message: "Please enter phone number" },
-                { pattern: /^\d+$/, message: "Numbers only" },
-              ]}
-            >
-              <Input placeholder="9876543210" />
-            </Form.Item>
-          </div>
-
-          <div className="flex justify-end gap-3 mt-4">
-            <Button onClick={handleCancel}>Cancel</Button>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={isCreatingUser}
-              className="bg-primary hover:bg-primary-dark"
-            >
-              Create User
-            </Button>
-          </div>
-        </Form>
-      </Modal>
+      {isModalOpen && (
+        <NewUserModal
+          existingUser={selectedRow}
+          handleCancel={handleCancel}
+          handleSubmit={handleSubmit}
+        />
+      )}
     </div>
   );
 };
