@@ -44,7 +44,7 @@ export const sideMenuConfig = [
       },
       {
         label: "Assign Role",
-        path: "assign-role",
+        path: "assign-role/:tenant_user_id",
         hideInMenu: true,
         element: <AssignRole />,
         allowed_permisions: [...getPermision("ASSIGN_ROLE")],

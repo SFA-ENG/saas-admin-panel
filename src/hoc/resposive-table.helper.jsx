@@ -8,7 +8,7 @@ const responsiveTable = ({ input, labelCol = 8, valueCol = 16 }) => {
     responsive: ["xs"],
     render: (__, item, index) => {
       return (
-        <div>
+        <div className="p-4 bg-white rounded-lg shadow-sm mb-4">
           {desktopColumn.map(({ title, mobileTitle, render }) => {
             const applicableTitle =
               mobileTitle !== undefined ? mobileTitle : title;
@@ -18,18 +18,16 @@ const responsiveTable = ({ input, labelCol = 8, valueCol = 16 }) => {
             return (
               <Row
                 key={applicableTitle}
-                style={{
-                  marginBottom: "6px",
-                }}
+                className="mb-3 last:mb-0"
+                align="middle"
               >
                 {hasTitle && (
-                  <Col span={labelCol - 1}>
-                    <strong>{applicableTitle}</strong>
+                  <Col span={labelCol} className="font-medium text-gray-600">
+                    {applicableTitle}
                   </Col>
                 )}
-                {hasTitle && <Col span={1}>:</Col>}
                 {render && (
-                  <Col span={hasTitle ? valueCol : 24}>
+                  <Col span={hasTitle ? valueCol : 24} className="text-gray-800">
                     {render(__, item, index)}
                   </Col>
                 )}

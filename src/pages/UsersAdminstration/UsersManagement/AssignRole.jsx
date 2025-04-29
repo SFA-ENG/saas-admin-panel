@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Card, Checkbox, Spin, Typography, List } from "antd";
 import { useApiQuery, useApiMutation } from "../../../hooks/useApiQuery/useApiQuery";
 import { renderErrorNotifications, renderSuccessNotifications } from "helpers/error.helpers";
@@ -9,24 +9,32 @@ import { CACHE_KEYS } from "../../../commons/constants";
 const { Text } = Typography;
 
 const AssignRole = () => {
-  const location = useLocation();
+  const { tenant_user_id } = useParams();
   const { userData: authUserData } = useAuthStore();
-  const { userDetails } = location.state || {};
   const [selectedRoles, setSelectedRoles] = useState(new Set());
   const [updating, setUpdating] = useState(false);
 
-  // Fetch user's current roles
+  console.log("tenant_user_id from URL:", tenant_user_id);
+  console.log("authUserData:", authUserData);
+
+  // Fetch all users details
   const {
-    data: userRolesResponse,
-    isFetching: userRolesLoading,
+    data: usersResponse,
+    isFetching: usersLoading,
   } = useApiQuery({
-    queryKey: [CACHE_KEYS.USER_ROLES, userDetails?.tenant_user_id],
-    url: `/iam/users`,
-    enabled: !!userDetails?.tenant_user_id,
+    queryKey: [CACHE_KEYS.USERS_LIST],
+    url: "/iam/users",
+    params: { 
+      type: "DETAILED",
+      tenant_id: authUserData?.tenant_id 
+    },
+    enabled: !!authUserData?.tenant_id,
     onError: (error) => {
       renderErrorNotifications(error.errors);
     },
   });
+
+  console.log("usersResponse:", usersResponse);
 
   // Fetch all available roles
   const {
@@ -43,8 +51,8 @@ const AssignRole = () => {
 
   // Update user roles mutation
   const { mutate: updateUserRoles } = useApiMutation({
-    url: `/iam/users/user-role`,
-    method: "PATCH",
+    url: "/iam/users/user-role",
+    method: "POST",
     onSuccess: () => {
       renderSuccessNotifications({
         title: "Success",
@@ -56,15 +64,20 @@ const AssignRole = () => {
     },
   });
 
-  // Set initial selected roles when user roles are fetched
+  // Find the specific user from the users list
+  const userDetails = usersResponse?.data?.find(user => user.tenant_user_id === tenant_user_id);
+  console.log("userDetails:", userDetails);
+
+  // Set initial selected roles when user details are fetched
   useEffect(() => {
-    if (userRolesResponse?.data) {
-      setSelectedRoles(new Set(userRolesResponse.data.map(role => role.tenant_role_id)));
+    if (userDetails?.roles) {
+      const userRoles = userDetails.roles.map(role => role.tenant_role_id);
+      setSelectedRoles(new Set(userRoles));
     }
-  }, [userRolesResponse?.data]);
+  }, [userDetails]);
 
   const handleRoleChange = (roleId) => {
-    if (!userDetails?.tenant_user_id) {
+    if (!tenant_user_id) {
       renderErrorNotifications([{
         message: "User ID is missing"
       }]);
@@ -78,7 +91,7 @@ const AssignRole = () => {
     const roleIds = [roleId];
     
     updateUserRoles({
-      tenant_user_id: userDetails.tenant_user_id,
+      tenant_user_id,
       tenant_role_ids: roleIds,
       type: isAdding ? "ADD" : "REMOVE"
     });
@@ -92,7 +105,7 @@ const AssignRole = () => {
     setUpdating(false);
   };
 
-  const loading = userRolesLoading || rolesLoading;
+  const loading = usersLoading || rolesLoading;
   const roles = rolesResponse?.data || [];
 
   return (
@@ -116,12 +129,12 @@ const AssignRole = () => {
           <br />
           <Text>
             <strong style={{ marginRight: "10px" }}>Phone:</strong>{" "}
-            {userDetails.phone_number || "N/A"}
+            {userDetails.contact_number?.number || "N/A"}
           </Text>
         </Card>
       ) : (
         <Text type="danger" style={{ textAlign: "center", display: "block" }}>
-          User not found.
+          User not found. Please check if the user ID is correct.
         </Text>
       )}
 

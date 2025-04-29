@@ -178,24 +178,14 @@ const UsersList = () => {
       updateUser(updatePayload);
     },
     handleAssignRole: (record) => {
-          
-      navigate(`/users-administration/assign-role`, {
-        state: {
-          userDetails: {
-            name: record.name,
-            email: record.email,
-            phone_number: record.contact_number?.number,
-            tenant_user_id: record.tenant_user_id
-          }
-        }
-      });      
+      navigate(`/users-administration/assign-role/${record.tenant_user_id}`);      
     }
   };
   // Table columns configuration
   const usersTableColumns = responsiveTable({
     input: getColumnsForUsersList({ editAndDeleteActions }),
-    labelCol: 9,
-    valueCol: 15,
+    labelCol: 8,
+    valueCol: 16,
   });
 
   return (
@@ -241,7 +231,7 @@ const UsersList = () => {
             showQuickJumper: true,
             showTotal: (total) => `Total ${total} items`,
           }}
-          className="border border-gray-100 rounded-lg"
+          className="border border-gray-100 rounded-lg tca-responsive-table"
           locale={{ emptyText: "No users found" }}
         />
       </div>

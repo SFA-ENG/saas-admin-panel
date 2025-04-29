@@ -184,8 +184,8 @@ const RolesList = () => {
 
   const rolesTableColumns = responsiveTable({
     input: roleListColumns(handleEdit),
-    labelCol: 9,
-    valueCol: 15,
+    labelCol: 8,
+    valueCol: 16,
   });
 
   const paginatedData = filteredData?.slice(
@@ -237,7 +237,7 @@ const RolesList = () => {
             showSizeChanger: false,
             showTotal: (total) => `Total ${total} items`,
           }}
-          className="border border-gray-100 rounded-lg"
+          className="border border-gray-100 rounded-lg tca-responsive-table"
           locale={{ emptyText: "No roles found" }}    
         />
       </div>

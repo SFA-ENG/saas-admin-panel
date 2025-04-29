@@ -97,12 +97,12 @@ export const getColumnsForUsersList = ({ editAndDeleteActions }) => {
             </Tooltip>
             <Tooltip title="Assign Role">
               <Button
-                type="primary"
                 icon={<UserAddOutlined />}
+                shape="circle"
+                className="border-gray-300 hover:border-red-500 hover:text-red-500"
                 onClick={() => editAndDeleteActions.handleAssignRole(record)}
-              >
-                Assign Role
-              </Button>
+              />
+
             </Tooltip>
           </Space>
         </Row>

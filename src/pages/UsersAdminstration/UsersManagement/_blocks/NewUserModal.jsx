@@ -7,11 +7,18 @@ const NewUserModal = ({ existingUser, handleCancel, handleSubmit, isLoading }) =
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState([]);
   const isEdit = existingUser ? true : false;
+  const [mobile, setMobile] = useState('');
 
   const onFinish = (values) => {
     handleSubmit(values);
   };
 
+  const handleChange = (e) => {
+    const value = e.target.value.replace(/\D/g, ''); 
+    if (value.length <= 10) {
+      setMobile(value);
+    }
+  };
   return (
     <Modal
       title={isEdit ? "Edit User" : "Add New User"}
@@ -58,8 +65,15 @@ const NewUserModal = ({ existingUser, handleCancel, handleSubmit, isLoading }) =
               name="name"
               label="Full Name"
               rules={[{ required: true, message: "Please enter user's name" }]}
+              
             >
-              <Input placeholder="John Doe" />
+              <Input placeholder="John Doe" 
+              onKeyPress={(e) => {
+                const regex = /^[A-Za-z\s]$/;
+                if (!regex.test(e.key)) {
+                  e.preventDefault();
+                }
+              }}/>
             </Form.Item>
           </Col>
         </Row>
@@ -98,10 +112,11 @@ const NewUserModal = ({ existingUser, handleCancel, handleSubmit, isLoading }) =
               label="Phone Number"
               rules={[
                 { required: true, message: "Please enter phone number" },
-                { pattern: /^\d+$/, message: "Numbers only" },
               ]}
             >
-              <Input placeholder="9876543210" />
+              <Input placeholder="9876543210" 
+              onChange = {handleChange}
+              />
             </Form.Item>
           </Col>
         </Row>
