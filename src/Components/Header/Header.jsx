@@ -8,7 +8,7 @@ import {
 } from "@ant-design/icons";
 import { Avatar, Badge, Button, Col, Dropdown, Grid, Row, Tooltip } from "antd";
 import _ from "lodash";
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { NavLink, matchPath, useLocation } from "react-router-dom";
 import { HEADER_TITLES } from "../../routing";
 import useAuthStore from "../../stores/AuthStore/AuthStore";
@@ -38,38 +38,53 @@ const Header = ({ handleMenuClick, isCollapsed, toggleCollapse }) => {
     return "";
   };
 
-  const profileMenuItems = [
-    {
-      key: "profile",
-      label: (
-        <NavLink to="/profile" className="profile-dropdown-item">
-          <UserOutlined /> My Profile
-        </NavLink>
-      ),
-    },
-    {
-      key: "settings",
-      label: (
-        <NavLink to="/settings" className="profile-dropdown-item">
-          <SettingOutlined /> Settings
-        </NavLink>
-      ),
-    },
-    {
-      type: "divider",
-    },
-    {
-      key: "logout",
-      label: (
-        <div
-          onClick={handleLogout}
-          className="profile-dropdown-item text-danger"
-        >
-          <LogoutOutlined /> Logout
-        </div>
-      ),
-    },
-  ];
+  // Memoize the profile menu items to prevent unnecessary re-renders
+  const profileMenuItems = useMemo(
+    () => [
+      {
+        key: "profile",
+        label: (
+          <NavLink to="/profile" className="profile-dropdown-item">
+            <UserOutlined /> My Profile
+          </NavLink>
+        ),
+      },
+      {
+        key: "settings",
+        label: (
+          <NavLink to="/settings" className="profile-dropdown-item">
+            <SettingOutlined /> Settings
+          </NavLink>
+        ),
+      },
+      {
+        type: "divider",
+      },
+      {
+        key: "logout",
+        label: (
+          <div
+            onClick={handleLogout}
+            className="profile-dropdown-item text-danger"
+          >
+            <LogoutOutlined /> Logout
+          </div>
+        ),
+      },
+    ],
+    [handleLogout]
+  );
+
+  // Use a stable callback function that won't change on re-renders
+  const handleOpenChange = useCallback((open) => {
+    setDropdownOpen(open);
+  }, []);
+
+  // Memoize the dropdown menu to prevent re-initialization
+  const dropdownMenu = useMemo(
+    () => ({ items: profileMenuItems }),
+    [profileMenuItems]
+  );
 
   return (
     <header>
@@ -117,11 +132,12 @@ const Header = ({ handleMenuClick, isCollapsed, toggleCollapse }) => {
               <Col>
                 <Tooltip title="Profile Menu" placement="bottom">
                   <Dropdown
-                    menu={{ items: profileMenuItems }}
+                    menu={dropdownMenu}
                     placement="bottomRight"
                     arrow={{ pointAtCenter: true }}
                     trigger={["click"]}
-                    onOpenChange={setDropdownOpen}
+                    open={dropdownOpen}
+                    onOpenChange={handleOpenChange}
                   >
                     <div
                       className={`profile-avatar-container ${

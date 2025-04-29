@@ -79,7 +79,6 @@ export const useApiMutation = ({
   const mutation = useMutation({
     mutationFn: async (body) => {
       const httpMethod = method.toLowerCase();
-
       if (!httpClient[httpMethod]) {
         throw new Error(`Unsupported HTTP method: ${method}`);
       }

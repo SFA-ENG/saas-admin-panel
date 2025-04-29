@@ -21,7 +21,6 @@ const axiosCall = async ({
   responseType = undefined,
 }) => {
   let http = axiosInstance;
-
   try {
     const { data, status } = await http.request({
       url,

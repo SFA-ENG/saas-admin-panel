@@ -9,7 +9,6 @@ const NewUserModal = ({ existingUser, handleCancel, handleSubmit }) => {
   const isEdit = existingUser ? true : false;
 
   const onFinish = (values) => {
-    console.log(values);
     handleSubmit(values);
   };
 
@@ -27,7 +26,12 @@ const NewUserModal = ({ existingUser, handleCancel, handleSubmit }) => {
         layout="vertical"
         onFinish={onFinish}
         className="mt-4"
-        initialValues={existingUser}
+        initialValues={{
+          ...existingUser,
+          profile_picture: [],
+          country_code: existingUser?.contact_number?.country_code || "IN",
+          phone_number: existingUser?.contact_number?.number || "",
+        }}
       >
         <Row gutter={16} justify="center">
           <Col style={{ height: "120px" }}>

@@ -52,10 +52,21 @@ export const getColumnsForUsersList = ({ editAndDeleteActions }) => {
       key: "status",
       align: "center",
       responsive: ["sm"],
-      render: ({ is_active }) => (
+      render: (record) => (
         <Row justify={"center"}>
-          <Switch checked={is_active} color={is_active ? "success" : "error"}>
-            {is_active ? "Active" : "Inactive"}
+          <Switch
+            color={record.is_active ? "success" : "error"}
+            onChange={(checked) =>
+              editAndDeleteActions.handleActiveInactive({
+                record,
+                checked,
+              })
+            }
+            checkedChildren="ACTIVE"
+            unCheckedChildren="INACTIVE"
+            defaultChecked={record?.is_active}
+          >
+            {record.is_active ? "Active" : "Inactive"}
           </Switch>
         </Row>
       ),

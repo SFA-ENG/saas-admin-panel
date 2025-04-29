@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Input, Button, Table, Form, message } from "antd";
 import { SearchOutlined, UserAddOutlined } from "@ant-design/icons";
 import {
@@ -6,11 +6,12 @@ import {
   useApiMutation,
 } from "../../../hooks/useApiQuery/useApiQuery";
 import useAuthStore from "../../../stores/AuthStore/AuthStore";
-import { renderErrorNotifications } from "helpers/error.helpers";
+import { renderErrorNotifications, renderSuccessNotifications } from "helpers/error.helpers";
 import responsiveTable from "hoc/resposive-table.helper";
 import { getColumnsForUsersList } from "../Users.helper";
 import { CACHE_KEYS } from "../../../commons/constants";
 import NewUserModal from "./_blocks/NewUserModal";
+import { deleteUserByuserId } from "../Users.service";
 
 const UsersList = () => {
   const { userData } = useAuthStore();
@@ -38,8 +39,10 @@ const UsersList = () => {
     },
   });
 
-  const usersData = usersResponse?.data || [];
-  const totalUsers = usersResponse?.meta?.pagination?.total || 0;
+  const usersData = useMemo(
+    () => usersResponse?.data || [],
+    [usersResponse?.data]
+  );
 
   // Create new user mutation
   const { mutate: createUser, isLoading: isCreatingUser } = useApiMutation({
@@ -76,13 +79,6 @@ const UsersList = () => {
     setFilteredData(filtered);
   }, [searchText, usersData]);
 
-  // Set initial filtered data when users data loads
-  useEffect(() => {
-    if (usersData && usersData.length) {
-      setFilteredData(usersData);
-    }
-  }, [usersData]);
-
   const handleSearch = (e) => {
     setSearchText(e.target.value);
   };
@@ -93,6 +89,7 @@ const UsersList = () => {
 
   const handleCancel = () => {
     setIsModalOpen(false);
+    setSelectedRow(null);
     form.resetFields();
   };
 
@@ -115,13 +112,25 @@ const UsersList = () => {
       setSelectedRow(rowData);
       setIsModalOpen(true);
     },
-    handleDelete: ({ receipt_id }) => {
-      // navigate(`/receipt/receipt-approval/${receipt_id}`);
+    handleDelete: async (record) => {
+      const { data, errors } = await deleteUserByuserId(record.tenant_user_id);
+      if (errors.length) {
+        renderErrorNotifications(errors);
+      } else {
+        renderSuccessNotifications({
+          title: "Success",
+          message: "User deleted successfully",
+        });
+        refetch();
+      }
+    },
+    handleActiveInactive: ({ record, checked }) => {
+      console.log(record, checked, "record");
     },
   };
   // Table columns configuration
   const usersTableColumns = responsiveTable({
-    input: getColumnsForUsersList({editAndDeleteActions}),
+    input: getColumnsForUsersList({ editAndDeleteActions }),
     labelCol: 9,
     valueCol: 15,
   });
