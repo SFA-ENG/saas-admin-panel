@@ -17,7 +17,7 @@ const RolesList = () => {
   const [form] = Form.useForm();
   const [filteredData, setFilteredData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-
+  const [editingRole, setEditingRole] = useState(null);
   const {
     data: rolesResponse,
     isFetching: rolesLoading,
@@ -66,6 +66,20 @@ const RolesList = () => {
     },
   });
 
+  const { mutate: updateRole, isLoading: isUpdatingRole } = useApiMutation({
+    url: "/iam/roles/role-permissions",
+    method: "PATCH",
+    onSuccess: () => {
+      message.success("Role updated successfully");
+      setIsModalOpen(false);
+      form.resetFields();
+      refetch();
+    },
+    onError: (error) => {
+      message.error(error?.errors?.[0]?.message || "Failed to update role");
+    },
+  });
+
   useEffect(() => {
     if (!rolesData || !rolesData.length) return;
 
@@ -97,25 +111,79 @@ const RolesList = () => {
     setSearchText(e.target.value);
   };
 
-  const showModal = () => {
+  const showAddModal = (role = null) => {
+    setEditingRole(role);
+    if (role) {
+      form.setFieldsValue({
+        name: role.name,
+        permissions: role.permissions
+      });
+    }
     setIsModalOpen(true);
   };
 
   const handleCancel = () => {
     setIsModalOpen(false);
+    setEditingRole(null);
     form.resetFields();
   };
 
   const handleSubmit = (values) => {
-    createRole({
-      tenant_id: userData.tenant_id,
-      name: values.name,
-      tenant_privilege_ids: values.permissions.map(permission => permission.id),
-    });
+    if (editingRole) {
+      // For existing role, we need to compare current and new permissions
+      const currentPermissions = editingRole.permissions || [];
+      const newPermissions = values.permissions || [];
+      
+      // Find permissions to add and remove
+      const permissionsToAdd = newPermissions.filter(
+        perm => !currentPermissions.some(p => p.id === perm)
+      );
+      const permissionsToRemove = currentPermissions
+        .filter(p => !newPermissions.includes(p.id))
+        .map(p => p.id);
+
+      // First add new permissions
+      if (permissionsToAdd.length > 0) {
+        updateRole({
+          tenant_role_id: editingRole.tenant_role_id,
+          tenant_privilege_ids: permissionsToAdd,
+          type: "ADD"
+        });
+      }
+
+      // Then remove old permissions
+      if (permissionsToRemove.length > 0) {
+        updateRole({
+          tenant_role_id: editingRole.tenant_role_id,
+          tenant_privilege_ids: permissionsToRemove,
+          type: "REMOVE"
+        });
+      }
+
+      // If no changes to permissions, just update the name
+      if (permissionsToAdd.length === 0 && permissionsToRemove.length === 0) {
+        updateRole({
+          tenant_role_id: editingRole.tenant_role_id,
+          name: values.name
+        });
+      }
+    } else {
+      // Create new role - no type field needed
+      createRole({
+
+        name: values.name,
+        tenant_privilege_ids: values.permissions
+      });
+    }
+  };
+
+  const handleEdit = (record) => {
+    console.log("Edit clicked for record:", record); // Debug log
+    showAddModal(record);
   };
 
   const rolesTableColumns = responsiveTable({
-    input: roleListColumns,
+    input: roleListColumns(handleEdit),
     labelCol: 9,
     valueCol: 15,
   });
@@ -136,7 +204,7 @@ const RolesList = () => {
         <Button
           type="primary"
           icon={<UserAddOutlined />}
-          onClick={showModal}
+          onClick={() => showAddModal()}
           className="bg-primary hover:bg-primary-dark"
         >
           Add New Role
@@ -191,6 +259,7 @@ const RolesList = () => {
           <Form.Item
             name="name"
             label="Role Name"
+            
             rules={[{ required: true, message: "Please enter role name" }]}
           >
             <Input />
@@ -207,8 +276,8 @@ const RolesList = () => {
               loading={permissionsLoading}
               notFoundContent={permissionsLoading ? "Loading..." : "No permissions found"}
               options={getAllPermissionsList()}
+              fieldNames={{ label: 'label', value: 'value' }}
             />
-             
           </Form.Item>
 
           <div className="flex justify-end gap-3 mt-4">
@@ -216,10 +285,10 @@ const RolesList = () => {
             <Button
               type="primary"
               htmlType="submit"
-              loading={isCreatingRole}
+              loading={isCreatingRole || isUpdatingRole}
               className="bg-primary hover:bg-primary-dark"
             >
-              Create Role
+            {editingRole ? "Update Role" : "Create Role"}
             </Button>
           </div>
         </Form>

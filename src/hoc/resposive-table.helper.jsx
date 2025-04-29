@@ -1,11 +1,7 @@
 import { Col, Row } from "antd";
 
 const responsiveTable = ({ input, labelCol = 8, valueCol = 16 }) => {
-  const desktopColumn = input?.map((item) => {
-    return {
-      ...item,
-    };
-  });
+  const desktopColumn = Array.isArray(input) ? input : [];
 
   const mobileColumn = {
     title: "",
@@ -13,7 +9,7 @@ const responsiveTable = ({ input, labelCol = 8, valueCol = 16 }) => {
     render: (__, item, index) => {
       return (
         <div>
-          {input?.map(({ title, mobileTitle, render: desktopRender }) => {
+          {desktopColumn.map(({ title, mobileTitle, render }) => {
             const applicableTitle =
               mobileTitle !== undefined ? mobileTitle : title;
 
@@ -32,9 +28,9 @@ const responsiveTable = ({ input, labelCol = 8, valueCol = 16 }) => {
                   </Col>
                 )}
                 {hasTitle && <Col span={1}>:</Col>}
-                {desktopRender && (
+                {render && (
                   <Col span={hasTitle ? valueCol : 24}>
-                    {desktopRender(__, item, index)}
+                    {render(__, item, index)}
                   </Col>
                 )}
               </Row>

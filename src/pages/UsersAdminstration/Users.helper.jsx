@@ -113,7 +113,7 @@ export const getColumnsForUsersList = ({ editAndDeleteActions }) => {
   return columns;
 };
 
-export const roleListColumns = [
+export const roleListColumns = (onEdit) => [
   {
     title: "Role",
     key: "name",
@@ -142,12 +142,17 @@ export const roleListColumns = [
     title: "Actions",
     key: "actions",
     align: "center",
-    responsive: ["sm"],
+    responsive: ["sm"],    
     render: (record) => (
       <Row justify={"center"}>
         <Space size="middle">
           <Tooltip title="Edit Role">
-            <Button icon={<EditOutlined />} shape="circle" />
+            <Button 
+              icon={<EditOutlined />} 
+              shape="circle"
+              onClick={() => onEdit && onEdit(record)}
+              className="border-gray-300 hover:border-primary hover:text-primary"
+            />
           </Tooltip>
         </Space>
       </Row>
