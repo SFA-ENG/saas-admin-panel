@@ -1,4 +1,23 @@
 import { sideMenuConfig } from "../routing";
+import { v5 as uuidv5 } from 'uuid';
+
+const NAMESPACE = 'b3b3c4f6-4d6e-4b19-8c70-3fc8c2216a0d'; // <-- You should define your own namespace UUID
+export const getAllPermissionsList = () => {
+  if (!sideMenuConfig || !Array.isArray(sideMenuConfig)) {
+    console.error(
+      "sideMenuConfig is missing or not an array",
+      sideMenuConfig
+    );
+    return [];
+  }
+
+  return sideMenuConfig
+    .flatMap((item) => item.allowed_permisions || [])
+    .map((perm) => ({
+      label: perm,
+      value: uuidv5(perm, NAMESPACE),
+    }));
+};
 
 export const userAccessTypes = {
   SUPER_ADMIN: "SUPER_ADMIN",
@@ -26,19 +45,4 @@ export const CACHE_KEYS = {
   ROLES_LIST: "roles_list",
 };
 
-export const getAllPermissionsList = () => {
-  if (!sideMenuConfig || !Array.isArray(sideMenuConfig)) {
-    console.error(
-      "sideMenuConfig is missing or not an array",
-      sideMenuConfig
-    );
-    return [];
-  }
-
-  return sideMenuConfig
-    .flatMap((item) => item.allowed_permisions || [])
-    .map((perm) => ({
-      label: perm,
-      value: perm,
-    }));
-};
+  
