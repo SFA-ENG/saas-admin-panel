@@ -3,7 +3,7 @@ import AttachmentBox from "../../../../Components/UploadBox/UploadBox";
 import { countryCodeOptions } from "../../../../commons/constants";
 import { useState } from "react";
 
-const NewUserModal = ({ existingUser, handleCancel, handleSubmit }) => {
+const NewUserModal = ({ existingUser, handleCancel, handleSubmit, isLoading }) => {
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState([]);
   const isEdit = existingUser ? true : false;
@@ -157,11 +157,11 @@ const NewUserModal = ({ existingUser, handleCancel, handleSubmit }) => {
         )}
 
         <div className="flex justify-end gap-3 mt-4">
-          <Button onClick={handleCancel}>Cancel</Button>
+          <Button onClick={handleCancel} disabled={isLoading}>Cancel</Button>
           <Button
             type="primary"
             htmlType="submit"
-            loading={false}
+            loading={isLoading}
             className="bg-primary hover:bg-primary-dark"
           >
             {isEdit ? "Update User" : "Create User"}

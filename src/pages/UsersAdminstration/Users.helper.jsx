@@ -1,4 +1,4 @@
-import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { EditOutlined, DeleteOutlined, UserAddOutlined } from "@ant-design/icons";
 import { Avatar, Button, Row, Space, Switch, Tooltip } from "antd";
 import { isMobile } from "helpers/device.helpers";
 
@@ -94,6 +94,15 @@ export const getColumnsForUsersList = ({ editAndDeleteActions }) => {
                 className="border-gray-300 hover:border-red-500 hover:text-red-500"
                 onClick={() => editAndDeleteActions.handleDelete(record)}
               />
+            </Tooltip>
+            <Tooltip title="Assign Role">
+              <Button
+                type="primary"
+                icon={<UserAddOutlined />}
+                onClick={() => editAndDeleteActions.handleAssignRole(record)}
+              >
+                Assign Role
+              </Button>
             </Tooltip>
           </Space>
         </Row>

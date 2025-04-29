@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Input, Button, Table, Form, message } from "antd";
 import { SearchOutlined, UserAddOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 import {
   useApiQuery,
   useApiMutation,
@@ -9,12 +10,13 @@ import useAuthStore from "../../../stores/AuthStore/AuthStore";
 import { renderErrorNotifications, renderSuccessNotifications } from "helpers/error.helpers";
 import responsiveTable from "hoc/resposive-table.helper";
 import { getColumnsForUsersList } from "../Users.helper";
-import { CACHE_KEYS } from "../../../commons/constants";
+import { CACHE_KEYS, countryCodes } from "../../../commons/constants";
 import NewUserModal from "./_blocks/NewUserModal";
 import { deleteUserByuserId } from "../Users.service";
 
 const UsersList = () => {
-  const { userData } = useAuthStore();
+  const navigate = useNavigate();
+  const { userData: authUserData } = useAuthStore();
   const [form] = Form.useForm();
   const [searchText, setSearchText] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,10 +31,10 @@ const UsersList = () => {
   } = useApiQuery({
     queryKey: [CACHE_KEYS.USERS_LIST],
     url: "/iam/users",
-    params: { tenant_id: userData?.tenant_id },
+    params: { tenant_id: authUserData?.tenant_id },
     staleTimeInMinutes: 1,
     onSuccess: (data) => {
-      console.log(data);
+      console.log("Users fetched successfully:", data);
     },
     onError: (error) => {
       renderErrorNotifications(error.errors);
@@ -48,16 +50,36 @@ const UsersList = () => {
   const { mutate: createUser, isLoading: isCreatingUser } = useApiMutation({
     url: "/iam/users",
     method: "POST",
-    onSuccess: () => {
+    onSuccess: (response) => {
+      console.log("User created successfully:", response);
       message.success("User created successfully");
       setIsModalOpen(false);
       form.resetFields();
       refetch();
     },
     onError: (error) => {
+      console.error("Error creating user:", error);
       message.error(error?.errors?.[0]?.message || "Failed to create user");
     },
   });
+
+  // Update user mutation
+  const { mutate: updateUser, isLoading: isUpdatingUser } = useApiMutation({
+    url: `/iam/users`,
+    method: "PATCH",
+    onSuccess: (response) => {
+      console.log("User updated successfully:", response);
+      message.success("User updated successfully");
+      setIsModalOpen(false);
+      form.resetFields();
+      refetch();
+    },
+    onError: (error) => {
+      console.error("Error updating user:", error);
+      message.error(error?.errors?.[0]?.message || "Failed to update user");
+    },
+  });
+
 
   // Filter data based on search text
   useEffect(() => {
@@ -94,21 +116,43 @@ const UsersList = () => {
   };
 
   const handleSubmit = (values) => {
-    createUser({
-      tenant_id: userData.tenant_id,
-      name: values.name,
-      email: values.email,
-      contact_number: {
-        country_code: values.country_code,
-        isd_code: values.isd_code,
-        number: values.phone_number,
-      },
-    });
+      
+    if (!authUserData?.tenant_id) {
+      message.error("Tenant ID is missing");
+      return;
+    }
+
+    if (selectedRow) {
+      // Update existing user
+      const updatePayload = {
+        tenant_user_id: selectedRow.tenant_user_id,
+        name: values.name,
+        contact_number: {
+          country_code: values.country_code,
+          isd_code: countryCodes[values.country_code],
+          number: values.phone_number,
+        },
+      };
+      updateUser(updatePayload);
+    } else {
+      // Create new user
+      const createPayload = {
+        tenant_id: authUserData.tenant_id,
+        name: values.name,
+        email: values.email,
+        password: values.password,
+        contact_number: {
+          country_code: values.country_code,
+          isd_code: countryCodes[values.country_code],
+          number: values.phone_number,
+        },
+      };
+      createUser(createPayload);
+    }
   };
 
   const editAndDeleteActions = {
     handleEdit: (rowData) => {
-      console.log(rowData);
       setSelectedRow(rowData);
       setIsModalOpen(true);
     },
@@ -125,8 +169,27 @@ const UsersList = () => {
       }
     },
     handleActiveInactive: ({ record, checked }) => {
-      console.log(record, checked, "record");
+
+      const updatePayload = {
+        tenant_user_id: record.tenant_user_id,
+        is_active: checked ? 1 : 0
+      };
+
+      updateUser(updatePayload);
     },
+    handleAssignRole: (record) => {
+          
+      navigate(`/users-administration/assign-role`, {
+        state: {
+          userDetails: {
+            name: record.name,
+            email: record.email,
+            phone_number: record.contact_number?.number,
+            tenant_user_id: record.tenant_user_id
+          }
+        }
+      });      
+    }
   };
   // Table columns configuration
   const usersTableColumns = responsiveTable({
@@ -189,6 +252,7 @@ const UsersList = () => {
           existingUser={selectedRow}
           handleCancel={handleCancel}
           handleSubmit={handleSubmit}
+          isLoading={isCreatingUser || isUpdatingUser}
         />
       )}
     </div>

@@ -10,6 +10,7 @@ import { UsersRound } from "lucide-react";
 import Users from "pages/UsersAdminstration/Users";
 import UsersList from "pages/UsersAdminstration/UsersManagement/UsersList";
 import RolesList from "pages/UsersAdminstration/RolesManagement/RolesList";
+import AssignRole from "pages/UsersAdminstration/UsersManagement/AssignRole";
 export const sideMenuConfig = [
   {
     label: "Welcome Page",
@@ -40,6 +41,13 @@ export const sideMenuConfig = [
         path: "roles-list",
         element: <RolesList />,
         allowed_permisions: [...getPermision("ROLES_LIST")],
+      },
+      {
+        label: "Assign Role",
+        path: "assign-role",
+        hideInMenu: true,
+        element: <AssignRole />,
+        allowed_permisions: [...getPermision("ASSIGN_ROLE")],
       },
     ],
   },
