@@ -88,7 +88,7 @@ const NewUserModal = ({ existingUser, handleCancel, handleSubmit, isLoading }) =
                 { type: "email", message: "Please enter a valid email" },
               ]}
             >
-              <Input placeholder="john.doe@example.com" autoComplete="email" />
+              <Input placeholder="john.doe@example.com" autoComplete="email" disabled={isEdit} />
             </Form.Item>
           </Col>
         </Row>
