@@ -50,4 +50,7 @@ export default defineConfig({
     include: /src\/.*\.[tj]sx?$/,
     exclude: [],
   },
+  build: {
+    sourcemap: true, // Ensure this is added to generate source maps
+  },
 });

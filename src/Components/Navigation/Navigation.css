@@ -9,7 +9,6 @@
 }
 
 
-
 /* Add this to fix the white space issue */
 .MainLayout aside.collapsed .Navigation {
   width: 80px;
@@ -81,6 +80,13 @@
 .Navigation::-webkit-scrollbar-track {
   background-color: transparent;
 }
+
+.Navigation .ant-menu-title-content {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+
 
 /* Mobile adjustments */
 @media only screen and (max-width: 1023px) {
