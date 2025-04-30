@@ -1,5 +1,18 @@
-import { EditOutlined, DeleteOutlined, UserAddOutlined } from "@ant-design/icons";
-import { Avatar, Button, Row, Space, Switch, Tooltip, Popconfirm, Tag, Col } from "antd";
+import {
+  EditOutlined,
+  DeleteOutlined,
+  UserAddOutlined,
+} from "@ant-design/icons";
+import {
+  Avatar,
+  Button,
+  Row,
+  Space,
+  Switch,
+  Tooltip,
+  Popconfirm,
+  Tag,
+} from "antd";
 import { isMobile } from "helpers/device.helpers";
 
 export const getColumnsForUsersList = ({ editAndDeleteActions }) => {
@@ -89,15 +102,15 @@ export const getColumnsForUsersList = ({ editAndDeleteActions }) => {
             </Tooltip>
             <Tooltip title="Delete User">
               <Popconfirm
-              title="Are you sure you want to delete this user?"
-              onConfirm={() => editAndDeleteActions.handleDelete(record)}
+                title="Are you sure you want to delete this user?"
+                onConfirm={() => editAndDeleteActions.handleDelete(record)}
               >
-              <Button
-                icon={<DeleteOutlined />}
-                shape="circle"
-                className="border-gray-300 hover:border-red-500 hover:text-red-500"
-                disabled={record.is_root_user}
-              />
+                <Button
+                  icon={<DeleteOutlined />}
+                  shape="circle"
+                  className="border-gray-300 hover:border-red-500 hover:text-red-500"
+                  disabled={record.is_root_user}
+                />
               </Popconfirm>
             </Tooltip>
             <Tooltip title="Assign Role">
@@ -107,7 +120,6 @@ export const getColumnsForUsersList = ({ editAndDeleteActions }) => {
                 className="border-gray-300 hover:border-red-500 hover:text-red-500"
                 onClick={() => editAndDeleteActions.handleAssignRole(record)}
               />
-
             </Tooltip>
           </Space>
         </Row>
@@ -135,28 +147,26 @@ export const roleListColumns = (onEdit, onDelete) => [
     key: "permissions",
     align: "center",
     responsive: ["sm"],
+    width: "350px",
     render: ({ privileges }) => {
-     
-
-      // Split privileges into pairs for two-column layout
-      const permissionPairs = [];
-      for (let i = 0; i < privileges.length; i += 2) {
-        permissionPairs.push(privileges.slice(i, i + 2));
-      }
-
+      
       return (
-        <div className="flex flex-col">
-          {permissionPairs.map((pair, index) => (
-            <Row key={index} justify="center" gutter={[0, 0]}>
-              {pair.map((permission) => (
-                <Col key={permission.tenant_privilege_id} span={4}>
-                  <Tag color="blue" style={{ overflow: 'hidden', whiteSpace: 'nowrap', textAlign: 'center' }}>
-                    {permission.privilege_name}
-                  </Tag>
-                </Col>
-              ))}
-            </Row>
-          ))}
+        <div>
+          {privileges.map((privilege) => {
+            const [action] = privilege.privilege_name.split(":");
+            return (
+              <Tag
+                key={privilege.tenant_privilege_id}
+                color={action === "VIEW" ? "gold" : "green"}
+                style={{
+                  fontSize: "10px",
+                  fontWeight: "550",
+                }}
+              >
+                {privilege.privilege_name}
+              </Tag>
+            );
+          })}
         </div>
       );
     },
@@ -165,13 +175,13 @@ export const roleListColumns = (onEdit, onDelete) => [
     title: "Actions",
     key: "actions",
     align: "center",
-    responsive: ["sm"],    
+    responsive: ["sm"],
     render: (record) => (
       <Row justify={"center"}>
         <Space size="middle">
           <Tooltip title="Edit Role">
-            <Button 
-              icon={<EditOutlined />} 
+            <Button
+              icon={<EditOutlined />}
               shape="circle"
               onClick={() => onEdit && onEdit(record)}
               className="border-gray-300 hover:border-primary hover:text-primary"
@@ -182,11 +192,14 @@ export const roleListColumns = (onEdit, onDelete) => [
               title="Are you sure you want to delete this role?"
               onConfirm={() => onDelete && onDelete(record)}
             >
-              <Button 
-                icon={<DeleteOutlined />} 
-                shape="circle"  
+              <Button
+                icon={<DeleteOutlined />}
+                shape="circle"
                 className="border-gray-300 hover:border-red-500 hover:text-red-500"
-                disabled={record.tenant_role_id === "42122c12-a143-5807-9c2e-aca004836374"}
+                disabled={
+                  record.tenant_role_id ===
+                  "42122c12-a143-5807-9c2e-aca004836374"
+                }
               />
             </Popconfirm>
           </Tooltip>

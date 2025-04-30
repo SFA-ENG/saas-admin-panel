@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Input, Button, Table, Form, message } from "antd";
+import { Button, Table, Form, message, Card, Row, Input, Col } from "antd";
 import { SearchOutlined, UserAddOutlined } from "@ant-design/icons";
 import {
   useApiQuery,
@@ -87,11 +87,11 @@ const RolesList = () => {
     setFilteredData(filtered);
   }, [searchText, rolesData]);
 
-  useEffect(() => {
-    if (rolesData && rolesData.length) {
-      setFilteredData(rolesData);
-    }
-  }, [rolesData]);
+  // useEffect(() => {
+  //   if (rolesData && rolesData.length) {
+  //     setFilteredData(rolesData);
+  //   }
+  // }, [rolesData]);
 
   const handleSearch = (e) => {
     setSearchText(e.target.value);
@@ -102,7 +102,7 @@ const RolesList = () => {
     if (role) {
       form.setFieldsValue({
         name: role.role_name,
-        permissions: role.privileges?.map(perm => perm.tenant_privilege_id)
+        permissions: role.privileges?.map((perm) => perm.tenant_privilege_id),
       });
     }
     setIsModalOpen(true);
@@ -115,24 +115,28 @@ const RolesList = () => {
   };
 
   const handleDelete = (record) => {
-    console.log("Delete clicked for record:", record); 
+    console.log("Delete clicked for record:", record);
   };
 
   const handleSubmit = (values) => {
-    if(editingRole){
-      const currentPermissionIds = new Set(editingRole.privileges.map(p => p.tenant_privilege_id));
+    if (editingRole) {
+      const currentPermissionIds = new Set(
+        editingRole.privileges.map((p) => p.tenant_privilege_id)
+      );
       const newPermissionIds = new Set(values.permissions);
-      
-      const permissionsToAdd = values.permissions.filter(id => !currentPermissionIds.has(id));
+
+      const permissionsToAdd = values.permissions.filter(
+        (id) => !currentPermissionIds.has(id)
+      );
       const permissionsToRemove = editingRole.privileges
-        .map(p => p.tenant_privilege_id)
-        .filter(id => !newPermissionIds.has(id));
+        .map((p) => p.tenant_privilege_id)
+        .filter((id) => !newPermissionIds.has(id));
 
       if (permissionsToAdd.length > 0) {
         updateRole({
           tenant_role_id: editingRole.tenant_role_id,
           tenant_privilege_ids: permissionsToAdd,
-          type: "ADD"
+          type: "ADD",
         });
       }
 
@@ -140,17 +144,16 @@ const RolesList = () => {
         updateRole({
           tenant_role_id: editingRole.tenant_role_id,
           tenant_privilege_ids: permissionsToRemove,
-          type: "REMOVE"
+          type: "REMOVE",
         });
       }
-    }
-    else{
+    } else {
       createRole({
         name: values.name,
         tenant_privilege_ids: values.permissions,
       });
     }
-  }
+  };
 
   const handleEdit = (record) => {
     showAddModal(record);
@@ -163,44 +166,50 @@ const RolesList = () => {
   });
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <h1 className="text-2xl font-semibold text-gray-800">
-          Roles Management
-        </h1>
-        <Button
-          type="primary"
-          icon={<UserAddOutlined />}
-          onClick={() => showAddModal()}
-          className="bg-primary hover:bg-primary-dark"
-        >
-          Add New Role
-        </Button>
-      </div>
+    <Card title="Roles Management">
+      <Row justify="space-between" align="middle">
+        <Col>
+          <div className="flex items-center gap-2">
+            <Input.Search
+              enterButton
+              size="middle"
+              prefix={<SearchOutlined className="text-gray-400" />}
+              placeholder="Search roles by name"
+              onChange={handleSearch}
+              value={searchText}
+              className="rounded-lg max-w-lg"
+              allowClear
+            />
 
-     <div className="mb-6">
-          <Input.Search
-            enterButton
-            size="middle"
-            prefix={<SearchOutlined className="text-gray-400" />}
-            placeholder="Search roles by name"
-            onChange={handleSearch}
-            value={searchText}
-            className="rounded-lg max-w-lg"
-            allowClear
-          />
-
-          <Button type="link" onClick={() => setSearchText("")}>
-            Reset
+            <Button type="link" onClick={() => setSearchText("")}>
+              Reset
             </Button>
-        </div>
+          </div>
+        </Col>
+        <Col>
+          <Button
+            type="primary"
+            icon={<UserAddOutlined />}
+            onClick={() => showAddModal()}
+            className="bg-primary hover:bg-primary-dark"
+          >
+            Add New Role
+          </Button>
+        </Col>
+      </Row>
 
-
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto mt-4">
         <Table
           loading={permissionsLoading}
           dataSource={filteredData}
           columns={rolesTableColumns}
+          pagination={{
+            defaultPageSize: 5,
+            pageSizeOptions: [5, 10, 15, 20],
+            showSizeChanger: true,
+            showQuickJumper: true,
+            showTotal: (total) => `Total ${total} items`,
+          }}
           rowKey="role_id"
           locale={{ emptyText: "No roles found" }}
         />
@@ -216,7 +225,7 @@ const RolesList = () => {
           isUpdatingRole={isUpdatingRole}
         />
       )}
-    </div>
+    </Card>
   );
 };
 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
-import { Input, Button, Table, Form, message } from "antd";
-import { SearchOutlined, UserAddOutlined } from "@ant-design/icons";
+import { Input, Button, Table, Form, message, Card, Row, Col } from "antd";
+import { SearchOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import {
   useApiQuery,
@@ -187,42 +187,31 @@ const UsersList = () => {
   });
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <h1 className="text-2xl font-semibold text-gray-800">
-          Users Management
-        </h1>
-        <Button
-          type="primary"
-          icon={<UserAddOutlined />}
-          onClick={showModal}
-          className="bg-primary hover:bg-primary-dark"
-        >
-          Add New User
-        </Button>
-      </div>
+    <Card title="Users Management">
+      <Row justify="space-between" align="middle">
+        <Col sm={12}>
+          <div className="flex items-center gap-2">
+            <Input.Search
+              enterButton
+              size="middle"
+              prefix={<SearchOutlined className="text-gray-400" />}
+              placeholder="Search users by name, email or phone number"
+              onChange={handleSearch}
+              value={searchText}
+            ></Input.Search>
+            <Button type="link" onClick={() => setSearchText("")}>
+              Reset
+            </Button>
+          </div>
+        </Col>
+        <Col>
+          <Button type="primary" onClick={showModal}>
+            Add New User
+          </Button>
+        </Col>
+      </Row>
 
-      {/* Search Bar */}
-      <div className="mb-6">
-        <Input.Search
-          enterButton
-          size="middle"
-          prefix={<SearchOutlined className="text-gray-400" />}
-          placeholder="Search users by name, email or phone number"
-          onChange={handleSearch}
-          value={searchText}
-          className="rounded-lg max-w-lg"
-          allowClear
-        />
-
-        <Button type="link" onClick={() => setSearchText("")}>
-          Reset
-        </Button>
-      </div>
-
-      {/* Users Table */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto mt-4">
         <Table
           loading={usersLoading}
           dataSource={filteredData}
@@ -249,7 +238,7 @@ const UsersList = () => {
           isLoading={isCreatingUser || isUpdatingUser}
         />
       )}
-    </div>
+    </Card>
   );
 };
 

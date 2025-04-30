@@ -6,12 +6,13 @@ import { createBrowserRouter } from "react-router-dom";
 import MainLayout from "./Components/MainLayout/MainLayout";
 import WelcomePage from "./pages/WelcomePage/WelcomePage";
 import { generateHeaderTitles, getPermision } from "./routing.helpers";
-import { UsersRound } from "lucide-react";
+import { TrophyIcon, UsersRound } from "lucide-react";
 import Users from "pages/UsersAdminstration/Users";
 import UsersList from "pages/UsersAdminstration/UsersManagement/UsersList";
 import RolesList from "pages/UsersAdminstration/RolesManagement/RolesList";
 import AssignRole from "pages/UsersAdminstration/UsersManagement/AssignRole";
 import ResetPassword from "pages/UsersAdminstration/ResetPassword/ResetPassword";
+import TmsPage from "pages/Tms/Tms";
 export const sideMenuConfig = [
   {
     label: "Welcome Page",
@@ -29,6 +30,8 @@ export const sideMenuConfig = [
     allowed_permisions: [
       ...getPermision("USERS_LIST"),
       ...getPermision("ROLES_LIST"),
+      ...getPermision("RESET_PASSWORD"),
+      ...getPermision("ASSIGN_ROLE"),
     ],
     children: [
       {
@@ -42,12 +45,12 @@ export const sideMenuConfig = [
         path: "roles-list",
         element: <RolesList />,
         allowed_permisions: [...getPermision("ROLES_LIST")],
-        
       },
       {
         label: "Reset Password",
         path: "reset-password",
         element: <ResetPassword />,
+        allowed_permisions: [...getPermision("RESET_PASSWORD")],
       },
       {
         label: "Assign Role",
@@ -59,20 +62,20 @@ export const sideMenuConfig = [
     ],
   },
   {
+    label: "TMS",
+    path: "tms",
+    element: <TmsPage />,
+    icon: <TrophyIcon />,
+    allowed_permisions: [...getPermision("TMS")],
+  },
+  {
     label: "Profile",
     path: "profile",
     icon: <UsersRound />,
     element: <Profile />,
+    hideInMenu: true,
     allowed_permisions: [...getPermision("PROFILE")],
-    children: [
-      {
-        label: "Test1",
-        path: "test1",
-        element: <Profile />,
-      },
-    ],
   },
-
 ];
 
 const getRoutingObject = ({ sideMenuConfig }) => {
