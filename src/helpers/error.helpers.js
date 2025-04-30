@@ -8,21 +8,21 @@ import { notification } from "antd";
 
 export const renderErrorNotifications = (errors) => {
   if (Array.isArray(errors)) {
-  errors?.forEach((errorMessage) => {
-    let description = "";
+    errors?.forEach((errorMessage) => {
+      let description = "";
 
-    if (errorMessage.rawErrors) {
-      description = errorMessage.rawErrors
-        .map((rawErr) => rawErr.message)
-        .join(" | ");
-    }
+      if (errorMessage.rawErrors) {
+        description = errorMessage.rawErrors
+          .map((rawErr) => rawErr.message)
+          .join(" | ");
+      }
 
-    notification.error({
-      // message: errorMessage?.message,
-      description: description,
-      placement: "topRight",
-      duration: 5,
-    });
+      notification.error({
+        message: errorMessage?.message,
+        description: description,
+        placement: "topRight",
+        duration: 5,
+      });
     });
   } else {
     notification.error({
@@ -36,7 +36,7 @@ export const renderErrorNotifications = (errors) => {
 
 export const renderSuccessNotifications = ({ title, message }) => {
   notification.success({
-    // message: title,
+    message: title,
     description: message,
     placement: "topRight",
     duration: 5,

@@ -67,11 +67,13 @@ const UsersList = () => {
   const { mutate: updateUser, isLoading: isUpdatingUser } = useApiMutation({
     url: `/iam/users`,
     method: "PATCH",
-    onSuccess: (response) => {
-      console.log("User updated successfully:", response);
-      message.success("User updated successfully");
+    onSuccess: () => {
       setIsModalOpen(false);
       form.resetFields();
+      renderSuccessNotifications({
+        title: "Success",
+        message: "User updated successfully",
+      });
       refetch();
     },
     onError: (error) => {
@@ -175,7 +177,7 @@ const UsersList = () => {
 
       const updatePayload = {
         tenant_user_id: record.tenant_user_id,
-        is_active: checked ? 1 : 0
+        is_active: checked ? true : false
       };
 
       updateUser(updatePayload);

@@ -2,7 +2,7 @@ import axios from "axios";
 import useAuthStore from "../stores/AuthStore/AuthStore";
 
 const AXIOS_TIMEOUT = 100 * 1000; //100 seconds
-export const X_CHANNEL_ID = "ADMIN-PANEL";
+export const X_CHANNEL_ID = "WEB";
 const ACCESS_TOKEN = useAuthStore.getState()?.token;
 
 const API_ENDPOINTS = {
@@ -14,7 +14,7 @@ const API_ENDPOINTS = {
 const BASE_URI_MAP = {
   "domain.in": API_ENDPOINTS.STAGE,
   "domain.com": API_ENDPOINTS.PROD,
-  localhost: API_ENDPOINTS.STAGE,
+  localhost: API_ENDPOINTS.LOCAL,
 };
 
 export const hostName = window.location.hostname;
@@ -27,6 +27,7 @@ const api = axios.create({
 });
 
 api.defaults.headers.common["origin"] = "something.in";
+api.defaults.headers.common["x-channel-id"] = X_CHANNEL_ID;
 
 api.interceptors.response.use(
   (response) => {
