@@ -41,6 +41,10 @@ const ResetPassword = () => {
 
   async function getUserDetails(values) {
     setUserData(null);
+    if (values.trim().length < 3) {
+      renderErrorNotifications("Please enter a valid email");
+      return;
+    }
     try {
       setLoading(true);
       const { data, errors } = await getUserByEmailAndTenantId({
@@ -124,13 +128,13 @@ const ResetPassword = () => {
           <Col xs={24} sm={10} md={8} lg={7}>
             <div className="relative">
               <Input
+                size="large"
                 value={email}
                 placeholder="Search user by email"
                 onChange={(e) => setEmail(e.target.value)}
                 className="pl-10 py-2 pr-3"
                 style={{
                   borderRadius: "10px",
-                  height: "46px",
                   boxShadow: "0 2px 5px rgba(0, 0, 0, 0.05)",
                   fontSize: "15px",
                   border: "1px solid #e2e8f0",
@@ -354,10 +358,9 @@ const ResetPassword = () => {
             <Row gutter={[16, 16]}>
               <Col>
                 <AccessControlButton
-                  htmlType="submit"
                   title="Save Changes"
                   icon={Save}
-                  onClick={handleSubmit}
+                  onClick={() => form.submit()}
                 />
               </Col>
               <Col>
