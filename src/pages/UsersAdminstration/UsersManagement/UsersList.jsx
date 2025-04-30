@@ -205,14 +205,20 @@ const UsersList = () => {
 
       {/* Search Bar */}
       <div className="mb-6">
-        <Input
+        <Input.Search
+          enterButton
+          size="middle"
           prefix={<SearchOutlined className="text-gray-400" />}
           placeholder="Search users by name, email or phone number"
           onChange={handleSearch}
           value={searchText}
-          className="rounded-lg max-w-xl"
+          className="rounded-lg max-w-lg"
           allowClear
         />
+
+        <Button type="link" onClick={() => setSearchText("")}>
+          Reset
+        </Button>
       </div>
 
       {/* Users Table */}

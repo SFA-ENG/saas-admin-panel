@@ -1,4 +1,5 @@
 import { Modal, Form, Input, Button, Select } from "antd";
+import { useEffect } from "react";
 import { getAllPermissionsList } from "../../../../commons/constants";
 
 const NewRoleModal = ({
@@ -10,11 +11,25 @@ const NewRoleModal = ({
     isUpdatingRole
 }) => {
     const [form] = Form.useForm();
-    const isEdit = !!existingRole;
+    const isEdit = existingRole ? true : false;
+
+    useEffect(() => {
+        if (existingRole) {
+            form.setFieldsValue({
+                name: existingRole.role_name,
+                permissions: existingRole.privileges?.map(perm => perm.tenant_privilege_id) || []
+            });
+        } else {
+            form.resetFields();
+        }
+    }, [existingRole, form]);
 
     const onFinish = (values) => {
         handleSubmit(values);
     };
+
+    // Get all available permissions
+    const allPermissions = getAllPermissionsList();
 
     return (
         <Modal
@@ -31,8 +46,8 @@ const NewRoleModal = ({
                 onFinish={onFinish}
                 className="mt-4"
                 initialValues={existingRole ? {
-                    name: existingRole.name,
-                    permissions: existingRole.permissions?.map(perm => perm.id) || []
+                    name: existingRole.role_name,
+                    permissions: existingRole.privileges?.map(perm => perm.tenant_privilege_id) || []
                 } : {}}
             >
                 <Form.Item
@@ -42,6 +57,7 @@ const NewRoleModal = ({
                 >
                     <Input
                         placeholder="Enter role name"
+                        disabled={isEdit}
                         onKeyPress={(e) => {
                             const regex = /^[a-zA-Z_\s]+$/;
                             if (!regex.test(e.key)) {
@@ -61,7 +77,7 @@ const NewRoleModal = ({
                         placeholder="Select permissions"
                         loading={permissionsLoading}
                         notFoundContent={permissionsLoading ? "Loading..." : "No permissions found"}
-                        options={getAllPermissionsList()}
+                        options={allPermissions}
                         fieldNames={{ label: 'label', value: 'value' }}
                     />
                 </Form.Item>

@@ -1,5 +1,5 @@
 import { EditOutlined, DeleteOutlined, UserAddOutlined } from "@ant-design/icons";
-import { Avatar, Button, Row, Space, Switch, Tooltip, Popconfirm, Tag } from "antd";
+import { Avatar, Button, Row, Space, Switch, Tooltip, Popconfirm, Tag, Col } from "antd";
 import { isMobile } from "helpers/device.helpers";
 
 export const getColumnsForUsersList = ({ editAndDeleteActions }) => {
@@ -96,6 +96,7 @@ export const getColumnsForUsersList = ({ editAndDeleteActions }) => {
                 icon={<DeleteOutlined />}
                 shape="circle"
                 className="border-gray-300 hover:border-red-500 hover:text-red-500"
+                disabled={record.is_root_user}
               />
               </Popconfirm>
             </Tooltip>
@@ -117,7 +118,7 @@ export const getColumnsForUsersList = ({ editAndDeleteActions }) => {
   return columns;
 };
 
-export const roleListColumns = (onEdit) => [
+export const roleListColumns = (onEdit, onDelete) => [
   {
     title: "Role",
     key: "name",
@@ -125,7 +126,7 @@ export const roleListColumns = (onEdit) => [
     responsive: ["sm"],
     render: ({ role_name }) => (
       <Row justify={"center"}>
-        <span>{role_name}</span>
+        <span>{role_name.toUpperCase().replace(/\s+/g, "_")}</span>
       </Row>
     ),
   },
@@ -134,15 +135,31 @@ export const roleListColumns = (onEdit) => [
     key: "permissions",
     align: "center",
     responsive: ["sm"],
-    render: ({ privileges }) => (
-      <Row justify={"center"}>
-          {privileges.map((permission) =>{
-            return (
-              <Tag key={permission.id}>{permission.name}</Tag>
-            )
-          })}
-      </Row>
-    ),
+    render: ({ privileges }) => {
+     
+
+      // Split privileges into pairs for two-column layout
+      const permissionPairs = [];
+      for (let i = 0; i < privileges.length; i += 2) {
+        permissionPairs.push(privileges.slice(i, i + 2));
+      }
+
+      return (
+        <div className="flex flex-col">
+          {permissionPairs.map((pair, index) => (
+            <Row key={index} justify="center" gutter={[0, 0]}>
+              {pair.map((permission) => (
+                <Col key={permission.tenant_privilege_id} span={4}>
+                  <Tag color="blue" style={{ overflow: 'hidden', whiteSpace: 'nowrap', textAlign: 'center' }}>
+                    {permission.privilege_name}
+                  </Tag>
+                </Col>
+              ))}
+            </Row>
+          ))}
+        </div>
+      );
+    },
   },
   {
     title: "Actions",
@@ -159,6 +176,19 @@ export const roleListColumns = (onEdit) => [
               onClick={() => onEdit && onEdit(record)}
               className="border-gray-300 hover:border-primary hover:text-primary"
             />
+          </Tooltip>
+          <Tooltip title="Delete Role">
+            <Popconfirm
+              title="Are you sure you want to delete this role?"
+              onConfirm={() => onDelete && onDelete(record)}
+            >
+              <Button 
+                icon={<DeleteOutlined />} 
+                shape="circle"  
+                className="border-gray-300 hover:border-red-500 hover:text-red-500"
+                disabled={record.tenant_role_id === "42122c12-a143-5807-9c2e-aca004836374"}
+              />
+            </Popconfirm>
           </Tooltip>
         </Space>
       </Row>

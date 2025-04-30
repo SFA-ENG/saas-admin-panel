@@ -78,9 +78,9 @@ const RolesList = () => {
     const lowerCaseSearch = searchText.toLowerCase();
     const filtered = rolesData.filter(
       (role) =>
-        role.name.toLowerCase().includes(lowerCaseSearch) ||
-        role.permissions.some((permission) =>
-          permission.name.toLowerCase().includes(lowerCaseSearch)
+        role.role_name.toLowerCase().includes(lowerCaseSearch) ||
+        role.privileges.some((permission) =>
+          permission.privilege_name.toLowerCase().includes(lowerCaseSearch)
         )
     );
 
@@ -101,8 +101,8 @@ const RolesList = () => {
     setEditingRole(role);
     if (role) {
       form.setFieldsValue({
-        name: role.name,
-        permissions: role.permissions,
+        name: role.role_name,
+        permissions: role.privileges?.map(perm => perm.tenant_privilege_id)
       });
     }
     setIsModalOpen(true);
@@ -114,61 +114,50 @@ const RolesList = () => {
     form.resetFields();
   };
 
+  const handleDelete = (record) => {
+    console.log("Delete clicked for record:", record); 
+  };
+
   const handleSubmit = (values) => {
-    if (editingRole) {
-      // For existing role, we need to compare current and new permissions
-      const currentPermissions = editingRole.permissions || [];
-      const newPermissions = values.permissions || [];
+    if(editingRole){
+      const currentPermissionIds = new Set(editingRole.privileges.map(p => p.tenant_privilege_id));
+      const newPermissionIds = new Set(values.permissions);
+      
+      const permissionsToAdd = values.permissions.filter(id => !currentPermissionIds.has(id));
+      const permissionsToRemove = editingRole.privileges
+        .map(p => p.tenant_privilege_id)
+        .filter(id => !newPermissionIds.has(id));
 
-      // Find permissions to add and remove
-      const permissionsToAdd = newPermissions.filter(
-        (perm) => !currentPermissions.some((p) => p.id === perm)
-      );
-      const permissionsToRemove = currentPermissions
-        .filter((p) => !newPermissions.includes(p.id))
-        .map((p) => p.id);
-
-      // First add new permissions
       if (permissionsToAdd.length > 0) {
         updateRole({
           tenant_role_id: editingRole.tenant_role_id,
           tenant_privilege_ids: permissionsToAdd,
-          type: "ADD",
+          type: "ADD"
         });
       }
 
-      // Then remove old permissions
       if (permissionsToRemove.length > 0) {
         updateRole({
           tenant_role_id: editingRole.tenant_role_id,
           tenant_privilege_ids: permissionsToRemove,
-          type: "REMOVE",
+          type: "REMOVE"
         });
       }
-
-      // If no changes to permissions, just update the name
-      if (permissionsToAdd.length === 0 && permissionsToRemove.length === 0) {
-        updateRole({
-          tenant_role_id: editingRole.tenant_role_id,
-          name: values.name,
-        });
-      }
-    } else {
-      // Create new role - no type field needed
+    }
+    else{
       createRole({
         name: values.name,
         tenant_privilege_ids: values.permissions,
       });
     }
-  };
+  }
 
   const handleEdit = (record) => {
-    console.log("Edit clicked for record:", record); // Debug log
     showAddModal(record);
   };
 
   const rolesTableColumns = responsiveTable({
-    input: roleListColumns(handleEdit),
+    input: roleListColumns(handleEdit, handleDelete),
     labelCol: 8,
     valueCol: 16,
   });
@@ -189,16 +178,23 @@ const RolesList = () => {
         </Button>
       </div>
 
-      <div className="mb-6">
-        <Input
-          prefix={<SearchOutlined className="text-gray-400" />}
-          placeholder="Search roles by name"
-          onChange={handleSearch}
-          value={searchText}
-          className="rounded-lg max-w-xl"
-          allowClear
-        />
-      </div>
+     <div className="mb-6">
+          <Input.Search
+            enterButton
+            size="middle"
+            prefix={<SearchOutlined className="text-gray-400" />}
+            placeholder="Search roles by name"
+            onChange={handleSearch}
+            value={searchText}
+            className="rounded-lg max-w-lg"
+            allowClear
+          />
+
+          <Button type="link" onClick={() => setSearchText("")}>
+            Reset
+            </Button>
+        </div>
+
 
       <div className="overflow-x-auto">
         <Table
