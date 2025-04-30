@@ -1,6 +1,24 @@
 import { useState, useEffect, useMemo } from "react";
-import { Input, Button, Table, Form, message, Card, Row, Col } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
+import {
+  Input,
+  Button,
+  Table,
+  Form,
+  message,
+  Card,
+  Row,
+  Col,
+  Tooltip,
+  Typography,
+} from "antd";
+import {
+  UserPlus,
+  RefreshCw,
+  Layers,
+  Filter,
+  TrendingUp,
+  Calendar,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   useApiQuery,
@@ -16,6 +34,9 @@ import { getColumnsForUsersList } from "../Users.helper";
 import { CACHE_KEYS, countryCodes } from "../../../commons/constants";
 import NewUserModal from "./_blocks/NewUserModal";
 import { deleteUserByuserId } from "../Users.service";
+import AccessControlButton from "Components/AccessControlButton/AccessControlButton";
+
+const { Title, Text } = Typography;
 
 const UsersList = () => {
   const navigate = useNavigate();
@@ -186,46 +207,146 @@ const UsersList = () => {
     valueCol: 16,
   });
 
+  // Get user statistics
+  const totalUsers = usersData.length;
+  const activeUsers = usersData.filter((user) => user.is_active).length;
+  const inactiveUsers = totalUsers - activeUsers;
+
   return (
-    <Card title="Users Management">
-      <Row justify="space-between" align="middle" gutter={[0, 8]}>
-        <Col sm={12}>
-          <div className="flex items-center gap-2">
-            <Input.Search
-              enterButton
-              size="middle"
-              prefix={<SearchOutlined className="text-gray-400" />}
+    <Card
+      bordered={false}
+      style={{
+        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.06)",
+        borderRadius: "12px",
+        background: "linear-gradient(145deg, #ffffff, #f9fafb)",
+      }}
+    >
+      <div className="mb-8">
+        <Row gutter={[16, 16]} align="middle" className="mb-2">
+          <Col>
+            <div className="flex items-center">
+              <div className="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 h-12 w-2 rounded-full mr-4"></div>
+              <div>
+                <Title level={3} style={{ margin: 0, fontWeight: 600 }}>
+                  Users Management
+                </Title>
+                <Text type="secondary" className="mt-1">
+                  Manage your organization&apos;s users and their access
+                  permissions
+                </Text>
+              </div>
+            </div>
+          </Col>
+        </Row>
+
+        {/* User Stats */}
+        <Row gutter={[16, 16]} className="mb-6">
+          {[
+            {
+              icon: TrendingUp,
+              label: "Active",
+              value: activeUsers,
+              bg: "bg-blue-100",
+              color: "text-blue-600",
+            },
+            {
+              icon: Calendar,
+              label: "Inactive",
+              value: inactiveUsers,
+              bg: "bg-green-100",
+              color: "text-green-600",
+            },
+            {
+              icon: Layers,
+              label: "Total",
+              value: usersData.length,
+              bg: "bg-purple-100",
+              color: "text-purple-600",
+            },
+          ].map(({ icon: Icon, label, value, bg, color }) => (
+            <Col xs={24} sm={8} key={label}>
+              <div className="flex items-center bg-white p-2 rounded-lg shadow-sm">
+                <div className={`${bg} p-2 rounded-lg mr-3`}>
+                  <Icon size={20} className={color} />
+                </div>
+                <div className="flex flex-row justify-between gap-3 items-center">
+                  <p className="text-gray-500 text-sm">{label} Users:</p>
+                  <h3 className="text-xl font-bold text-gray-800">{value}</h3>
+                </div>
+              </div>
+            </Col>
+          ))}
+        </Row>
+      </div>
+
+      <Row
+        justify="space-between"
+        align="middle"
+        gutter={[20, 20]}
+        className="mb-6"
+      >
+        <Col xs={24} sm={14} md={16}>
+          <div>
+            <Input
               placeholder="Search users by name, email or phone number"
               onChange={handleSearch}
               value={searchText}
-            ></Input.Search>
-            <Button type="link" onClick={() => setSearchText("")}>
-              Reset
-            </Button>
+              className="search-input pl-10 py-2 pr-3"
+              style={{
+                borderRadius: "10px",
+                height: "46px",
+                boxShadow: "0 2px 5px rgba(0, 0, 0, 0.05)",
+                fontSize: "15px",
+                border: "1px solid #e2e8f0",
+              }}
+              suffix={
+                searchText ? (
+                  <Tooltip title="Clear search">
+                    <Button
+                      type="text"
+                      className="reset-btn flex items-center justify-center"
+                      onClick={() => setSearchText("")}
+                      style={{ width: "30px", height: "30px" }}
+                      icon={<RefreshCw size={14} className="text-gray-500" />}
+                    />
+                  </Tooltip>
+                ) : (
+                  <Filter size={15} className="text-gray-400" />
+                )
+              }
+            />
           </div>
         </Col>
-        <Col>
-          <Button type="primary" onClick={showModal}>
-            Add New User
-          </Button>
+        <Col className="flex justify-end">
+          <AccessControlButton
+            title="Add New User"
+            icon={UserPlus}
+            onClick={showModal}
+          />
         </Col>
       </Row>
 
-      <div className="overflow-x-auto mt-4">
+      <div>
         <Table
           loading={usersLoading}
           dataSource={filteredData}
           columns={usersTableColumns}
           rowKey="tenant_user_id"
+          rowClassName="user-table-row"
           pagination={{
             defaultPageSize: 10,
             pageSizeOptions: [10, 20, 30, 40, 50],
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total) => `Total ${total} items`,
+            style: { marginTop: "20px" },
           }}
-          className="border border-gray-100 rounded-lg tca-responsive-table"
-          locale={{ emptyText: "No users found" }}
+          className="users-table"
+          style={{
+            borderRadius: "12px",
+            overflow: "hidden",
+            boxShadow: "0 2px 10px rgba(0, 0, 0, 0.04)",
+          }}
         />
       </div>
 

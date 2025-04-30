@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { SearchOutlined } from "@ant-design/icons";
 import { tournaments } from "../Tms.service";
+import AccessControlButton from "Components/AccessControlButton/AccessControlButton";
 
 const TournamentsPage = () => {
   const [loading, setLoading] = useState(false);
@@ -203,18 +204,11 @@ const TournamentsPage = () => {
           </div>
         </Col>
         <Col>
-          <button
-            type="button"
-            className="relative flex items-center px-3 py-2 text-lg font-normal text-white bg-gray-800 rounded-full overflow-hidden group transition-all duration-300 ease-in-out focus:outline-none transform hover:scale-105"
-          >
-            {/* gradient reveal */}
-            <span className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 transform scale-x-0 group-hover:scale-x-110 opacity-0 group-hover:opacity-100 transition-all duration-500 ease-in-out"></span>
-
-            <span className="relative z-10 flex items-center">
-              <Plus size={18} className="mr-1" />
-              Add New Tournament
-            </span>
-          </button>
+          <AccessControlButton
+            title="Add New Tournament"
+            icon={Plus}
+            onClick={() => {}}
+          />
         </Col>
       </Row>
 

@@ -1,18 +1,38 @@
 import { useState, useEffect } from "react";
-import { Button, Table, Form, message, Card, Row, Input, Col } from "antd";
-import { SearchOutlined, UserAddOutlined } from "@ant-design/icons";
+import {
+  Button,
+  Table,
+  Form,
+  Card,
+  Row,
+  Input,
+  Col,
+  Typography,
+  Tooltip,
+} from "antd";
+import {
+  UserPlus,
+  RefreshCw,
+  Shield,
+  Key,
+  CheckSquare,
+  Filter,
+} from "lucide-react";
 import {
   useApiQuery,
   useApiMutation,
 } from "../../../hooks/useApiQuery/useApiQuery";
 import useAuthStore from "../../../stores/AuthStore/AuthStore";
-import { renderErrorNotifications } from "helpers/error.helpers";
+import {
+  renderErrorNotifications,
+  renderSuccessNotifications,
+} from "helpers/error.helpers";
 import responsiveTable from "hoc/resposive-table.helper";
 import { roleListColumns } from "../Users.helper";
 import { CACHE_KEYS } from "../../../commons/constants";
 import NewRoleModal from "./_blocks/NewRoleModal";
-
-const pageSize = 10;
+import AccessControlButton from "Components/AccessControlButton/AccessControlButton";
+const { Title, Text } = Typography;
 
 const RolesList = () => {
   const { userData } = useAuthStore();
@@ -43,13 +63,16 @@ const RolesList = () => {
     url: "/iam/roles",
     method: "POST",
     onSuccess: () => {
-      message.success("Role created successfully");
+      renderSuccessNotifications({
+        title: "Success",
+        message: "Role created successfully",
+      });
       setIsModalOpen(false);
       form.resetFields();
       refetch();
     },
     onError: (error) => {
-      message.error(error?.errors?.[0]?.message || "Failed to create role");
+      renderErrorNotifications(error.errors);
     },
   });
 
@@ -57,13 +80,16 @@ const RolesList = () => {
     url: "/iam/roles/role-permissions",
     method: "PATCH",
     onSuccess: () => {
-      message.success("Role updated successfully");
+      renderSuccessNotifications({
+        title: "Success",
+        message: "Role updated successfully",
+      });
       setIsModalOpen(false);
       form.resetFields();
       refetch();
     },
     onError: (error) => {
-      message.error(error?.errors?.[0]?.message || "Failed to update role");
+      renderErrorNotifications(error.errors);
     },
   });
 
@@ -86,12 +112,6 @@ const RolesList = () => {
 
     setFilteredData(filtered);
   }, [searchText, rolesData]);
-
-  // useEffect(() => {
-  //   if (rolesData && rolesData.length) {
-  //     setFilteredData(rolesData);
-  //   }
-  // }, [rolesData]);
 
   const handleSearch = (e) => {
     setSearchText(e.target.value);
@@ -165,40 +185,128 @@ const RolesList = () => {
     valueCol: 16,
   });
 
+  // Calculate statistics
+  const totalRoles = rolesData?.length || 0;
+  const adminRoles =
+    rolesData?.filter((role) => role.role_name.toLowerCase().includes("admin"))
+      .length || 0;
+  const otherRoles = totalRoles - adminRoles;
+
   return (
-    <Card title="Roles Management">
-      <Row justify="space-between" align="middle" gutter={[16, 8]}>
-        <Col>
-          <div className="flex items-center gap-2">
-            <Input.Search
-              enterButton
-              size="middle"
-              prefix={<SearchOutlined className="text-gray-400" />}
-              placeholder="Search roles by name"
+    <Card
+      bordered={false}
+      style={{
+        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.06)",
+        borderRadius: "12px",
+        background: "linear-gradient(145deg, #ffffff, #f9fafb)",
+      }}
+    >
+      <div className="mb-6">
+        <Row gutter={[16, 16]} align="middle" className="mb-2">
+          <Col>
+            <div className="flex items-center">
+              <div className="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 h-12 w-2 rounded-full mr-4"></div>
+              <div>
+                <Title level={3} style={{ margin: 0, fontWeight: 600 }}>
+                  Roles Management
+                </Title>
+                <Text type="secondary" className="mt-1">
+                  Manage roles and permissions for your organization&apos;s
+                  users
+                </Text>
+              </div>
+            </div>
+          </Col>
+        </Row>
+
+        {/* Role Stats */}
+        <Row gutter={[16, 16]} className="mb-6">
+          {[
+            {
+              icon: Shield,
+              label: "Total",
+              value: totalRoles,
+              bg: "bg-blue-100",
+              color: "text-blue-600",
+            },
+            {
+              icon: Key,
+              label: "Admin",
+              value: adminRoles,
+              bg: "bg-purple-100",
+              color: "text-purple-600",
+            },
+            {
+              icon: CheckSquare,
+              label: "Other",
+              value: otherRoles,
+              bg: "bg-green-100",
+              color: "text-green-600",
+            },
+          ].map(({ icon: Icon, label, value, bg, color }) => (
+            <Col xs={24} sm={8} key={label}>
+              <div className="flex items-center bg-white p-2 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 h-full">
+                <div className={`${bg} p-2 rounded-lg mr-3`}>
+                  <Icon size={20} className={color} />
+                </div>
+                <div className="flex flex-row justify-between gap-3 items-center">
+                  <p className="text-gray-500 text-sm">{label} Roles:</p>
+                  <h3 className="text-xl font-bold text-gray-800">{value}</h3>
+                </div>
+              </div>
+            </Col>
+          ))}
+        </Row>
+      </div>
+
+      <Row
+        justify="space-between"
+        align="middle"
+        gutter={[16, 16]}
+        className="mb-6"
+      >
+        <Col xs={24} sm={14} md={16}>
+          <div className="relative">
+            <Input
+              placeholder="Search roles by name or permission"
               onChange={handleSearch}
               value={searchText}
-              className="rounded-lg max-w-lg"
-              allowClear
+              className="pl-10 py-2 pr-3"
+              style={{
+                borderRadius: "10px",
+                height: "46px",
+                boxShadow: "0 2px 5px rgba(0, 0, 0, 0.05)",
+                fontSize: "15px",
+                border: "1px solid #e2e8f0",
+              }}
+              suffix={
+                searchText ? (
+                  <Tooltip title="Clear search">
+                    <Button
+                      type="text"
+                      className="reset-btn flex items-center justify-center"
+                      onClick={() => setSearchText("")}
+                      style={{ width: "30px", height: "30px" }}
+                      icon={<RefreshCw size={14} className="text-gray-500" />}
+                    />
+                  </Tooltip>
+                ) : (
+                  <Filter size={15} className="text-gray-400" />
+                )
+              }
             />
-
-            <Button type="link" onClick={() => setSearchText("")}>
-              Reset
-            </Button>
           </div>
         </Col>
-        <Col>
-          <Button
-            type="primary"
-            icon={<UserAddOutlined />}
+        <Col className="flex justify-end">
+          <AccessControlButton
+            title="Add New Role"
+            icon={UserPlus}
             onClick={() => showAddModal()}
-            className="bg-primary hover:bg-primary-dark"
-          >
-            Add New Role
-          </Button>
+          />
         </Col>
       </Row>
 
-      <div className="overflow-x-auto mt-4">
+      <div className="overflow-x-auto">
         <Table
           loading={permissionsLoading}
           dataSource={filteredData}
@@ -209,9 +317,15 @@ const RolesList = () => {
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total) => `Total ${total} items`,
+            style: { marginTop: "20px" },
           }}
           rowKey="role_id"
-          locale={{ emptyText: "No roles found" }}
+          className="roles-table"
+          style={{
+            borderRadius: "12px",
+            overflow: "hidden",
+            boxShadow: "0 2px 10px rgba(0, 0, 0, 0.04)",
+          }}
         />
       </div>
 
