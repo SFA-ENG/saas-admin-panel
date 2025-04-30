@@ -1,4 +1,9 @@
-import { SaveOutlined, UploadOutlined, UserOutlined, LoadingOutlined } from "@ant-design/icons";
+import {
+  SaveOutlined,
+  UploadOutlined,
+  UserOutlined,
+  LoadingOutlined,
+} from "@ant-design/icons";
 import {
   Avatar,
   Button,
@@ -15,7 +20,10 @@ import {
 import { useState, useEffect } from "react";
 import useAuthStore from "../../stores/AuthStore/AuthStore";
 import "./Profile.css";
-import { useApiQuery, useApiMutation } from "../../hooks/useApiQuery/useApiQuery";
+import {
+  useApiQuery,
+  useApiMutation,
+} from "../../hooks/useApiQuery/useApiQuery";
 import { CACHE_KEYS, userAccessTypes } from "../../commons/constants";
 import { renderErrorNotifications } from "../../helpers/error.helpers";
 
@@ -26,19 +34,19 @@ const Profile = () => {
   const [imageUrl, setImageUrl] = useState(userData?.profile_image || null);
   const [logoUploading, setLogoUploading] = useState(false);
   const [logoUrl, setLogoUrl] = useState(null);
-  
+
   // Check role from roles array in userData
-  const isSuperAdmin = userData?.roles?.some(role => role.role_name === userAccessTypes.SUPER_ADMIN);
-
-
+  const isSuperAdmin = userData?.roles?.some(
+    (role) => role.role_name === userAccessTypes.SUPER_ADMIN
+  );
 
   const setTenantFormValues = (currentTenant) => {
-    console.log('Setting tenant form values with:', currentTenant);
+    console.log("Setting tenant form values with:", currentTenant);
     if (currentTenant) {
       const formValues = {
         tenant_name: currentTenant.name,
         tenant_email: currentTenant.root_email,
-        tenant_phone: `${currentTenant.contact_number?.isd_code } ${currentTenant.contact_number?.number}`,
+        tenant_phone: `${currentTenant.contact_number?.isd_code} ${currentTenant.contact_number?.number}`,
         address_line_1: currentTenant.address?.address_line_1,
         address_line_2: currentTenant.address?.address_line_2,
         city: currentTenant.address?.city,
@@ -47,7 +55,7 @@ const Profile = () => {
         zip_code: currentTenant.address?.zip_code,
         tenant_logo: currentTenant.logo_url,
       };
-      console.log('Setting form values:', formValues);
+      console.log("Setting form values:", formValues);
       form.setFieldsValue(formValues);
       setLogoUrl(currentTenant.logo_url);
       form.validateFields();
@@ -66,34 +74,36 @@ const Profile = () => {
     },
     staleTimeInMinutes: 1,
     onSuccess: (data) => {
-      console.log('Tenant data received:', data)
-      console.log('User tenant ID:', userData?.tenant_user_id);
-      const currentTenant = data?.data?.find(tenant => tenant.tenant_id === userData?.tenant_user_id);
-      console.log('Found current tenant:', currentTenant);
+      console.log("Tenant data received:", data);
+      console.log("User tenant ID:", userData?.tenant_user_id);
+      const currentTenant = data?.data?.find(
+        (tenant) => tenant.tenant_id === userData?.tenant_user_id
+      );
+      console.log("Found current tenant:", currentTenant);
       setTenantFormValues(currentTenant);
     },
     onError: (error) => {
-      console.error('Error fetching tenant data:', error);
+      console.error("Error fetching tenant data:", error);
       renderErrorNotifications(error.errors);
     },
   });
 
-const { mutate: updateTenant, isLoading: isUpdatingTenant } = useApiMutation({
-  url: "/iam/tenant",
-  method: "PATCH",
-  onSuccess: () => {
-    message.success("Tenant updated successfully");
-    refetchTenantData();
-  },
-  onError: (error) => {
-    console.error("API Error:", error);
-    renderErrorNotifications(error.errors);
-  },
-});
+  const { mutate: updateTenant, isLoading: isUpdatingTenant } = useApiMutation({
+    url: "/iam/tenant",
+    method: "PATCH",
+    onSuccess: () => {
+      message.success("Tenant updated successfully");
+      refetchTenantData();
+    },
+    onError: (error) => {
+      console.error("API Error:", error);
+      renderErrorNotifications(error.errors);
+    },
+  });
 
   useEffect(() => {
     if (userData) {
-      console.log('Setting initial form values with userData:', userData);
+      console.log("Setting initial form values with userData:", userData);
       form.setFieldsValue({
         fullname: userData?.name,
         email: userData?.email,
@@ -107,9 +117,11 @@ const { mutate: updateTenant, isLoading: isUpdatingTenant } = useApiMutation({
   // Add useEffect to handle initial form values
   useEffect(() => {
     if (userData && tenantData?.data) {
-      console.log('Setting tenant form values with tenantData:', tenantData);
-      const currentTenant = tenantData.data.find(tenant => tenant.tenant_id === userData.tenant_id);
-      console.log('Current tenant found:', currentTenant);
+      console.log("Setting tenant form values with tenantData:", tenantData);
+      const currentTenant = tenantData.data.find(
+        (tenant) => tenant.tenant_id === userData.tenant_id
+      );
+      console.log("Current tenant found:", currentTenant);
       if (currentTenant) {
         setTenantFormValues(currentTenant);
       }
@@ -118,21 +130,21 @@ const { mutate: updateTenant, isLoading: isUpdatingTenant } = useApiMutation({
 
   const handleProfileUpdate = (values) => {
     // Extract phone number - remove country code if present
-    const phoneNumber = values.tenant_phone?.split(' ').pop() || '';
-    
+    const phoneNumber = values.tenant_phone?.split(" ").pop() || "";
+
     const updateData = {
       name: values.tenant_name,
       email: values.tenant_email,
       contact_number: {
         country_code: "IN",
         isd_code: "+91",
-        number: phoneNumber
-      }
+        number: phoneNumber,
+      },
     };
 
     updateTenant({
       ...updateData,
-      tenant_id: userData?.tenant_id
+      tenant_id: userData?.tenant_id,
     });
   };
 
@@ -174,18 +186,20 @@ const { mutate: updateTenant, isLoading: isUpdatingTenant } = useApiMutation({
     }
   };
 
-  const currentTenant = tenantData?.data?.find(tenant => tenant.tenant_id === userData?.tenant_id);
+  const currentTenant = tenantData?.data?.find(
+    (tenant) => tenant.tenant_id === userData?.tenant_id
+  );
 
   return (
     <div className="profile-container">
       <Spin spinning={tenantLoading}>
         <Row gutter={[24, 24]} justify="center">
-          <Col xs={24} md={24}>
+          <Col span={24}>
             <Card className="profile-card">
               <div className="profile-header">
                 <div className="avatar-container">
                   <Avatar
-                    size={200}
+                    size={100}
                     src={imageUrl}
                     icon={!imageUrl && <UserOutlined />}
                     className="profile-large-avatar"
@@ -197,14 +211,14 @@ const { mutate: updateTenant, isLoading: isUpdatingTenant } = useApiMutation({
                         showUploadList={false}
                         accept="image/*"
                         beforeUpload={(file) => {
-                          const isImage = file.type.startsWith('image/');
+                          const isImage = file.type.startsWith("image/");
                           if (!isImage) {
-                            message.error('You can only upload image files!');
+                            message.error("You can only upload image files!");
                             return Upload.LIST_IGNORE;
                           }
                           const isLt2M = file.size / 1024 / 1024 < 2;
                           if (!isLt2M) {
-                            message.error('Image must be smaller than 2MB!');
+                            message.error("Image must be smaller than 2MB!");
                             return Upload.LIST_IGNORE;
                           }
                           return true;
@@ -224,8 +238,12 @@ const { mutate: updateTenant, isLoading: isUpdatingTenant } = useApiMutation({
                   )}
                 </div>
                 <div className="profile-info">
-                  <h2 className="role-name">{userData?.name || userData?.fullname}</h2>
-                  <p className="user-role">{userData?.stakeholder_type || "User"}</p>
+                  <h2 className="role-name">
+                    {userData?.name || userData?.fullname}
+                  </h2>
+                  <p className="user-role">
+                    {userData?.stakeholder_type || "User"}
+                  </p>
                 </div>
               </div>
             </Card>
@@ -242,14 +260,16 @@ const { mutate: updateTenant, isLoading: isUpdatingTenant } = useApiMutation({
                 <Row gutter={[24, 24]}>
                   <Col xs={24} md={12}>
                     <Form.Item name="tenant_name" label="Tenant Name">
-                      <Input placeholder="Name" 
-                      onKeyPress={(e) => {
-                        const regex = /^[a-zA-Z\s]+$/;
-                        if (!regex.test(e.key)) {
-                          e.preventDefault();
-                        }
-                      }}
-                      disabled={!isSuperAdmin} />
+                      <Input
+                        placeholder="Name"
+                        onKeyPress={(e) => {
+                          const regex = /^[a-zA-Z\s]+$/;
+                          if (!regex.test(e.key)) {
+                            e.preventDefault();
+                          }
+                        }}
+                        disabled={!isSuperAdmin}
+                      />
                     </Form.Item>
                   </Col>
                 </Row>
@@ -261,7 +281,10 @@ const { mutate: updateTenant, isLoading: isUpdatingTenant } = useApiMutation({
                       label="Email Address"
                       rules={[
                         { required: true, message: "Please enter your email" },
-                        { type: "email", message: "Please enter a valid email" },
+                        {
+                          type: "email",
+                          message: "Please enter a valid email",
+                        },
                       ]}
                     >
                       <Input placeholder="Enter your email address" disabled />
@@ -291,14 +314,14 @@ const { mutate: updateTenant, isLoading: isUpdatingTenant } = useApiMutation({
                         showUploadList={false}
                         accept="image/*"
                         beforeUpload={(file) => {
-                          const isImage = file.type.startsWith('image/');
+                          const isImage = file.type.startsWith("image/");
                           if (!isImage) {
-                            message.error('You can only upload image files!');
+                            message.error("You can only upload image files!");
                             return Upload.LIST_IGNORE;
                           }
                           const isLt2M = file.size / 1024 / 1024 < 2;
                           if (!isLt2M) {
-                            message.error('Image must be smaller than 2MB!');
+                            message.error("Image must be smaller than 2MB!");
                             return Upload.LIST_IGNORE;
                           }
                           return true;
@@ -315,11 +338,19 @@ const { mutate: updateTenant, isLoading: isUpdatingTenant } = useApiMutation({
                           <img
                             src={logoUrl}
                             alt="logo"
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                            }}
                           />
                         ) : (
                           <div>
-                            {logoUploading ? <LoadingOutlined /> : <UploadOutlined />}
+                            {logoUploading ? (
+                              <LoadingOutlined />
+                            ) : (
+                              <UploadOutlined />
+                            )}
                             <div style={{ marginTop: 8 }}>Upload</div>
                           </div>
                         )}
@@ -332,12 +363,18 @@ const { mutate: updateTenant, isLoading: isUpdatingTenant } = useApiMutation({
                 <Row gutter={[24, 24]}>
                   <Col xs={24} md={12}>
                     <Form.Item name="address_line_1" label="Address Line 1">
-                      <Input placeholder="Address Line 1" disabled={!isSuperAdmin} />
+                      <Input
+                        placeholder="Address Line 1"
+                        disabled={!isSuperAdmin}
+                      />
                     </Form.Item>
                   </Col>
                   <Col xs={24} md={12}>
                     <Form.Item name="address_line_2" label="Address Line 2">
-                      <Input placeholder="Address Line 2" disabled={!isSuperAdmin} />
+                      <Input
+                        placeholder="Address Line 2"
+                        disabled={!isSuperAdmin}
+                      />
                     </Form.Item>
                   </Col>
                 </Row>
@@ -345,26 +382,30 @@ const { mutate: updateTenant, isLoading: isUpdatingTenant } = useApiMutation({
                 <Row gutter={[24, 24]}>
                   <Col xs={24} md={12}>
                     <Form.Item name="city" label="City">
-                      <Input placeholder="City" 
-                      onKeyPress={(e) => {
-                        const regex = /^[a-zA-Z\s]+$/;
-                        if (!regex.test(e.key)) {
-                          e.preventDefault();
-                        }
-                      }}
-                      disabled={!isSuperAdmin} />
+                      <Input
+                        placeholder="City"
+                        onKeyPress={(e) => {
+                          const regex = /^[a-zA-Z\s]+$/;
+                          if (!regex.test(e.key)) {
+                            e.preventDefault();
+                          }
+                        }}
+                        disabled={!isSuperAdmin}
+                      />
                     </Form.Item>
                   </Col>
                   <Col xs={24} md={12}>
                     <Form.Item name="state" label="State">
-                      <Input placeholder="State" 
-                      onKeyPress={(e) => {
-                        const regex = /^[a-zA-Z\s]+$/;
-                        if (!regex.test(e.key)) {
-                          e.preventDefault();
-                        }
-                      }}
-                      disabled={!isSuperAdmin} />
+                      <Input
+                        placeholder="State"
+                        onKeyPress={(e) => {
+                          const regex = /^[a-zA-Z\s]+$/;
+                          if (!regex.test(e.key)) {
+                            e.preventDefault();
+                          }
+                        }}
+                        disabled={!isSuperAdmin}
+                      />
                     </Form.Item>
                   </Col>
                 </Row>
@@ -372,14 +413,16 @@ const { mutate: updateTenant, isLoading: isUpdatingTenant } = useApiMutation({
                 <Row gutter={[24, 24]}>
                   <Col xs={24} md={12}>
                     <Form.Item name="country" label="Country">
-                      <Input placeholder="Country" 
-                      onKeyPress={(e) => {
-                        const regex = /^[a-zA-Z\s]+$/;
-                        if (!regex.test(e.key)) {
-                          e.preventDefault();
-                        }
-                      }}
-                      disabled={!isSuperAdmin} />
+                      <Input
+                        placeholder="Country"
+                        onKeyPress={(e) => {
+                          const regex = /^[a-zA-Z\s]+$/;
+                          if (!regex.test(e.key)) {
+                            e.preventDefault();
+                          }
+                        }}
+                        disabled={!isSuperAdmin}
+                      />
                     </Form.Item>
                   </Col>
                   <Col xs={24} md={12}>

@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { useApiQuery, useApiMutation } from "../../../hooks/useApiQuery/useApiQuery";
+import { useState } from "react";
+import { useApiMutation, useApiQuery } from "../../../hooks/useApiQuery/useApiQuery";
 import { CACHE_KEYS } from "../../../commons/constants";
 import { Button, Card, Col, Form, Input, Row, message } from "antd";
 import Text from "antd/lib/typography/Text";
@@ -8,84 +8,66 @@ import useAuthStore from "../../../stores/AuthStore/AuthStore";
 
 const ResetPassword = () => {
   const [form] = Form.useForm();
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [customerData, setCustomerData] = useState(null);
+  const [email, setEmail] = useState("");
+  const [userData, setUserData] = useState(null);
   const { userData: authUserData } = useAuthStore();
 
   // Fetch users data
-  const {
-    data: usersResponse,
-    isFetching: usersLoading,
-    refetch: refetchUsers,
-  } = useApiQuery({
-    queryKey: [CACHE_KEYS.USERS_LIST],
+  const { data: usersResponse, isPending: usersLoading } = useApiQuery({
+    queryKey: [CACHE_KEYS.GET_USER_BY_PHONE],
     url: "/iam/users",
-    params: { tenant_id: authUserData?.tenant_id },
-    staleTimeInMinutes: 1,
+    method: "GET",
+    params: {},
+    onSuccess: (data) => {
+      console.log("usersResponse:", data);
+      setUserData(data);
+    },
     onError: (error) => {
       renderErrorNotifications(error.errors);
     },
   });
-
-  const usersData = useMemo(
-    () => usersResponse?.data || [],
-    [usersResponse?.data]
-  );
 
   // Reset password mutation
-  const { mutate: resetPassword, isLoading: isResettingPassword } = useApiMutation({
-    url: "/iam/users/reset-password",
-    method: "POST",
-    onSuccess: () => {
-      message.success("Password reset successfully");
-      form.resetFields();
-      setCustomerData(null);
-      setPhoneNumber("");
-    },
-    onError: (error) => {
-      renderErrorNotifications(error.errors);
-    },
-  });
+  const { mutate: resetPassword, isLoading: isResettingPassword } =
+    useApiMutation({
+      url: "/iam/users/reset-password",
+      method: "POST",
+      onSuccess: () => {
+        message.success("Password reset successfully");
+        form.resetFields();
+        setUserData(null);
+        setEmail("");
+      },
+      onError: (error) => {
+        renderErrorNotifications(error.errors);
+      },
+    });
 
   const handleSearch = () => {
-    if (!phoneNumber) {
-      message.error("Please enter a phone number");
+    if (email.length < 3) {
+      renderErrorNotifications("Please enter a valid email");
       return;
     }
-
-    if (phoneNumber.length !== 10) {
-      message.error("Please enter a valid 10-digit phone number");
-      return;
-    }
-
-    setLoading(true);
-    const user = usersData.find(
-      (user) => user.contact_number?.number === phoneNumber
-    );
-
-    if (user) {
-      setCustomerData(user);
-    } else {
-      message.error("No user found with this phone number");
-    }
-    setLoading(false);
+    getUserByPhone({
+      email: email,
+      tenant_id: authUserData?.tenant_id,
+    });
   };
 
   const handleReset = () => {
-    setPhoneNumber("");
-    setCustomerData(null);
+    setEmail("");
+    setUserData(null);
     form.resetFields();
   };
 
   const handleSubmit = (values) => {
-    if (!customerData) {
+    if (!userData) {
       message.error("Please search for a user first");
       return;
     }
 
     resetPassword({
-      tenant_user_id: customerData.tenant_user_id,
+      tenant_user_id: userData.tenant_user_id,
       password: values.password,
     });
   };
@@ -98,30 +80,40 @@ const ResetPassword = () => {
       <Col span={24}>
         <Card title="Reset Password">
           <Row>
-            <Col xs={24} sm={6}>
+            <Col xs={24} sm={8}>
               <Input.Search
-                loading={loading}
-                value={phoneNumber}
+                loading={usersLoading}
+                value={email}
                 enterButton
-                size="large"
-                placeholder="Search Customer By Phone"
+                size="middle"
+                placeholder="Search User By Email"
                 onSearch={handleSearch}
-                maxLength={10}
-                minLength={10}
-                onChange={(e) => setPhoneNumber(e.target.value)}
+                minLength={3}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                }}
+                disabled={isResettingPassword}
               />
-              <Button onClick={handleReset} type="link">
+
+              <Button
+                onClick={() => {
+                  setEmail(null);
+                  setUserData(null);
+                }}
+                type="link"
+              >
                 Reset
               </Button>
             </Col>
+            <Col></Col>
           </Row>
         </Card>
       </Col>
 
-      {customerData && (
+      {userData && (
         <>
           <Col span={24}>
-            <Card title="Customer Details" style={{ marginTop: "16px" }}>
+            <Card title="User Details" style={{ marginTop: "16px" }}>
               <Row gutter={[16, 16]}>
                 <Col xs={24} sm={12}>
                   <div className="flex flex-col gap-4">
@@ -130,7 +122,7 @@ const ResetPassword = () => {
                         <Text strong>Name:</Text>
                       </div>
                       <div className="flex-1">
-                        <Text>{customerData.name || "NA"}</Text>
+                        <Text>{userData.name || "NA"}</Text>
                       </div>
                     </div>
                     <div className="flex items-center">
@@ -138,7 +130,7 @@ const ResetPassword = () => {
                         <Text strong>Email:</Text>
                       </div>
                       <div className="flex-1">
-                        <Text>{customerData.email || "NA"}</Text>
+                        <Text>{userData.email || "NA"}</Text>
                       </div>
                     </div>
                     <div className="flex items-center">
@@ -146,7 +138,7 @@ const ResetPassword = () => {
                         <Text strong>Phone:</Text>
                       </div>
                       <div className="flex-1">
-                        <Text>{customerData.contact_number?.number || "NA"}</Text>
+                        <Text>{userData.contact_number?.number || "NA"}</Text>
                       </div>
                     </div>
                   </div>
@@ -171,7 +163,11 @@ const ResetPassword = () => {
                           validator: (_, value) =>
                             value?.trim().length >= 6
                               ? Promise.resolve()
-                              : Promise.reject(new Error("Password must be at least 6 characters")),
+                              : Promise.reject(
+                                  new Error(
+                                    "Password must be at least 6 characters"
+                                  )
+                                ),
                         },
                       ]}
                       hasFeedback
@@ -195,13 +191,18 @@ const ResetPassword = () => {
                       dependencies={["password"]}
                       hasFeedback
                       rules={[
-                        { required: true, message: "Please confirm your password!" },
+                        {
+                          required: true,
+                          message: "Please confirm your password!",
+                        },
                         ({ getFieldValue }) => ({
                           validator(_, value) {
                             if (!value || getFieldValue("password") === value) {
                               return Promise.resolve();
                             }
-                            return Promise.reject(new Error("Passwords do not match!"));
+                            return Promise.reject(
+                              new Error("Passwords do not match!")
+                            );
                           },
                         }),
                       ]}
@@ -217,7 +218,12 @@ const ResetPassword = () => {
 
                 <Row gutter={[16]}>
                   <Col xs={6} sm={3}>
-                    <Button block type="primary" htmlType="submit" loading={isResettingPassword}>
+                    <Button
+                      block
+                      type="primary"
+                      htmlType="submit"
+                      loading={isResettingPassword}
+                    >
                       Save
                     </Button>
                   </Col>

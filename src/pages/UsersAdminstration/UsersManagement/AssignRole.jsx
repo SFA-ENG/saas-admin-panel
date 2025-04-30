@@ -1,8 +1,14 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Card, Checkbox, Spin, Typography, List } from "antd";
-import { useApiQuery, useApiMutation } from "../../../hooks/useApiQuery/useApiQuery";
-import { renderErrorNotifications, renderSuccessNotifications } from "helpers/error.helpers";
+import {
+  useApiQuery,
+  useApiMutation,
+} from "../../../hooks/useApiQuery/useApiQuery";
+import {
+  renderErrorNotifications,
+  renderSuccessNotifications,
+} from "helpers/error.helpers";
 import useAuthStore from "../../../stores/AuthStore/AuthStore";
 import { CACHE_KEYS } from "../../../commons/constants";
 
@@ -12,35 +18,21 @@ const AssignRole = () => {
   const { tenant_user_id } = useParams();
   const { userData: authUserData } = useAuthStore();
   const [selectedRoles, setSelectedRoles] = useState(new Set());
-  const [updating, setUpdating] = useState(false);
 
-  console.log("tenant_user_id from URL:", tenant_user_id);
-  console.log("authUserData:", authUserData);
-
-  // Fetch all users details
-  const {
-    data: usersResponse,
-    isFetching: usersLoading,
-  } = useApiQuery({
+  const { data: usersResponse, isFetching: usersLoading } = useApiQuery({
     queryKey: [CACHE_KEYS.USERS_LIST],
-    url: "/iam/users",
-    params: { 
+    url: `/iam/users`,
+    params: {
       type: "DETAILED",
-      tenant_id: authUserData?.tenant_id 
+      user_id: tenant_user_id,
     },
-    enabled: !!authUserData?.tenant_id,
     onError: (error) => {
       renderErrorNotifications(error.errors);
     },
   });
 
-  console.log("usersResponse:", usersResponse);
-
   // Fetch all available roles
-  const {
-    data: rolesResponse,
-    isFetching: rolesLoading,
-  } = useApiQuery({
+  const { data: rolesResponse, isFetching: rolesLoading } = useApiQuery({
     queryKey: [CACHE_KEYS.ROLES_LIST],
     url: "/iam/roles",
     params: { tenant_id: authUserData?.tenant_id },
@@ -50,9 +42,9 @@ const AssignRole = () => {
   });
 
   // Update user roles mutation
-  const { mutate: updateUserRoles } = useApiMutation({
+  const { mutate: updateUserRoles, isPending: isUpdating } = useApiMutation({
     url: "/iam/users/user-role",
-    method: "POST",
+    method: "PATCH",
     onSuccess: () => {
       renderSuccessNotifications({
         title: "Success",
@@ -64,36 +56,38 @@ const AssignRole = () => {
     },
   });
 
-  // Find the specific user from the users list
-  const userDetails = usersResponse?.data?.find(user => user.tenant_user_id === tenant_user_id);
+  const userDetails = usersResponse?.data?.find(
+    (user) => user.tenant_user_id === tenant_user_id
+  );
   console.log("userDetails:", userDetails);
 
   // Set initial selected roles when user details are fetched
   useEffect(() => {
     if (userDetails?.roles) {
-      const userRoles = userDetails.roles.map(role => role.tenant_role_id);
+      const userRoles = userDetails.roles.map((role) => role.tenant_role_id);
       setSelectedRoles(new Set(userRoles));
     }
   }, [userDetails]);
 
   const handleRoleChange = (roleId) => {
     if (!tenant_user_id) {
-      renderErrorNotifications([{
-        message: "User ID is missing"
-      }]);
+      renderErrorNotifications([
+        {
+          message: "User ID is missing",
+        },
+      ]);
       return;
     }
 
-    setUpdating(true);
     const isAdding = !selectedRoles.has(roleId);
-    
+
     // Create a new array with the role ID to be added/removed
     const roleIds = [roleId];
-    
+
     updateUserRoles({
       tenant_user_id,
       tenant_role_ids: roleIds,
-      type: isAdding ? "ADD" : "REMOVE"
+      type: isAdding ? "ADD" : "REMOVE",
     });
 
     setSelectedRoles((prev) => {
@@ -101,8 +95,6 @@ const AssignRole = () => {
       isAdding ? updatedRoles.add(roleId) : updatedRoles.delete(roleId);
       return updatedRoles;
     });
-
-    setUpdating(false);
   };
 
   const loading = usersLoading || rolesLoading;
@@ -158,8 +150,8 @@ const AssignRole = () => {
                   <Checkbox
                     checked={selectedRoles.has(role.tenant_role_id)}
                     onChange={() => handleRoleChange(role.tenant_role_id)}
-                    disabled={updating}
                     style={{ paddingLeft: "8px" }}
+                    disabled={isUpdating}
                   >
                     <span style={{ paddingLeft: "6px", fontWeight: "550" }}>
                       {role.name}

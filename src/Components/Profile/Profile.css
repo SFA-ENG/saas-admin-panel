@@ -1,6 +1,4 @@
 .profile-container {
-  padding: 12px;
-  max-width: 1500px;
   margin: 0 auto;
 }
 
@@ -15,8 +13,6 @@
   height: 100%;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
-  margin-bottom: 24px;
-  padding: 32px;
 }
 
 .text-center {
@@ -28,7 +24,6 @@
   align-items: center;
   justify-content: center;
   gap: 68px;
-  padding: 32px;
   text-align: left;
 }
 
@@ -90,127 +85,3 @@
   font-size: 18px;
 }
 
-.ant-form-item {
-  margin-bottom: 24px;
-}
-
-.ant-form-item-label {
-  padding-bottom: 8px;
-}
-
-.ant-input-group-compact {
-  display: flex;
-  align-items: center;
-}
-
-.ant-input-group-compact .ant-input {
-  border-radius: 4px 0 0 4px;
-}
-
-.ant-input-group-compact .ant-btn {
-  border-radius: 0 4px 4px 0;
-}
-
-.ant-divider {
-  margin: 40px 0;
-  border-color: #f0f0f0;
-}
-
-.ant-card {
-  transition: all 0.3s;
-}
-
-.ant-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.ant-row {
-  margin-bottom: 0 !important;
-}
-
-.ant-col {
-  padding: 0 12px !important;
-}
-
-.ant-input-affix-wrapper,
-.ant-input {
-  border-radius: 4px;
-  padding: 8px 12px;
-}
-
-.ant-btn {
-  border-radius: 4px;
-  height: 40px;
-}
-
-.ant-form-item-control-input {
-  min-height: 40px;
-}
-
-.ant-form-item-label > label {
-  height: 24px;
-  line-height: 24px;
-}
-
-.ant-form-item-explain {
-  margin-top: 8px;
-}
-
-@media (max-width: 768px) {
-  .profile-container {
-    padding: 16px;
-  }
-  
-  .profile-card {
-    padding: 24px;
-  }
-  
-  .ant-row {
-    margin: 0 !important;
-  }
-  
-  .ant-col {
-    padding: 0 8px !important;
-  }
-
-  .form-section-title {
-    margin: 24px 0 16px;
-    font-size: 16px;
-  }
-
-  .ant-form-item {
-    margin-bottom: 20px;
-  }
-
-  .ant-form-item-label {
-    padding-bottom: 6px;
-  }
-
-  .ant-input-affix-wrapper,
-  .ant-input {
-    padding: 6px 10px;
-  }
-
-  .profile-header {
-    flex-direction: column;
-    gap: 24px;
-    text-align: center;
-  }
-
-  .avatar-container {
-    margin-right: 0;
-    margin-bottom: 16px;
-  }
-
-  .profile-info {
-    min-width: auto;
-  }
-
-  .role-name {
-    font-size: 24px;
-  }
-
-  .user-role {
-    font-size: 16px;
-  }
-}

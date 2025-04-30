@@ -26,8 +26,8 @@ export const renderErrorNotifications = (errors) => {
     });
   } else {
     notification.error({
-      // message: errors,
-      description: errors,
+      message: errors,
+      //description: errors,
       placement: "topRight",
       duration: 5,
     });

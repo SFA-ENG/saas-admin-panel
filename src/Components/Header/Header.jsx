@@ -95,7 +95,7 @@ const Header = ({ handleMenuClick, isCollapsed, toggleCollapse }) => {
               <Col xs={6} sm={7}>
                 <NavLink className={"logo-link desktop-only"} to={"/"}>
                   <div className="text-primary font-bold text-lg">
-                    Sports Administration
+                    Home
                   </div>{" "}
                 </NavLink>
                 <Button

@@ -1,5 +1,5 @@
 import { EditOutlined, DeleteOutlined, UserAddOutlined } from "@ant-design/icons";
-import { Avatar, Button, Row, Space, Switch, Tooltip, Popconfirm } from "antd";
+import { Avatar, Button, Row, Space, Switch, Tooltip, Popconfirm, Tag } from "antd";
 import { isMobile } from "helpers/device.helpers";
 
 export const getColumnsForUsersList = ({ editAndDeleteActions }) => {
@@ -123,9 +123,9 @@ export const roleListColumns = (onEdit) => [
     key: "name",
     align: "center",
     responsive: ["sm"],
-    render: ({ name }) => (
+    render: ({ role_name }) => (
       <Row justify={"center"}>
-        <span>{name}</span>
+        <span>{role_name}</span>
       </Row>
     ),
   },
@@ -134,11 +134,13 @@ export const roleListColumns = (onEdit) => [
     key: "permissions",
     align: "center",
     responsive: ["sm"],
-    render: ({ permissions }) => (
+    render: ({ privileges }) => (
       <Row justify={"center"}>
-        <span>
-          {(permissions || []).map((permission) => permission.name).join(", ")}
-        </span>
+          {privileges.map((permission) =>{
+            return (
+              <Tag key={permission.id}>{permission.name}</Tag>
+            )
+          })}
       </Row>
     ),
   },

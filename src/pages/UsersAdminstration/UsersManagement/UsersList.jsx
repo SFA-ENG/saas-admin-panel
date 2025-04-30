@@ -7,7 +7,10 @@ import {
   useApiMutation,
 } from "../../../hooks/useApiQuery/useApiQuery";
 import useAuthStore from "../../../stores/AuthStore/AuthStore";
-import { renderErrorNotifications, renderSuccessNotifications } from "helpers/error.helpers";
+import {
+  renderErrorNotifications,
+  renderSuccessNotifications,
+} from "helpers/error.helpers";
 import responsiveTable from "hoc/resposive-table.helper";
 import { getColumnsForUsersList } from "../Users.helper";
 import { CACHE_KEYS, countryCodes } from "../../../commons/constants";
@@ -82,7 +85,6 @@ const UsersList = () => {
     },
   });
 
-
   // Filter data based on search text
   useEffect(() => {
     if (!usersData || !usersData.length) return;
@@ -118,18 +120,10 @@ const UsersList = () => {
   };
 
   const handleSubmit = (values) => {
-    console.log("Auth User Data:", authUserData);
-      
-    if (!authUserData?.tenant_id) {
-      message.error("Tenant ID is missing. Please ensure you are properly logged in.");
-      return;
-    }
-
     if (selectedRow) {
       // Update existing user
       const updatePayload = {
-        // tenant_user_id: selectedRow.tenant_user_id,
-        tenant_id: selectedRow.tenant_user_id,
+        tenant_user_id: selectedRow.tenant_user_id,
         name: values.name,
         contact_number: {
           country_code: values.country_code,
@@ -174,17 +168,16 @@ const UsersList = () => {
       }
     },
     handleActiveInactive: ({ record, checked }) => {
-
       const updatePayload = {
         tenant_user_id: record.tenant_user_id,
-        is_active: checked ? true : false
+        is_active: checked ? true : false,
       };
 
       updateUser(updatePayload);
     },
     handleAssignRole: (record) => {
-      navigate(`/users-administration/assign-role/${record.tenant_user_id}`);      
-    }
+      navigate(`/users-administration/assign-role/${record.tenant_user_id}`);
+    },
   };
   // Table columns configuration
   const usersTableColumns = responsiveTable({
