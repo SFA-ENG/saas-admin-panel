@@ -14,7 +14,7 @@ const API_ENDPOINTS = {
 const BASE_URI_MAP = {
   "domain.in": API_ENDPOINTS.STAGE,
   "domain.com": API_ENDPOINTS.PROD,
-  localhost: API_ENDPOINTS.LOCAL,
+  localhost: API_ENDPOINTS.STAGE,
 };
 
 export const hostName = window.location.hostname;

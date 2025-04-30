@@ -2,7 +2,11 @@ import { Button, Checkbox, Form, Input, Select } from "antd";
 import { useEffect, useState } from "react";
 import useAuthStore from "../../stores/AuthStore/AuthStore";
 import LoginCarousel from "./LoginCarousel";
-import { CACHE_KEYS, countryCodeOptions, countryCodes } from "../../commons/constants";
+import {
+  CACHE_KEYS,
+  countryCodeOptions,
+  countryCodes,
+} from "../../commons/constants";
 import { useApiMutation } from "../../hooks/useApiQuery/useApiQuery";
 import { renderErrorNotifications } from "helpers/error.helpers";
 import { useNavigate } from "react-router-dom";
@@ -109,13 +113,14 @@ const Login = () => {
                     { required: true, message: "Please input your full name!" },
                   ]}
                 >
-                  <Input placeholder="Full Name" 
-                  onKeyPress={(e) => {
-                    const regex = /^[a-zA-Z\s]+$/;
-                    if (!regex.test(e.key)) {
-                      e.preventDefault();
-                    }
-                  }}
+                  <Input
+                    placeholder="Full Name"
+                    onKeyPress={(e) => {
+                      const regex = /^[a-zA-Z\s]+$/;
+                      if (!regex.test(e.key)) {
+                        e.preventDefault();
+                      }
+                    }}
                   />
                 </Form.Item>
               )}
