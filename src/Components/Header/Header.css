@@ -4,11 +4,9 @@ header {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.05);
   display: flex;
   align-items: center;
-  justify-content: flex-end;
   padding: 16px;
   position: fixed;
   width: 100%;
-  left: 0px;
   z-index: 99;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -46,19 +44,14 @@ header .logo-link:hover {
   transform: scale(1.02);
 }
 
-header .outlet-name {
-  font-weight: 600;
-  color: #4f46e5;
-  font-size: large;
-}
 
 /* Profile Avatar Styling */
 .profile-avatar-container {
   cursor: pointer;
   padding: 3px;
-  border-radius: 9999px;
+  border-radius: 999px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 2px solid transparent;
+  border: 1px solid transparent;
   display: flex;
   align-items: center;
   justify-content: center;

@@ -167,7 +167,7 @@ const RolesList = () => {
 
   return (
     <Card title="Roles Management">
-      <Row justify="space-between" align="middle">
+      <Row justify="space-between" align="middle" gutter={[16, 8]}>
         <Col>
           <div className="flex items-center gap-2">
             <Input.Search

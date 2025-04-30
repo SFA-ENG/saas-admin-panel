@@ -188,7 +188,7 @@ const UsersList = () => {
 
   return (
     <Card title="Users Management">
-      <Row justify="space-between" align="middle">
+      <Row justify="space-between" align="middle" gutter={[0, 8]}>
         <Col sm={12}>
           <div className="flex items-center gap-2">
             <Input.Search

@@ -5,14 +5,10 @@
   height: calc(100vh - 56px);
   overflow-y: auto;
   background-color: #fff;
-  transition: all 0.3s;
   top: 56px;
-  left: 0;
 }
 
-.Navigation.collapsed {
-  width: 80px;
-}
+
 
 /* Add this to fix the white space issue */
 .MainLayout aside.collapsed .Navigation {
