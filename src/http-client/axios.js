@@ -7,7 +7,7 @@ const ACCESS_TOKEN = useAuthStore.getState()?.token;
 
 const API_ENDPOINTS = {
   PROD: `https://something.in`,
-  STAGE: `http://35.244.4.251:3003/api/v1`,
+  STAGE: `http://35.244.9.159:3003/api/v1`,
   LOCAL: `http://localhost:4000/api/v1`,
 };
 //BASE URL MAP

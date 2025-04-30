@@ -18,7 +18,7 @@ export const renderErrorNotifications = (errors) => {
     }
 
     notification.error({
-      message: errorMessage?.message,
+      // message: errorMessage?.message,
       description: description,
       placement: "topRight",
       duration: 5,
@@ -26,7 +26,8 @@ export const renderErrorNotifications = (errors) => {
     });
   } else {
     notification.error({
-      message: errors,
+      // message: errors,
+      description: errors,
       placement: "topRight",
       duration: 5,
     });
@@ -35,7 +36,7 @@ export const renderErrorNotifications = (errors) => {
 
 export const renderSuccessNotifications = ({ title, message }) => {
   notification.success({
-    message: title,
+    // message: title,
     description: message,
     placement: "topRight",
     duration: 5,

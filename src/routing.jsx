@@ -11,6 +11,7 @@ import Users from "pages/UsersAdminstration/Users";
 import UsersList from "pages/UsersAdminstration/UsersManagement/UsersList";
 import RolesList from "pages/UsersAdminstration/RolesManagement/RolesList";
 import AssignRole from "pages/UsersAdminstration/UsersManagement/AssignRole";
+import ResetPassword from "pages/UsersAdminstration/ResetPassword/ResetPassword";
 export const sideMenuConfig = [
   {
     label: "Welcome Page",
@@ -41,6 +42,12 @@ export const sideMenuConfig = [
         path: "roles-list",
         element: <RolesList />,
         allowed_permisions: [...getPermision("ROLES_LIST")],
+        
+      },
+      {
+        label: "Reset Password",
+        path: "reset-password",
+        element: <ResetPassword />,
       },
       {
         label: "Assign Role",
@@ -65,6 +72,7 @@ export const sideMenuConfig = [
       },
     ],
   },
+
 ];
 
 const getRoutingObject = ({ sideMenuConfig }) => {

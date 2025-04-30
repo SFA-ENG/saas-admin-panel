@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
-import { Input, Button, Table, Modal, Form, message, Select } from "antd";
+import { Input, Button, Table, Form, message } from "antd";
 import { SearchOutlined, UserAddOutlined } from "@ant-design/icons";
 import { useApiQuery, useApiMutation } from "../../../hooks/useApiQuery/useApiQuery";
 import useAuthStore from "../../../stores/AuthStore/AuthStore";
 import { renderErrorNotifications } from "helpers/error.helpers";
 import responsiveTable from "hoc/resposive-table.helper";
 import { roleListColumns } from "../Users.helper";
-import { CACHE_KEYS, getAllPermissionsList } from "../../../commons/constants";
+import { CACHE_KEYS } from "../../../commons/constants";
+import NewRoleModal from "./_blocks/NewRoleModal";
 
 const pageSize = 10;
 
@@ -43,7 +44,11 @@ const RolesList = () => {
     url: "/iam/roles/role-permissions",
     params: { tenant_id: userData?.tenant_id },
     staleTimeInMinutes: 1,
+    onSuccess: (data) => {
+      console.log("Permissions data:", data);
+    },
     onError: (error) => {
+      console.error("Error fetching permissions:", error);
       renderErrorNotifications(error.errors);
     },
   });
@@ -170,7 +175,6 @@ const RolesList = () => {
     } else {
       // Create new role - no type field needed
       createRole({
-
         name: values.name,
         tenant_privilege_ids: values.permissions
       });
@@ -242,57 +246,16 @@ const RolesList = () => {
         />
       </div>
 
-      <Modal
-        title="Add New Role"
-        open={isModalOpen}
-        onCancel={handleCancel}
-        footer={null}
-        width={600}
-        className="role-modal"
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleSubmit}
-          className="mt-4"
-        >
-          <Form.Item
-            name="name"
-            label="Role Name"
-            
-            rules={[{ required: true, message: "Please enter role name" }]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item
-            name="permissions"
-            label="Permissions"
-            rules={[{ required: true, message: "Please select at least one permission" }]}
-          >
-            <Select 
-              mode="multiple" 
-              placeholder="Select permissions"
-              loading={permissionsLoading}
-              notFoundContent={permissionsLoading ? "Loading..." : "No permissions found"}
-              options={getAllPermissionsList()}
-              fieldNames={{ label: 'label', value: 'value' }}
-            />
-          </Form.Item>
-
-          <div className="flex justify-end gap-3 mt-4">
-            <Button onClick={handleCancel}>Cancel</Button>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={isCreatingRole || isUpdatingRole}
-              className="bg-primary hover:bg-primary-dark"
-            >
-            {editingRole ? "Update Role" : "Create Role"}
-            </Button>
-          </div>
-        </Form>
-      </Modal>
+      {isModalOpen && (
+        <NewRoleModal
+          existingRole={editingRole}
+          handleCancel={handleCancel}
+          handleSubmit={handleSubmit}
+          permissionsLoading={permissionsLoading}
+          isCreatingRole={isCreatingRole}
+          isUpdatingRole={isUpdatingRole}
+        />
+      )}
     </div>
   );
 };

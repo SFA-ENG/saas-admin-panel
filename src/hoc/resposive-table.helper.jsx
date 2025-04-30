@@ -18,7 +18,7 @@ const responsiveTable = ({ input, labelCol = 8, valueCol = 16 }) => {
             return (
               <Row
                 key={applicableTitle}
-                className="mb-3 last:mb-0"
+                className="mb-3 last:mb-0 space-y-4"
                 align="middle"
               >
                 {hasTitle && (

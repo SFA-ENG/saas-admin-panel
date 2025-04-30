@@ -116,16 +116,18 @@ const UsersList = () => {
   };
 
   const handleSubmit = (values) => {
+    console.log("Auth User Data:", authUserData);
       
     if (!authUserData?.tenant_id) {
-      message.error("Tenant ID is missing");
+      message.error("Tenant ID is missing. Please ensure you are properly logged in.");
       return;
     }
 
     if (selectedRow) {
       // Update existing user
       const updatePayload = {
-        tenant_user_id: selectedRow.tenant_user_id,
+        // tenant_user_id: selectedRow.tenant_user_id,
+        tenant_id: selectedRow.tenant_user_id,
         name: values.name,
         contact_number: {
           country_code: values.country_code,
@@ -137,7 +139,8 @@ const UsersList = () => {
     } else {
       // Create new user
       const createPayload = {
-        tenant_id: authUserData.tenant_id,
+        // tenant_user_id: authUserData.tenant_user_id,
+        tenant_id: authUserData.tenant_user_id,
         name: values.name,
         email: values.email,
         password: values.password,

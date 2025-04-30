@@ -109,7 +109,14 @@ const Login = () => {
                     { required: true, message: "Please input your full name!" },
                   ]}
                 >
-                  <Input placeholder="Full Name" />
+                  <Input placeholder="Full Name" 
+                  onKeyPress={(e) => {
+                    const regex = /^[a-zA-Z\s]+$/;
+                    if (!regex.test(e.key)) {
+                      e.preventDefault();
+                    }
+                  }}
+                  />
                 </Form.Item>
               )}
               {isLogin && (

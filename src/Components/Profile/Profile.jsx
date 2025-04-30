@@ -33,21 +33,23 @@ const Profile = () => {
 
 
   const setTenantFormValues = (currentTenant) => {
+    console.log('Setting tenant form values with:', currentTenant);
     if (currentTenant) {
-      form.setFieldsValue({
+      const formValues = {
         tenant_name: currentTenant.name,
         tenant_email: currentTenant.root_email,
-        tenant_phone: `${currentTenant.contact_number?.isd_code || ''} ${currentTenant.contact_number?.number || ''}`,
-        address_line_1: currentTenant.address?.address_line_1 || '',
-        address_line_2: currentTenant.address?.address_line_2 || '',
-        city: currentTenant.address?.city || '',
-        state: currentTenant.address?.state || '',
-        country: currentTenant.address?.country || '',
-        zip_code: currentTenant.address?.zip_code || '',
-        tenant_logo: currentTenant.logo_url || '',
-      });
-      // Set logo URL for display
-      setLogoUrl(currentTenant.logo_url || null);
+        tenant_phone: `${currentTenant.contact_number?.isd_code } ${currentTenant.contact_number?.number}`,
+        address_line_1: currentTenant.address?.address_line_1,
+        address_line_2: currentTenant.address?.address_line_2,
+        city: currentTenant.address?.city,
+        state: currentTenant.address?.state,
+        country: currentTenant.address?.country,
+        zip_code: currentTenant.address?.zip_code,
+        tenant_logo: currentTenant.logo_url,
+      };
+      console.log('Setting form values:', formValues);
+      form.setFieldsValue(formValues);
+      setLogoUrl(currentTenant.logo_url);
       form.validateFields();
     }
   };
@@ -64,10 +66,14 @@ const Profile = () => {
     },
     staleTimeInMinutes: 1,
     onSuccess: (data) => {
-      const currentTenant = data?.data?.find(tenant => tenant.tenant_id === userData?.tenant_id);
+      console.log('Tenant data received:', data)
+      console.log('User tenant ID:', userData?.tenant_user_id);
+      const currentTenant = data?.data?.find(tenant => tenant.tenant_id === userData?.tenant_user_id);
+      console.log('Found current tenant:', currentTenant);
       setTenantFormValues(currentTenant);
     },
     onError: (error) => {
+      console.error('Error fetching tenant data:', error);
       renderErrorNotifications(error.errors);
     },
   });
@@ -77,7 +83,7 @@ const { mutate: updateTenant, isLoading: isUpdatingTenant } = useApiMutation({
   method: "PATCH",
   onSuccess: () => {
     message.success("Tenant updated successfully");
-    refetchTenantData(); // Refresh tenant data after successful update
+    refetchTenantData();
   },
   onError: (error) => {
     console.error("API Error:", error);
@@ -87,11 +93,13 @@ const { mutate: updateTenant, isLoading: isUpdatingTenant } = useApiMutation({
 
   useEffect(() => {
     if (userData) {
+      console.log('Setting initial form values with userData:', userData);
       form.setFieldsValue({
-        fullname: userData?.fullname || userData?.name,
+        fullname: userData?.name,
         email: userData?.email,
         phone_number: userData?.contact_number?.number,
         tenant_code: userData?.tenant_code,
+        tenant_name: userData?.name,
       });
     }
   }, [userData, form]);
@@ -99,8 +107,12 @@ const { mutate: updateTenant, isLoading: isUpdatingTenant } = useApiMutation({
   // Add useEffect to handle initial form values
   useEffect(() => {
     if (userData && tenantData?.data) {
+      console.log('Setting tenant form values with tenantData:', tenantData);
       const currentTenant = tenantData.data.find(tenant => tenant.tenant_id === userData.tenant_id);
-      setTenantFormValues(currentTenant);
+      console.log('Current tenant found:', currentTenant);
+      if (currentTenant) {
+        setTenantFormValues(currentTenant);
+      }
     }
   }, [userData, tenantData, form]);
 
@@ -230,7 +242,14 @@ const { mutate: updateTenant, isLoading: isUpdatingTenant } = useApiMutation({
                 <Row gutter={[24, 24]}>
                   <Col xs={24} md={12}>
                     <Form.Item name="tenant_name" label="Tenant Name">
-                      <Input placeholder="Name" disabled={!isSuperAdmin} />
+                      <Input placeholder="Name" 
+                      onKeyPress={(e) => {
+                        const regex = /^[a-zA-Z\s]+$/;
+                        if (!regex.test(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
+                      disabled={!isSuperAdmin} />
                     </Form.Item>
                   </Col>
                 </Row>
@@ -326,12 +345,26 @@ const { mutate: updateTenant, isLoading: isUpdatingTenant } = useApiMutation({
                 <Row gutter={[24, 24]}>
                   <Col xs={24} md={12}>
                     <Form.Item name="city" label="City">
-                      <Input placeholder="City" disabled={!isSuperAdmin} />
+                      <Input placeholder="City" 
+                      onKeyPress={(e) => {
+                        const regex = /^[a-zA-Z\s]+$/;
+                        if (!regex.test(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
+                      disabled={!isSuperAdmin} />
                     </Form.Item>
                   </Col>
                   <Col xs={24} md={12}>
                     <Form.Item name="state" label="State">
-                      <Input placeholder="State" disabled={!isSuperAdmin} />
+                      <Input placeholder="State" 
+                      onKeyPress={(e) => {
+                        const regex = /^[a-zA-Z\s]+$/;
+                        if (!regex.test(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
+                      disabled={!isSuperAdmin} />
                     </Form.Item>
                   </Col>
                 </Row>
@@ -339,7 +372,14 @@ const { mutate: updateTenant, isLoading: isUpdatingTenant } = useApiMutation({
                 <Row gutter={[24, 24]}>
                   <Col xs={24} md={12}>
                     <Form.Item name="country" label="Country">
-                      <Input placeholder="Country" disabled={!isSuperAdmin} />
+                      <Input placeholder="Country" 
+                      onKeyPress={(e) => {
+                        const regex = /^[a-zA-Z\s]+$/;
+                        if (!regex.test(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
+                      disabled={!isSuperAdmin} />
                     </Form.Item>
                   </Col>
                   <Col xs={24} md={12}>

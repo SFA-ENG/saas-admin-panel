@@ -1,5 +1,5 @@
 import { EditOutlined, DeleteOutlined, UserAddOutlined } from "@ant-design/icons";
-import { Avatar, Button, Row, Space, Switch, Tooltip } from "antd";
+import { Avatar, Button, Row, Space, Switch, Tooltip, Popconfirm } from "antd";
 import { isMobile } from "helpers/device.helpers";
 
 export const getColumnsForUsersList = ({ editAndDeleteActions }) => {
@@ -88,12 +88,16 @@ export const getColumnsForUsersList = ({ editAndDeleteActions }) => {
               />
             </Tooltip>
             <Tooltip title="Delete User">
+              <Popconfirm
+              title="Are you sure you want to delete this user?"
+              onConfirm={() => editAndDeleteActions.handleDelete(record)}
+              >
               <Button
                 icon={<DeleteOutlined />}
                 shape="circle"
                 className="border-gray-300 hover:border-red-500 hover:text-red-500"
-                onClick={() => editAndDeleteActions.handleDelete(record)}
               />
+              </Popconfirm>
             </Tooltip>
             <Tooltip title="Assign Role">
               <Button

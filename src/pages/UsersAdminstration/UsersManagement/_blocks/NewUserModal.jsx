@@ -110,12 +110,21 @@ const NewUserModal = ({ existingUser, handleCancel, handleSubmit, isLoading }) =
             <Form.Item
               name="phone_number"
               label="Phone Number"
+             
               rules={[
                 { required: true, message: "Please enter phone number" },
               ]}
             >
               <Input placeholder="9876543210" 
               onChange = {handleChange}
+              onKeyPress={(e) => {
+                const regex = /^[0-9]$/;
+                if (!regex.test(e.key)) {
+                  e.preventDefault();
+                }
+              }}
+              maxLength={10}
+              minLength={10}
               />
             </Form.Item>
           </Col>
