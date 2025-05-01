@@ -1,34 +1,19 @@
 import { useState } from "react";
-import {
-  Row,
-  Col,
-  Space,
-  Input,
-  Select,
-  Badge,
-  Button,
-  Spin,
-  Empty,
-  Tag,
-  Tooltip,
-  Card,
-} from "antd";
+import { Row, Col, Space, Input, Select, Button, Tooltip, Card } from "antd";
 import {
   Filter,
   Plus,
   Calendar,
   Users,
   Award,
-  ChevronDown,
-  Eye,
-  Star,
   TrendingUp,
-  MapPin,
   Layers,
   RefreshCw,
 } from "lucide-react";
 import { tournaments } from "../Tms.service";
 import AccessControlButton from "Components/AccessControlButton/AccessControlButton";
+import TournamentCard from "./_blocks/TournamentCard";
+import FullPageLoader from "Components/Loader/Loader";
 
 const TournamentsPage = () => {
   const [loading, setLoading] = useState(false);
@@ -39,19 +24,6 @@ const TournamentsPage = () => {
     gender: "all",
     sport: "all",
   });
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "upcoming":
-        return "bg-blue-500";
-      case "active":
-        return "bg-green-500";
-      case "completed":
-        return "bg-gray-500";
-      default:
-        return "bg-gray-300";
-    }
-  };
 
   const handleFilterChange = (value, filterType) => {
     setFilters((prev) => ({
@@ -64,122 +36,9 @@ const TournamentsPage = () => {
     setSearchQuery(e.target.value);
   };
 
-  // Format date in human-readable format
-  const formatDate = (dateString) => {
-    const options = { year: "numeric", month: "short", day: "numeric" };
-    return new Date(dateString).toLocaleDateString("en-US", options);
-  };
-
-  const TournamentCard = ({ tournament }) => (
-    <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100">
-      {/* Banner */}
-      <div className="relative h-44 overflow-hidden">
-        <img
-          src={tournament.tournament_configuration.league_banner.web}
-          alt="banner"
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            e.target.src =
-              "https://placehold.co/600x400/e2e8f0/64748b?text=Banner";
-          }}
-        />
-        <Badge
-          count={tournament.status}
-          className={`absolute top-3 right-3 text-xs font-semibold rounded-full text-white px-3 py-1 capitalize ${getStatusColor(
-            tournament.status
-          )}`}
-        />
-        {tournament.featured && (
-          <Tooltip title="Featured">
-            <div className="absolute top-3 left-3 bg-yellow-500 p-1 rounded-full shadow">
-              <Star size={16} className="text-white" />
-            </div>
-          </Tooltip>
-        )}
-      </div>
-
-      {/* Content */}
-      <div className="p-5">
-        <div className="flex items-start">
-          <div className="w-16 h-16 mr-4 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 border border-gray-200 shadow-sm hover:shadow-lg transition-shadow duration-300">
-            <img
-              src={tournament.tournament_configuration.league_logo.web}
-              alt="logo"
-              className="w-full h-full object-contain"
-              onError={(e) => {
-                e.target.src =
-                  "https://placehold.co/100/e2e8f0/64748b?text=Logo";
-              }}
-            />
-          </div>
-          <div className="flex-grow">
-            <h3 className="text-xl font-semibold text-gray-900 line-clamp-1">
-              {tournament.tournament_name}
-            </h3>
-            <div className="flex items-center mt-2 text-sm text-gray-600">
-              <MapPin size={14} className="mr-1" />
-              <span>{tournament.location}</span>
-              <span className="mx-2">•</span>
-              <Users size={14} className="mr-1" />
-              <span>{tournament.participants} teams</span>
-            </div>
-            <p className="text-sm text-gray-500 line-clamp-2 mt-2">
-              {tournament.tournament_description}
-            </p>
-          </div>
-        </div>
-
-        {/* Dates & Actions */}
-        <div className="mt-4 flex flex-col gap-4">
-          <div className="bg-gray-50 rounded-lg p-3 flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center text-sm text-gray-600">
-                <Calendar size={14} className="mr-1.5" />
-                <span className="font-medium">Period</span>
-              </div>
-              <Tag
-                color={tournament.status === "completed" ? "default" : "blue"}
-              >
-                {tournament.sport_type}
-              </Tag>
-            </div>
-            <div className="flex items-center justify-between text-sm text-gray-700">
-              <div>
-                <span className="text-gray-500">Start:</span>{" "}
-                <span className="font-semibold">
-                  {formatDate(tournament.start_date)}
-                </span>
-              </div>
-              <div>
-                <span className="text-gray-500">End:</span>{" "}
-                <span className="font-semibold">
-                  {formatDate(tournament.end_date)}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex justify-between items-center">
-            <Badge
-              color={tournament.is_active ? "green" : "red"}
-              text={tournament.is_active ? "Active" : "Inactive"}
-            />
-            <Button
-              type="primary"
-              size="middle"
-              className="flex items-center bg-gradient-to-r from-blue-500 to-blue-600 border-0 hover:from-blue-600 hover:to-blue-700 transition-all"
-            >
-              <Space>
-                <Eye size={14} />
-                View Seasons
-                <ChevronDown size={12} />
-              </Space>
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  if (loading) {
+    return <FullPageLoader message="Loading tournaments ..." />;
+  }
 
   return (
     <Card style={{ backgroundColor: "#F9FAFB" }}>
@@ -188,7 +47,7 @@ const TournamentsPage = () => {
         justify="space-between"
         align="middle"
         gutter={[16, 16]}
-        className="mb-6"
+        className="mb-4"
       >
         <Col xs={24} lg={16}>
           <div className="flex items-center">
@@ -213,7 +72,7 @@ const TournamentsPage = () => {
       </Row>
 
       {/* Stats */}
-      <Row gutter={[16, 16]} className="mb-6">
+      <Row gutter={[16, 16]} className="mb-4">
         {[
           {
             icon: TrendingUp,
@@ -252,7 +111,7 @@ const TournamentsPage = () => {
       </Row>
 
       {/* Search & Filters */}
-      <div className="mb-6 bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+      <div className="mb-4 bg-white p-2 rounded-xl shadow-sm border border-gray-100">
         <Row gutter={[16, 16]} align="middle">
           <Col xs={24} md={8}>
             <Input
@@ -285,7 +144,7 @@ const TournamentsPage = () => {
             />
           </Col>
           <Col xs={24} md={16}>
-            <Space wrap className="w-full justify-end">
+            <Space wrap className="w-full md:justify-end justify-center">
               {[
                 {
                   key: "status",
@@ -338,7 +197,7 @@ const TournamentsPage = () => {
                   onChange={(v) => handleFilterChange(v, key)}
                   placeholder={key.charAt(0).toUpperCase() + key.slice(1)}
                   size="large"
-                  className="rounded-lg min-w-[140px]"
+                  className="rounded-lg min-w-[160px]"
                   suffixIcon={<Icon size={16} />}
                   options={opts}
                 />
@@ -349,33 +208,13 @@ const TournamentsPage = () => {
       </div>
 
       {/* Tournament Cards or Empty/Loading */}
-      {loading ? (
-        <div className="flex justify-center items-center h-64 bg-white rounded-xl shadow-sm p-8">
-          <Spin size="large" />
-        </div>
-      ) : tournaments.length > 0 ? (
-        <Row gutter={[20, 20]}>
-          {tournaments.map((t) => (
-            <Col xs={24} sm={12} lg={8} xxl={6} key={t.tournament_id}>
-              <TournamentCard tournament={t} />
-            </Col>
-          ))}
-        </Row>
-      ) : (
-        <div className="flex flex-col items-center justify-center h-64 bg-white p-8 rounded-xl shadow-sm">
-          <Empty description="No tournaments found" />
-          <button
-            type="button"
-            className="mt-6 relative flex items-center justify-center px-6 py-3 text-lg font-semibold text-white bg-gray-800 rounded-full overflow-hidden group transition-all duration-300 ease-in-out"
-          >
-            <span className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-blue-500 transform scale-x-0 group-hover:scale-x-100 opacity-0 group-hover:opacity-100 transition-all duration-500 ease-in-out"></span>
-            <span className="relative z-10 flex items-center">
-              <Plus size={16} className="mr-2" />
-              Add Your First Tournament
-            </span>
-          </button>
-        </div>
-      )}
+      <Row gutter={[16, 16]}>
+        {tournaments.map((t) => (
+          <Col xs={24} sm={12} lg={8} xxl={6} key={t.tournament_id}>
+            <TournamentCard tournament={t} />
+          </Col>
+        ))}
+      </Row>
     </Card>
   );
 };

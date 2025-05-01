@@ -7,18 +7,12 @@ const NewUserModal = ({ existingUser, handleCancel, handleSubmit, isLoading }) =
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState([]);
   const isEdit = existingUser ? true : false;
-  const [mobile, setMobile] = useState('');
 
   const onFinish = (values) => {
     handleSubmit(values);
   };
 
-  const handleChange = (e) => {
-    const value = e.target.value.replace(/\D/g, ''); 
-    if (value.length <= 10) {
-      setMobile(value);
-    }
-  };
+ 
   return (
     <Modal
       title={isEdit ? "Edit User" : "Add New User"}
@@ -116,7 +110,6 @@ const NewUserModal = ({ existingUser, handleCancel, handleSubmit, isLoading }) =
               ]}
             >
               <Input placeholder="9876543210" 
-              onChange = {handleChange}
               onKeyPress={(e) => {
                 const regex = /^[0-9]$/;
                 if (!regex.test(e.key)) {

@@ -1,22 +1,37 @@
+import { LoadingOutlined } from "@ant-design/icons";
 import { Col, Row, Spin } from "antd";
 
-const tcaLoader = () => {
+const FullPageLoader = ({
+  spinning = true,
+  percent = false,
+  message = "Loading content ...",
+  allowFullScreen = false,
+  showMessage = true,
+}) => {
   return (
-    <Row className="tcaLoader" gutter={[16]}>
+    <Row gutter={[16]} justify="center" align="middle">
       <Col>
-        <Spin />
+        <Spin
+          spinning={spinning}
+          percent={percent}
+          fullscreen={allowFullScreen}
+          size={"large"}
+          indicator={<LoadingOutlined spin />}
+        />
       </Col>
-      <Col>
-        <span
-          style={{
-            fontSize: "14px",
-          }}
-        >
-          Loading content ...
-        </span>
-      </Col>
+      {showMessage && (
+        <Col>
+          <span
+            style={{
+              fontSize: "14px",
+            }}
+          >
+            {message}
+          </span>
+        </Col>
+      )}
     </Row>
   );
 };
 
-export default tcaLoader;
+export default FullPageLoader;

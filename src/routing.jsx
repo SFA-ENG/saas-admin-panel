@@ -25,6 +25,7 @@ import TmsPage from "pages/Tms/Tms";
 import TournamentsPage from "pages/Tms/Tournaments/Tournaments";
 import DrawsPage from "pages/Tms/Draws/Draws";
 import SchedulesPage from "pages/Tms/Schedules/Schedules";
+import TournamentDetailsPage from "pages/Tms/Tournaments/TournamentDetails/TournamentDetails";
 export const sideMenuConfig = [
   {
     label: "Welcome Page",
@@ -37,7 +38,7 @@ export const sideMenuConfig = [
   {
     label: "Users",
     path: "users-administration",
-    icon: <UsersRound size={18}/>,
+    icon: <UsersRound size={18} />,
     element: <Users />,
     allowed_permisions: [
       ...getPermision("USERS_LIST"),
@@ -49,21 +50,21 @@ export const sideMenuConfig = [
       {
         label: "Users List",
         path: "users-list",
-        icon: <UserPlus size={18}/>,
+        icon: <UserPlus size={18} />,
         element: <UsersList />,
         allowed_permisions: [...getPermision("USERS_LIST")],
       },
       {
         label: "Roles List",
         path: "roles-list",
-        icon:<ShieldCheck size={18}/>,
+        icon: <ShieldCheck size={18} />,
         element: <RolesList />,
         allowed_permisions: [...getPermision("ROLES_LIST")],
       },
       {
         label: "Reset Password",
         path: "reset-password",
-        icon:<LockKeyholeOpen size={18}/>,
+        icon: <LockKeyholeOpen size={18} />,
         element: <ResetPassword />,
         allowed_permisions: [...getPermision("RESET_PASSWORD")],
       },
@@ -80,26 +81,41 @@ export const sideMenuConfig = [
     label: "TMS",
     path: "tms",
     element: <TmsPage />,
-    icon: <TrophyIcon size={18}/>,
-    allowed_permisions: [...getPermision("TMS")],
+    icon: <TrophyIcon size={18} />,
+    allowed_permisions: [
+      ...getPermision("TOURNAMENTS", true),
+      ...getPermision("DRAWS"),
+      ...getPermision("SCHEDULES", true),
+    ],
     children: [
       {
         label: "Tournaments",
         path: "tournaments",
-        icon: <Dribbble size={18}/>,
+        icon: <Dribbble size={18} />,
         element: <TournamentsPage />,
+        allowed_permisions: [...getPermision("TOURNAMENTS", true)],
       },
+      {
+        label: "Tournament Details",
+        path: "tournaments/:tournament_id",
+        hideInMenu: true,
+        element: <TournamentDetailsPage />,
+        allowed_permisions: [...getPermision("TOURNAMENTS", true)],
+      },
+
       {
         label: "Draws",
         path: "draws",
-        icon: <Network size={18}/>,
+        icon: <Network size={18} />,
         element: <DrawsPage />,
+        allowed_permisions: [...getPermision("DRAWS")],
       },
       {
         label: "Schedules",
         path: "schedules",
-        icon: <CalendarClock size={18}/>,
+        icon: <CalendarClock size={18} />,
         element: <SchedulesPage />,
+        allowed_permisions: [...getPermision("SCHEDULES", true)],
       },
     ],
   },

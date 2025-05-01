@@ -221,7 +221,7 @@ const UsersList = () => {
         background: "linear-gradient(145deg, #ffffff, #f9fafb)",
       }}
     >
-      <div className="mb-8">
+      <div className="mb-4">
         <Row gutter={[16, 16]} align="middle" className="mb-2">
           <Col>
             <div className="flex items-center">
@@ -240,7 +240,7 @@ const UsersList = () => {
         </Row>
 
         {/* User Stats */}
-        <Row gutter={[16, 16]} className="mb-6">
+        <Row gutter={[16, 16]}>
           {[
             {
               icon: TrendingUp,
@@ -283,7 +283,7 @@ const UsersList = () => {
         justify="space-between"
         align="middle"
         gutter={[20, 20]}
-        className="mb-6"
+        className="mb-4"
       >
         <Col xs={24} sm={14} md={16}>
           <div>
