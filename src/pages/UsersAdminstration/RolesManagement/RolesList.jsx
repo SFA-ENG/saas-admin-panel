@@ -265,7 +265,7 @@ const RolesList = () => {
         gutter={[16, 16]}
         className="mb-6"
       >
-        <Col xs={24} sm={14} md={16}>
+        <Col xs={24} sm={14}>
           <div className="relative">
             <Input
               placeholder="Search roles by name or permission"

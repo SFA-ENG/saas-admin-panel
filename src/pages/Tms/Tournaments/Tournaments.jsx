@@ -25,8 +25,8 @@ import {
   TrendingUp,
   MapPin,
   Layers,
+  RefreshCw,
 } from "lucide-react";
-import { SearchOutlined } from "@ant-design/icons";
 import { tournaments } from "../Tms.service";
 import AccessControlButton from "Components/AccessControlButton/AccessControlButton";
 
@@ -255,14 +255,33 @@ const TournamentsPage = () => {
       <div className="mb-6 bg-white p-5 rounded-xl shadow-sm border border-gray-100">
         <Row gutter={[16, 16]} align="middle">
           <Col xs={24} md={8}>
-            <Input.Search
-              enterButton
-              size="middle"
-              prefix={<SearchOutlined className="text-gray-400" />}
-              placeholder="Search tournaments..."
-              value={searchQuery}
+            <Input
+              placeholder="Search tournaments by name"
               onChange={handleSearch}
-              className="w-full rounded-lg focus:border-blue-500"
+              value={searchQuery}
+              className="pl-10 py-2 pr-3"
+              style={{
+                borderRadius: "10px",
+                height: "46px",
+                boxShadow: "0 2px 5px rgba(0, 0, 0, 0.05)",
+                fontSize: "15px",
+                border: "1px solid #e2e8f0",
+              }}
+              suffix={
+                searchQuery ? (
+                  <Tooltip title="Clear search">
+                    <Button
+                      type="text"
+                      className="reset-btn flex items-center justify-center"
+                      onClick={() => setSearchQuery("")}
+                      style={{ width: "30px", height: "30px" }}
+                      icon={<RefreshCw size={14} className="text-gray-500" />}
+                    />
+                  </Tooltip>
+                ) : (
+                  <Filter size={15} className="text-gray-400" />
+                )
+              }
             />
           </Col>
           <Col xs={24} md={16}>
