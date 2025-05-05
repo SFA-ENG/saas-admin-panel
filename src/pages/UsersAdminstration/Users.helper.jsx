@@ -78,6 +78,7 @@ export const getColumnsForUsersList = ({ editAndDeleteActions }) => {
             checkedChildren="ACTIVE"
             unCheckedChildren="INACTIVE"
             defaultChecked={record?.is_active}
+            disabled={record.is_root_user}
           >
             {record.is_active ? "Active" : "Inactive"}
           </Switch>

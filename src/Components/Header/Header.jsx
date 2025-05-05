@@ -95,7 +95,7 @@ const Header = ({ handleMenuClick, isCollapsed, toggleCollapse }) => {
               <Col xs={6} sm={7}>
                 <NavLink className={"logo-link desktop-only"} to={"/"}>
                   <div className="text-primary font-bold text-lg">
-                    Home
+                    Sports Administration
                   </div>{" "}
                 </NavLink>
                 <Button
@@ -121,7 +121,7 @@ const Header = ({ handleMenuClick, isCollapsed, toggleCollapse }) => {
                   />
                 </Col>
               )}
-              <Col xs={18} sm={14}>
+              <Col xs={18} sm={17}>
                 <h1 className="page-title">{getHeaderTitle()}</h1>
               </Col>
             </Row>

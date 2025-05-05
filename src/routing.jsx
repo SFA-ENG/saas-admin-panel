@@ -28,7 +28,7 @@ import SchedulesPage from "pages/Tms/Schedules/Schedules";
 import TournamentDetailsPage from "pages/Tms/Tournaments/TournamentDetails/TournamentDetails";
 export const sideMenuConfig = [
   {
-    label: "Welcome Page",
+    label: "Welcome",
     path: "/",
     icon: <DashboardOutlined />,
     element: <WelcomePage />,

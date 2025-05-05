@@ -22,7 +22,6 @@ const Login = () => {
       url: "/iam/onboard-tenant",
       method: "POST",
       onSuccess: (data) => {
-        console.log("Successfully onboarded tenant", data);
       },
       onError: (error) => {
         renderErrorNotifications(error.errors);
