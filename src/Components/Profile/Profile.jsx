@@ -330,7 +330,7 @@ const Profile = () => {
                         },
                       ]}
                     >
-                      <Input placeholder="Enter your email address" />
+                      <Input placeholder="Enter your email address"  disabled/>
                     </Form.Item>
                   </Col>
                   <Col xs={24} md={12}>
