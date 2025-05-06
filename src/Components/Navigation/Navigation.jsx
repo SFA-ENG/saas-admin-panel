@@ -4,29 +4,29 @@ import { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { sideMenuConfig } from "../../routing";
 import useAuthStore from "../../stores/AuthStore/AuthStore";
+import _ from "lodash";
 import "./Navigation.css";
 
 const getHideClassValue = ({
-  array,
-  input,
+  allowed_permisions,
+  associated_permissions,
   hideInMenuInRouting,
-  childpath,
-  accessType,
+  rootUser,
 }) => {
   if (hideInMenuInRouting) {
     return hideInMenuInRouting ? "hide" : "";
   }
 
-  return "";
+  if (rootUser) {
+    return "";
+  }
 
-  // if (accessType === userAccessTypes.SUPER_ADMIN) return "";
-  // if (accessType === userAccessTypes.ADMIN) {
-  //   return childpath === "roles-permission" ? "hide" : "";
-  // }
-  // return _.intersection(array, input).length > 0 ? "" : "hide";
+  return _.intersection(allowed_permisions, associated_permissions).length > 0
+    ? ""
+    : "hide";
 };
 
-const getItems = ({ permissions, userType, accessType, isCollapsed }) => {
+const getItems = ({ permissions, rootUser, isCollapsed }) => {
   const processMenuItems = (items, parentPath = "") => {
     return items.map(
       ({ label, path, icon, children, allowed_permisions, hideInMenu }) => {
@@ -37,11 +37,10 @@ const getItems = ({ permissions, userType, accessType, isCollapsed }) => {
             key: parentPath,
             icon,
             className: getHideClassValue({
-              array: allowed_permisions,
-              input: permissions,
+              allowed_permisions: allowed_permisions,
+              associated_permissions: permissions,
               hideInMenuInRouting: hideInMenu,
-              userType,
-              accessType,
+              rootUser,
             }),
             children: processMenuItems(children, parentPath),
           };
@@ -55,11 +54,10 @@ const getItems = ({ permissions, userType, accessType, isCollapsed }) => {
             key: `/${fullPath}`,
             icon,
             className: getHideClassValue({
-              array: allowed_permisions,
-              input: permissions,
+              allowed_permisions: allowed_permisions,
+              associated_permissions: permissions,
               hideInMenuInRouting: hideInMenu,
-              userType,
-              accessType,
+              rootUser,
             }),
           };
         }
@@ -69,11 +67,10 @@ const getItems = ({ permissions, userType, accessType, isCollapsed }) => {
           key: `/${fullPath}`,
           icon,
           className: getHideClassValue({
-            array: allowed_permisions,
-            input: permissions,
+            allowed_permisions: allowed_permisions,
+            associated_permissions: permissions,
             hideInMenuInRouting: hideInMenu,
-            userType,
-            accessType,
+            rootUser,
           }),
           children: processMenuItems(children, fullPath),
         };
@@ -132,8 +129,7 @@ export const Navigation = ({ closeMenu, isCollapsed, onCollapse }) => {
         inlineCollapsed={isCollapsed}
         items={getItems({
           permissions: userData?.permissions,
-          userType: userData?.user_type,
-          accessType: userData?.access_type,
+          rootUser: userData?.is_root_user,
           isCollapsed,
         })}
       />

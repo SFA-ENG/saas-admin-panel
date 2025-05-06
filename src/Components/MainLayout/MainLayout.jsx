@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import Custom401 from "../401/401";
 import Header from "../Header/Header";
@@ -6,79 +6,71 @@ import "./MainLayout.css";
 import { Drawer } from "antd";
 import Navigation from "Components/Navigation/Navigation";
 import useAuthStore from "../../stores/AuthStore/AuthStore";
-
-// const getPermissions = ({ pathname, permissions }) => {
-//   const urlToPermisison = generatePermissionToURLMapping({
-//     sideMenuConfig: sideMenuConfig,
-//   });
-
-//   const ROUTING_PATTRNS = Object.keys(HEADER_TITLES.headerTitles);
-//   for (let i = 0; i < ROUTING_PATTRNS.length; i++) {
-//     const element = ROUTING_PATTRNS[i];
-//     const match = matchPath(element, pathname);
-//     if (!_.isEmpty(match)) {
-//       const requiredPermission = urlToPermisison[match.pattern.path];
-//       const hasAccess = _.intersection(requiredPermission, permissions);
-
-//       // const editFlag = hasAccess.some((item) => {
-//       //   return item.startsWith("UPDATE");
-//       // });
-
-//       return {
-//         authzFlag: Boolean(hasAccess.length),
-//         // editFlag,
-//       };
-//     }
-//   }
-//   return {
-//     authzFlag: false,
-//     // editFlag: false,
-//   };
-// };
+import { HEADER_TITLES, sideMenuConfig } from "../../routing";
+import { matchPath } from "react-router-dom";
+import _ from "lodash";
+import { generatePermissionToURLMapping } from "../../routing.helpers";
 
 const MainLayout = () => {
   const navigate = useNavigate();
-  // const pathname = window.location.pathname;
+  const pathname = window.location.pathname;
   const [collapsed, setCollapsed] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [isTokenVerified, setTokenVerified] = useState(true);
   const [isAuthorized, setAuthorized] = useState(true);
   const [loading, setLoading] = useState(false);
   const { userData, token } = useAuthStore();
 
+  // Memoize the permission mapping
+  const urlToPermissionMapping = useMemo(() => {
+    return generatePermissionToURLMapping({
+      sideMenuConfig: sideMenuConfig,
+    });
+  }, []);
+
+  const checkPermissions = ({ pathname, permissions }) => {
+    const ROUTING_PATTRNS = Object.keys(HEADER_TITLES.headerTitles);
+    for (let i = 0; i < ROUTING_PATTRNS.length; i++) {
+      const element = ROUTING_PATTRNS[i];
+      const match = matchPath(element, pathname);
+      if (!_.isEmpty(match)) {
+        const requiredPermission = urlToPermissionMapping[match.pattern.path];
+        const hasAccess = _.intersection(requiredPermission, permissions);
+        return {
+          authzFlag: Boolean(hasAccess.length),
+        };
+      }
+    }
+    return {
+      authzFlag: false,
+    };
+  };
+
   useEffect(() => {
-    setLoading(true);
     if (!token || !userData?.tenant_user_id) {
       navigate("/login");
       return;
     }
-    setLoading(false);
   }, [navigate, token, userData?.tenant_user_id]);
 
-  // useEffect(() => {
-  //   if (loading) return;
-  //   setAuthorized(true);
-  //   setLoading(false);
-  //   // function controlAcessAndEdit() {
-  //   //   setLoading(true);
-  //   //   if (userData?.access_type === userAccessTypes.SUPER_ADMIN) {
-  //   //     setAuthorized(true);
-  //   //   } else if (userData?.access_type === userAccessTypes.ADMIN) {
-  //   //     if (pathname !== "/user-administration/roles-permission") {
-  //   //       setAuthorized(true);
-  //   //     }
-  //   //   } else {
-  //   //     const { authzFlag } = getPermissions({
-  //   //       permissions: userData.permissions,
-  //   //       pathname,
-  //   //     });
-  //   //     setAuthorized(authzFlag);
-  //   //   }
-  //   //   setLoading(null);
-  //   // }
+  useEffect(() => {
+    if (loading) return;
+    function controlAcessAndEdit() {
+      setLoading(true);
+      if (userData?.is_root_user) {
+        setAuthorized(true);
+      } else {
+        const { authzFlag } = checkPermissions({
+          permissions: userData.permissions,
+          pathname,
+        });
+        setAuthorized(authzFlag);
+      }
+      setLoading(false);
+    }
 
-  //   // controlAcessAndEdit();
-  // }, [pathname, userData, loading]);
+    controlAcessAndEdit();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname, userData, loading, urlToPermissionMapping]);
 
   const toggleCollapse = () => {
     setCollapsed(!collapsed);
@@ -90,7 +82,7 @@ const MainLayout = () => {
 
   if (loading === true) return null;
 
-  if (isTokenVerified && !loading) {
+  if (!loading) {
     return (
       <section className="MainLayout">
         <Header
@@ -124,7 +116,7 @@ const MainLayout = () => {
           <div
             className={`main-content ${collapsed ? "content-collapsed" : ""}`}
           >
-            {isTokenVerified && isAuthorized ? <Outlet /> : <Custom401 />}
+            {isAuthorized ? <Outlet /> : <Custom401 />}
           </div>
         </main>
       </section>
