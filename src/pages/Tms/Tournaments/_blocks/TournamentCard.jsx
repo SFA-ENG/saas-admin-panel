@@ -1,4 +1,4 @@
-import { Badge, Space, Tag, Tooltip } from "antd";
+import { Badge, Space, Tag, Tooltip, Carousel } from "antd";
 import { Calendar, Eye, MapPin, Star, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -22,19 +22,47 @@ const TournamentCard = ({ tournament }) => {
     const options = { year: "numeric", month: "short", day: "numeric" };
     return new Date(dateString).toLocaleDateString("en-US", options);
   };
+
+  const banners = tournament.tournament_configuration.league_banner || [];
+  const defaultBanner = "https://static.vecteezy.com/system/resources/thumbnails/020/919/577/small_2x/sports-background-international-sports-day-illustration-graphic-design-for-the-decoration-of-gift-certificates-banners-and-flyer-free-vector.jpg";
+
   return (
     <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100">
       {/* Banner */}
-      <div className="relative h-44 overflow-hidden">
-        <img
-          src={tournament.tournament_configuration.league_banner.web}
-          alt="banner"
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            e.target.src =
-              "https://placehold.co/600x400/e2e8f0/64748b?text=Banner";
-          }}
-        />
+      <div className="relative w-full h-44 overflow-hidden">
+        {banners.length > 1 ? (
+          <div className="w-full h-full overflow-hidden">
+            <Carousel 
+              autoplay 
+              className="tournament-carousel"
+              dots={false}
+            >
+              {banners.map((banner, index) => (
+                <div key={index} className="w-full h-44 overflow-hidden">
+                  <img
+                    src={banner.web}
+                    alt={`banner-${index + 1}`}
+                    className="w-full h-full object-cover overflow-hidden"
+                    onError={(e) => {
+                      e.target.src = defaultBanner;
+                    }}
+                  />
+                </div>
+              ))}
+            </Carousel>
+          </div>
+        ) : (
+          <div className="w-full h-full overflow-hidden">
+            <img
+              src={banners[0]?.web || defaultBanner}
+              alt="banner"
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.target.src = defaultBanner;
+              }}
+            />
+          </div>
+        )}
         <Badge
           count={tournament.status}
           className={`absolute top-3 right-3 text-xs font-semibold rounded-full text-white px-3 py-1 capitalize ${getStatusColor(
@@ -84,7 +112,7 @@ const TournamentCard = ({ tournament }) => {
         {/* Dates & Actions */}
         <div className="mt-4 flex flex-col gap-4">
           <div className="bg-gray-50 rounded-lg p-3 flex flex-col gap-2">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center text-sm text-gray-600">
                 <Calendar size={14} className="mr-1.5" />
                 <span className="font-medium">Period</span>
@@ -95,7 +123,7 @@ const TournamentCard = ({ tournament }) => {
                 {tournament.sport_type}
               </Tag>
             </div>
-            <div className="flex items-center justify-between text-sm text-gray-700">
+            <div className="flex items-center justify-between text-sm text-gray-700 flex-wrap gap-2">
               <div>
                 <span className="text-gray-500">Start:</span>{" "}
                 <span className="font-semibold">

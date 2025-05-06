@@ -1,5 +1,4 @@
 import {
-  SaveOutlined,
   UploadOutlined,
   UserOutlined,
   LoadingOutlined,
@@ -25,6 +24,8 @@ import {
 } from "../../hooks/useApiQuery/useApiQuery";
 import { CACHE_KEYS } from "../../commons/constants";
 import { renderErrorNotifications, renderSuccessNotifications } from "../../helpers/error.helpers";
+import { Save } from "lucide-react";
+import AccessControlButton from "Components/AccessControlButton/AccessControlButton";
 
 const Profile = () => {
   const { userData, updateProfileData } = useAuthStore();
@@ -330,7 +331,7 @@ const Profile = () => {
                         },
                       ]}
                     >
-                      <Input placeholder="Enter your email address"  disabled/>
+                      <Input placeholder="Enter your email address" disabled />
                     </Form.Item>
                   </Col>
                   <Col xs={24} md={12}>
@@ -470,15 +471,14 @@ const Profile = () => {
                   </Col>
                 </Row>
 
-                <Form.Item>
-                  <Button
-                    type="primary"
-                    htmlType="submit"
-                    block
-                    icon={<SaveOutlined />}
-                  >
-                    Save Changes
-                  </Button>
+                <Form.Item className="flex justify-end">
+
+                  <AccessControlButton
+                    title="Save Changes"
+                    icon={Save}
+                    onClick={() => { }}
+                  />
+
                 </Form.Item>
               </Form>
             </Card>

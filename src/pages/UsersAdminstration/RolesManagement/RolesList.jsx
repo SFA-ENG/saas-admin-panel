@@ -169,7 +169,7 @@ const RolesList = () => {
       }
     } else {
       createRole({
-        name: values.name,
+        name: values.name.toUpperCase().replace(/[^A-Z0-9]/g, '_'),
         tenant_privilege_ids: values.permissions,
       });
     }

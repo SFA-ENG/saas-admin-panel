@@ -13,16 +13,26 @@ import { NavLink, matchPath, useLocation } from "react-router-dom";
 import { HEADER_TITLES } from "../../routing";
 import useAuthStore from "../../stores/AuthStore/AuthStore";
 import "./Header.css";
-
+import { useApiMutation } from "../../hooks/useApiQuery/useApiQuery";
+import { CACHE_KEYS } from "../../commons/constants";
 const Header = ({ handleMenuClick, isCollapsed, toggleCollapse }) => {
   const { pathname } = useLocation();
   const { clearUserData, userData } = useAuthStore();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const { xs } = Grid.useBreakpoint();
 
-  const handleLogout = () => {
+
+const {mutate:logout, isPending:isLogoutPending} = useApiMutation({
+  queryKey: [CACHE_KEYS.LOGOUT],
+  url: "/iam/logout",
+  method: "POST",
+  onSuccess: () => {
     clearUserData();
     window.location.href = "/login";
+  },
+});
+  const handleLogout = async () => {
+    await logout();
   };
 
   const getHeaderTitle = () => {
