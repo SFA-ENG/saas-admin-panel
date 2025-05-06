@@ -13,17 +13,23 @@ import { NavLink, matchPath, useLocation } from "react-router-dom";
 import { HEADER_TITLES } from "../../routing";
 import useAuthStore from "../../stores/AuthStore/AuthStore";
 import "./Header.css";
-
+import { useApiMutation } from "../../hooks/useApiQuery/useApiQuery";
+import { CACHE_KEYS } from "../../commons/constants";
 const Header = ({ handleMenuClick, isCollapsed, toggleCollapse }) => {
   const { pathname } = useLocation();
   const { clearUserData, userData } = useAuthStore();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const { xs } = Grid.useBreakpoint();
 
-  const handleLogout = () => {
-    clearUserData();
-    window.location.href = "/login";
-  };
+  const { mutate: logout } = useApiMutation({
+    queryKey: [CACHE_KEYS.LOGOUT],
+    url: "/iam/logout",
+    method: "POST",
+    onSuccess: () => {
+      clearUserData();
+      window.location.href = "/login";
+    },
+  });
 
   const getHeaderTitle = () => {
     const ROUTING_PATTRNS = Object.keys(HEADER_TITLES.headerTitles);
@@ -38,9 +44,14 @@ const Header = ({ handleMenuClick, isCollapsed, toggleCollapse }) => {
     return "";
   };
 
-  // Memoize the profile menu items to prevent unnecessary re-renders
-  const profileMenuItems = useMemo(
-    () => [
+  // Use a stable callback function that won't change on re-renders
+  const handleOpenChange = useCallback((open) => {
+    setDropdownOpen(open);
+  }, []);
+
+  // Memoize the dropdown menu to prevent re-initialization
+  const dropdownMenu = useMemo(() => {
+    const profileMenuItems = [
       {
         key: "profile",
         label: (
@@ -64,27 +75,19 @@ const Header = ({ handleMenuClick, isCollapsed, toggleCollapse }) => {
         key: "logout",
         label: (
           <div
-            onClick={handleLogout}
+            onClick={() => {
+              logout();
+            }}
             className="profile-dropdown-item text-danger"
           >
             <LogoutOutlined /> Logout
           </div>
         ),
       },
-    ],
-    [handleLogout]
-  );
+    ];
 
-  // Use a stable callback function that won't change on re-renders
-  const handleOpenChange = useCallback((open) => {
-    setDropdownOpen(open);
-  }, []);
-
-  // Memoize the dropdown menu to prevent re-initialization
-  const dropdownMenu = useMemo(
-    () => ({ items: profileMenuItems }),
-    [profileMenuItems]
-  );
+    return { items: profileMenuItems };
+  }, [logout]);
 
   return (
     <header>
@@ -95,7 +98,7 @@ const Header = ({ handleMenuClick, isCollapsed, toggleCollapse }) => {
               <Col xs={6} sm={7}>
                 <NavLink className={"logo-link desktop-only"} to={"/"}>
                   <div className="text-primary font-bold text-lg">
-                    Home
+                    Sports Administration
                   </div>{" "}
                 </NavLink>
                 <Button
@@ -121,7 +124,7 @@ const Header = ({ handleMenuClick, isCollapsed, toggleCollapse }) => {
                   />
                 </Col>
               )}
-              <Col xs={18} sm={14}>
+              <Col xs={18} sm={17}>
                 <h1 className="page-title">{getHeaderTitle()}</h1>
               </Col>
             </Row>

@@ -4,7 +4,6 @@ import {
   Button,
   Table,
   Form,
-  message,
   Card,
   Row,
   Col,
@@ -76,14 +75,17 @@ const UsersList = () => {
     method: "POST",
     onSuccess: (response) => {
       console.log("User created successfully:", response);
-      message.success("User created successfully");
+      renderSuccessNotifications({
+        title: "Success",
+        message: "User created successfully",
+      });
       setIsModalOpen(false);
       form.resetFields();
       refetch();
     },
     onError: (error) => {
       console.error("Error creating user:", error);
-      message.error(error?.errors?.[0]?.message || "Failed to create user");
+      renderErrorNotifications(error?.errors?.[0]?.message || "Failed to create user");
     },
   });
 
@@ -102,7 +104,7 @@ const UsersList = () => {
     },
     onError: (error) => {
       console.error("Error updating user:", error);
-      message.error(error?.errors?.[0]?.message || "Failed to update user");
+      renderErrorNotifications(error?.errors?.[0]?.message || "Failed to update user");
     },
   });
 

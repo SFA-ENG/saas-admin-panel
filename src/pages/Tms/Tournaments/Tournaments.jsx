@@ -1,39 +1,89 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Row, Col, Space, Input, Select, Button, Tooltip, Card } from "antd";
 import {
   Filter,
   Plus,
   Calendar,
-  Users,
   Award,
   TrendingUp,
   Layers,
   RefreshCw,
 } from "lucide-react";
-import { tournaments } from "../Tms.service";
 import AccessControlButton from "Components/AccessControlButton/AccessControlButton";
 import TournamentCard from "./_blocks/TournamentCard";
 import FullPageLoader from "Components/Loader/Loader";
+import { tournaments as mockTournaments } from "../Tms.service";
+import { getPascalCase } from "helpers/common.helper";
 
 const TournamentsPage = () => {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [tournaments, setTournaments] = useState(mockTournaments.tournaments);
+  const [filteredTournaments, setFilteredTournaments] = useState([]);
   const [filters, setFilters] = useState({
-    status: "all",
-    year: "all",
-    gender: "all",
-    sport: "all",
+    status: null,
+    sports: null,
   });
 
-  const handleFilterChange = (value, filterType) => {
+  const dataSource =
+    filteredTournaments.length > 0 ||
+    searchQuery ||
+    filters.status ||
+    filters.sports
+      ? filteredTournaments
+      : tournaments;
+
+  const handleFilterChange = (value) => {
     setFilters((prev) => ({
       ...prev,
-      [filterType]: value,
+      ...value,
     }));
   };
 
   const handleSearch = (e) => {
     setSearchQuery(e.target.value);
+  };
+
+  useEffect(() => {
+    const q = searchQuery.trim().toLowerCase();
+    const statusFilter = filters.status?.toLowerCase();
+    const sportsFilter = filters.sports?.toLowerCase();
+
+    const filtered = tournaments.filter((t) => {
+      // 1) Search
+      if (q && !t.tournament_name.toLowerCase().includes(q)) {
+        return false;
+      }
+      // 2) Status
+      if (
+        statusFilter &&
+        statusFilter !== "all" &&
+        t.status.toLowerCase() !== statusFilter
+      ) {
+        return false;
+      }
+      // 3) Sports
+      if (
+        sportsFilter &&
+        sportsFilter !== "all" &&
+        !t.sports.some((s) => s.toLowerCase() === sportsFilter)
+      ) {
+        return false;
+      }
+      return true;
+    });
+
+    setFilteredTournaments(filtered);
+  }, [searchQuery, filters, tournaments]);
+
+  const getFilters = (data) => {
+    const filters = data.map((item) => {
+      return {
+        label: getPascalCase(item),
+        value: item.toLowerCase(),
+      };
+    });
+    return [{ label: "All", value: "ALL" }, ...filters];
   };
 
   if (loading) {
@@ -77,21 +127,21 @@ const TournamentsPage = () => {
           {
             icon: TrendingUp,
             label: "Active",
-            value: 3,
+            value: mockTournaments.metadata.active_tournaments,
             bg: "bg-blue-100",
             color: "text-blue-600",
           },
           {
             icon: Calendar,
             label: "Upcoming",
-            value: 3,
+            value: mockTournaments.metadata.upcoming_tournaments,
             bg: "bg-green-100",
             color: "text-green-600",
           },
           {
             icon: Layers,
             label: "Total",
-            value: tournaments.length,
+            value: mockTournaments.metadata.total_tournaments,
             bg: "bg-purple-100",
             color: "text-purple-600",
           },
@@ -149,53 +199,19 @@ const TournamentsPage = () => {
                 {
                   key: "status",
                   icon: Filter,
-                  opts: [
-                    { label: "All Status", value: "all" },
-                    { label: "Upcoming", value: "upcoming" },
-                    { label: "Active", value: "active" },
-                    { label: "Completed", value: "completed" },
-                  ],
+                  opts: getFilters(mockTournaments.metadata.filters.status),
                 },
                 {
-                  key: "year",
-                  icon: Calendar,
-                  opts: [
-                    { label: "All Years", value: "all" },
-                    { label: "2024", value: "2024" },
-                    { label: "2023", value: "2023" },
-                    { label: "2022", value: "2022" },
-                  ],
-                },
-                {
-                  key: "gender",
-                  icon: Users,
-                  opts: [
-                    { label: "All Genders", value: "all" },
-                    { label: "Male", value: "male" },
-                    { label: "Female", value: "female" },
-                    { label: "Mixed", value: "mixed" },
-                  ],
-                },
-                {
-                  key: "sport",
+                  key: "sports",
                   icon: Award,
-                  opts: [
-                    { label: "All Sports", value: "all" },
-                    { label: "Cricket", value: "cricket" },
-                    { label: "Football", value: "football" },
-                    { label: "Basketball", value: "basketball" },
-                    { label: "Tennis", value: "tennis" },
-                    { label: "Badminton", value: "badminton" },
-                    { label: "Hockey", value: "hockey" },
-                    { label: "Swimming", value: "swimming" },
-                  ],
+                  opts: getFilters(mockTournaments.metadata.filters.sports),
                 },
               ].map(({ key, icon: Icon, opts }) => (
                 <Select
                   key={key}
-                  defaultValue="all"
-                  onChange={(v) => handleFilterChange(v, key)}
-                  placeholder={key.charAt(0).toUpperCase() + key.slice(1)}
+                  onChange={(v) => handleFilterChange({ [key]: v })}
+                  placeholder={getPascalCase(key)}
+                  allowClear
                   size="large"
                   className="rounded-lg min-w-[160px]"
                   suffixIcon={<Icon size={16} />}
@@ -209,11 +225,17 @@ const TournamentsPage = () => {
 
       {/* Tournament Cards or Empty/Loading */}
       <Row gutter={[16, 16]}>
-        {tournaments.map((t) => (
-          <Col xs={24} sm={12} lg={8} xxl={6} key={t.tournament_id}>
-            <TournamentCard tournament={t} />
+        {dataSource.length > 0 ? (
+          dataSource.map((t) => (
+            <Col xs={24} sm={12} lg={8} key={t.tournament_id}>
+              <TournamentCard tournament={t} />
+            </Col>
+          ))
+        ) : (
+          <Col span={24} className="text-center py-8">
+            <p className="text-gray-500">No tournaments found</p>
           </Col>
-        ))}
+        )}
       </Row>
     </Card>
   );

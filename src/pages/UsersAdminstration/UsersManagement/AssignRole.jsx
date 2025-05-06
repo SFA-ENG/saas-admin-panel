@@ -59,7 +59,6 @@ const AssignRole = () => {
   const userDetails = usersResponse?.data?.find(
     (user) => user.tenant_user_id === tenant_user_id
   );
-  console.log("userDetails:", userDetails);
 
   // Set initial selected roles when user details are fetched
   useEffect(() => {

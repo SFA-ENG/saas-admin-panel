@@ -64,6 +64,7 @@ const NewRoleModal = ({
                                 e.preventDefault();
                             }
                         }}
+                        
                     />
                 </Form.Item>
 

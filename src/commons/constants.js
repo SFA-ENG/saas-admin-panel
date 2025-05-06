@@ -41,6 +41,7 @@ export const CACHE_KEYS = {
   TENANTS_LIST: "tenants_list",
   ONBOARD_TENANT: "onboard_tenant",
   LOGIN: "login",
+  LOGOUT: "logout",
   USERS_LIST: "users_list",
   ROLES_LIST: "roles_list",
   GET_USER_BY_PHONE: "get_user_by_phone",

@@ -1,5 +1,4 @@
 import {
-  SaveOutlined,
   UploadOutlined,
   UserOutlined,
   LoadingOutlined,
@@ -13,7 +12,6 @@ import {
   Input,
   Row,
   Upload,
-  message,
   Divider,
   Spin,
 } from "antd";
@@ -24,8 +22,13 @@ import {
   useApiQuery,
   useApiMutation,
 } from "../../hooks/useApiQuery/useApiQuery";
-import { CACHE_KEYS, userAccessTypes } from "../../commons/constants";
-import { renderErrorNotifications } from "../../helpers/error.helpers";
+import { CACHE_KEYS } from "../../commons/constants";
+import {
+  renderErrorNotifications,
+  renderSuccessNotifications,
+} from "../../helpers/error.helpers";
+import { Save } from "lucide-react";
+import AccessControlButton from "Components/AccessControlButton/AccessControlButton";
 
 const Profile = () => {
   const { userData, updateProfileData } = useAuthStore();
@@ -35,13 +38,9 @@ const Profile = () => {
   const [logoUploading, setLogoUploading] = useState(false);
   const [logoUrl, setLogoUrl] = useState(null);
 
-  // Check role from roles array in userData
-  const isSuperAdmin = userData?.roles?.some(
-    (role) => role.role_name === userAccessTypes.SUPER_ADMIN
-  );
+  const isSuperAdmin = userData?.is_root_user === true;
 
   const setTenantFormValues = (currentTenant) => {
-    console.log("Setting tenant form values with:", currentTenant);
     if (currentTenant) {
       const formValues = {
         tenant_name: currentTenant.name,
@@ -55,7 +54,6 @@ const Profile = () => {
         zip_code: currentTenant.address?.zip_code,
         tenant_logo: currentTenant.logo_url,
       };
-      console.log("Setting form values:", formValues);
       form.setFieldsValue(formValues);
       setLogoUrl(currentTenant.logo_url);
       form.validateFields();
@@ -68,18 +66,17 @@ const Profile = () => {
     refetch: refetchTenantData,
   } = useApiQuery({
     queryKey: [CACHE_KEYS.TENANT_DATA],
-    url: "/iam/tenants-list",
+    url: "/iam/tenants",
     params: {
       tenant_id: userData?.tenant_id,
+      type: "DETAILED",
     },
+
     staleTimeInMinutes: 1,
     onSuccess: (data) => {
-      console.log("Tenant data received:", data);
-      console.log("User tenant ID:", userData?.tenant_user_id);
       const currentTenant = data?.data?.find(
         (tenant) => tenant.tenant_id === userData?.tenant_user_id
       );
-      console.log("Found current tenant:", currentTenant);
       setTenantFormValues(currentTenant);
     },
     onError: (error) => {
@@ -92,7 +89,20 @@ const Profile = () => {
     url: "/iam/tenant",
     method: "PATCH",
     onSuccess: () => {
-      message.success("Tenant updated successfully");
+      renderSuccessNotifications("Profile updated successfully");
+      refetchTenantData();
+    },
+    onError: (error) => {
+      console.error("API Error:", error);
+      renderErrorNotifications(error.errors);
+    },
+  });
+
+  const { mutate: updateUser, isLoading: isUpdatingUser } = useApiMutation({
+    url: "/iam/users",
+    method: "PATCH",
+    onSuccess: () => {
+      renderSuccessNotifications("Profile updated successfully");
       refetchTenantData();
     },
     onError: (error) => {
@@ -103,9 +113,8 @@ const Profile = () => {
 
   useEffect(() => {
     if (userData) {
-      console.log("Setting initial form values with userData:", userData);
       form.setFieldsValue({
-        fullname: userData?.name,
+        name: userData?.name,
         email: userData?.email,
         phone_number: userData?.contact_number?.number,
         tenant_code: userData?.tenant_code,
@@ -117,11 +126,9 @@ const Profile = () => {
   // Add useEffect to handle initial form values
   useEffect(() => {
     if (userData && tenantData?.data) {
-      console.log("Setting tenant form values with tenantData:", tenantData);
       const currentTenant = tenantData.data.find(
         (tenant) => tenant.tenant_id === userData.tenant_id
       );
-      console.log("Current tenant found:", currentTenant);
       if (currentTenant) {
         setTenantFormValues(currentTenant);
       }
@@ -129,23 +136,50 @@ const Profile = () => {
   }, [userData, tenantData, form]);
 
   const handleProfileUpdate = (values) => {
-    // Extract phone number - remove country code if present
-    const phoneNumber = values.tenant_phone?.split(" ").pop() || "";
+    const phoneNumber =
+      values.tenant_phone?.split(" ").pop()?.trim() ||
+      values.phone_number?.trim();
 
-    const updateData = {
-      name: values.tenant_name,
-      email: values.tenant_email,
-      contact_number: {
-        country_code: "IN",
-        isd_code: "+91",
-        number: phoneNumber,
-      },
-    };
+    if (!phoneNumber) {
+      renderErrorNotifications("Phone number is required");
+      return;
+    }
 
-    updateTenant({
-      ...updateData,
-      tenant_id: userData?.tenant_id,
-    });
+    if (isSuperAdmin) {
+      // Super Admin update
+      const updateData = {
+        name: values.tenant_name,
+        email: values.tenant_email,
+        contact_number: {
+          country_code: "IN",
+          isd_code: "+91",
+          number: phoneNumber,
+        },
+        // profile_picture_url: imageUrl,
+        is_active: true,
+      };
+
+      updateTenant({
+        ...updateData,
+        tenant_id: userData?.tenant_id,
+      });
+    } else {
+      const updateData = {
+        name: values.name,
+        email: values.email,
+        contact_number: {
+          country_code: "IN",
+          isd_code: "+91",
+          number: phoneNumber,
+        },
+        is_active: true,
+      };
+
+      updateUser({
+        ...updateData,
+        tenant_user_id: userData?.tenant_user_id,
+      });
+    }
   };
 
   const handleImageUpload = (info) => {
@@ -159,7 +193,7 @@ const Profile = () => {
         setUploading(false);
         setImageUrl(url);
         updateProfileData({ profile_image: url });
-        message.success("Profile picture updated successfully!");
+        renderSuccessNotifications("Profile picture updated successfully!");
       });
     }
   };
@@ -181,7 +215,7 @@ const Profile = () => {
         setLogoUploading(false);
         setLogoUrl(url);
         form.setFieldsValue({ tenant_logo: url });
-        message.success("Logo updated successfully!");
+        renderSuccessNotifications("Logo updated successfully!");
       });
     }
   };
@@ -204,38 +238,41 @@ const Profile = () => {
                     icon={!imageUrl && <UserOutlined />}
                     className="profile-large-avatar"
                   />
-                  {isSuperAdmin && (
-                    <div className="upload-overlay">
-                      <Upload
-                        name="avatar"
-                        showUploadList={false}
-                        accept="image/*"
-                        beforeUpload={(file) => {
-                          const isImage = file.type.startsWith("image/");
-                          if (!isImage) {
-                            message.error("You can only upload image files!");
-                            return Upload.LIST_IGNORE;
-                          }
-                          const isLt2M = file.size / 1024 / 1024 < 2;
-                          if (!isLt2M) {
-                            message.error("Image must be smaller than 2MB!");
-                            return Upload.LIST_IGNORE;
-                          }
-                          return true;
-                        }}
-                        customRequest={({ file, onSuccess }) => {
-                          setTimeout(() => {
-                            onSuccess("ok");
-                          }, 1000);
-                        }}
-                        onChange={handleImageUpload}
-                      >
-                        <Button icon={<UploadOutlined />} loading={uploading}>
-                          Change
-                        </Button>
-                      </Upload>
-                    </div>
-                  )}
+
+                  <div className="upload-overlay">
+                    <Upload
+                      name="avatar"
+                      showUploadList={false}
+                      accept="image/*"
+                      beforeUpload={(file) => {
+                        const isImage = file.type.startsWith("image/");
+                        if (!isImage) {
+                          renderErrorNotifications(
+                            "You can only upload image files!"
+                          );
+                          return Upload.LIST_IGNORE;
+                        }
+                        const isLt2M = file.size / 1024 / 1024 < 2;
+                        if (!isLt2M) {
+                          renderErrorNotifications(
+                            "Image must be smaller than 2MB!"
+                          );
+                          return Upload.LIST_IGNORE;
+                        }
+                        return true;
+                      }}
+                      customRequest={({ file, onSuccess }) => {
+                        setTimeout(() => {
+                          onSuccess("ok");
+                        }, 1000);
+                      }}
+                      onChange={handleImageUpload}
+                    >
+                      <Button icon={<UploadOutlined />} loading={uploading}>
+                        Change
+                      </Button>
+                    </Upload>
+                  </div>
                 </div>
                 <div className="profile-info">
                   <h2 className="role-name">
@@ -261,7 +298,7 @@ const Profile = () => {
                   <Col xs={24} md={12}>
                     <Form.Item name="tenant_name" label="Tenant Name">
                       <Input
-                        placeholder="Name"
+                        placeholder="Tenant Name"
                         onKeyPress={(e) => {
                           const regex = /^[a-zA-Z\s]+$/;
                           if (!regex.test(e.key)) {
@@ -271,6 +308,21 @@ const Profile = () => {
                         disabled={!isSuperAdmin}
                       />
                     </Form.Item>
+                  </Col>
+                  <Col xs={24} md={12}>
+                    {!isSuperAdmin && (
+                      <Form.Item name="name" label="User's Name">
+                        <Input
+                          placeholder="Enter Your Name"
+                          onKeyPress={(e) => {
+                            const regex = /^[a-zA-Z\s]+$/;
+                            if (!regex.test(e.key)) {
+                              e.preventDefault();
+                            }
+                          }}
+                        />
+                      </Form.Item>
+                    )}
                   </Col>
                 </Row>
 
@@ -292,7 +344,7 @@ const Profile = () => {
                   </Col>
                   <Col xs={24} md={12}>
                     <Form.Item name="phone_number" label="Phone Number">
-                      <Input placeholder="Enter your phone number" disabled />
+                      <Input placeholder="Enter your phone number" />
                     </Form.Item>
                   </Col>
                 </Row>
@@ -316,12 +368,16 @@ const Profile = () => {
                         beforeUpload={(file) => {
                           const isImage = file.type.startsWith("image/");
                           if (!isImage) {
-                            message.error("You can only upload image files!");
+                            renderErrorNotifications(
+                              "You can only upload image files!"
+                            );
                             return Upload.LIST_IGNORE;
                           }
                           const isLt2M = file.size / 1024 / 1024 < 2;
                           if (!isLt2M) {
-                            message.error("Image must be smaller than 2MB!");
+                            renderErrorNotifications(
+                              "Image must be smaller than 2MB!"
+                            );
                             return Upload.LIST_IGNORE;
                           }
                           return true;
@@ -363,18 +419,12 @@ const Profile = () => {
                 <Row gutter={[24, 24]}>
                   <Col xs={24} md={12}>
                     <Form.Item name="address_line_1" label="Address Line 1">
-                      <Input
-                        placeholder="Address Line 1"
-                        disabled={!isSuperAdmin}
-                      />
+                      <Input placeholder="Address Line 1" />
                     </Form.Item>
                   </Col>
                   <Col xs={24} md={12}>
                     <Form.Item name="address_line_2" label="Address Line 2">
-                      <Input
-                        placeholder="Address Line 2"
-                        disabled={!isSuperAdmin}
-                      />
+                      <Input placeholder="Address Line 2" />
                     </Form.Item>
                   </Col>
                 </Row>
@@ -390,7 +440,6 @@ const Profile = () => {
                             e.preventDefault();
                           }
                         }}
-                        disabled={!isSuperAdmin}
                       />
                     </Form.Item>
                   </Col>
@@ -404,7 +453,6 @@ const Profile = () => {
                             e.preventDefault();
                           }
                         }}
-                        disabled={!isSuperAdmin}
                       />
                     </Form.Item>
                   </Col>
@@ -421,7 +469,6 @@ const Profile = () => {
                             e.preventDefault();
                           }
                         }}
-                        disabled={!isSuperAdmin}
                       />
                     </Form.Item>
                   </Col>
@@ -432,18 +479,13 @@ const Profile = () => {
                   </Col>
                 </Row>
 
-                {isSuperAdmin && (
-                  <Form.Item>
-                    <Button
-                      type="primary"
-                      htmlType="submit"
-                      block
-                      icon={<SaveOutlined />}
-                    >
-                      Save Changes
-                    </Button>
-                  </Form.Item>
-                )}
+                <Form.Item className="flex justify-end">
+                  <AccessControlButton
+                    title="Save Changes"
+                    icon={Save}
+                    onClick={() => {}}
+                  />
+                </Form.Item>
               </Form>
             </Card>
           </Col>

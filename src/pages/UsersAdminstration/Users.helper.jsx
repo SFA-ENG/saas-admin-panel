@@ -15,6 +15,29 @@ import {
 } from "antd";
 import { isMobile } from "helpers/device.helpers";
 
+// Add styles for permissions tags
+const styles = `
+  @media (max-width: 768px) {
+    .permissions-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      justify-content: center;
+    }
+    
+    .permission-tag {
+      font-size: 8px !important;
+      padding: 1px 6px !important;
+      margin: 1px !important;
+    }
+  }
+`;
+
+// Add styles to document
+const styleSheet = document.createElement("style");
+styleSheet.textContent = styles;
+document.head.appendChild(styleSheet);
+
 export const getColumnsForUsersList = ({ editAndDeleteActions }) => {
   const columns = [
     {
@@ -78,6 +101,7 @@ export const getColumnsForUsersList = ({ editAndDeleteActions }) => {
             checkedChildren="ACTIVE"
             unCheckedChildren="INACTIVE"
             defaultChecked={record?.is_active}
+            disabled={record.is_root_user}
           >
             {record.is_active ? "Active" : "Inactive"}
           </Switch>
@@ -149,19 +173,15 @@ export const roleListColumns = (onEdit, onDelete) => [
     responsive: ["sm"],
     width: "350px",
     render: ({ privileges }) => {
-      
       return (
-        <div>
+        <div className="flex flex-wrap justify-center gap-1 md:gap-2">
           {privileges.map((privilege) => {
             const [action] = privilege.privilege_name.split(":");
             return (
               <Tag
                 key={privilege.tenant_privilege_id}
                 color={action === "VIEW" ? "gold" : "green"}
-                style={{
-                  fontSize: "10px",
-                  fontWeight: "550",
-                }}
+                className="text-[8px] md:text-xs font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-full px-2 py-0.5 m-0.5 md:px-3 md:py-1 md:m-1"
               >
                 {privilege.privilege_name}
               </Tag>
