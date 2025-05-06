@@ -1,4 +1,4 @@
-import { Badge, Space, Tag, Tooltip, Carousel } from "antd";
+import { Badge, Image, Space, Tag, Tooltip } from "antd";
 import { Calendar, Eye, MapPin, Star, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -24,45 +24,20 @@ const TournamentCard = ({ tournament }) => {
   };
 
   const banners = tournament.tournament_configuration.league_banner || [];
-  const defaultBanner = "https://static.vecteezy.com/system/resources/thumbnails/020/919/577/small_2x/sports-background-international-sports-day-illustration-graphic-design-for-the-decoration-of-gift-certificates-banners-and-flyer-free-vector.jpg";
+  const defaultBanner =
+    "https://static.vecteezy.com/system/resources/thumbnails/020/919/577/small_2x/sports-background-international-sports-day-illustration-graphic-design-for-the-decoration-of-gift-certificates-banners-and-flyer-free-vector.jpg";
 
   return (
     <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100">
       {/* Banner */}
-      <div className="relative w-full h-44 overflow-hidden">
-        {banners.length > 1 ? (
-          <div className="w-full h-full overflow-hidden">
-            <Carousel 
-              autoplay 
-              className="tournament-carousel"
-              dots={false}
-            >
-              {banners.map((banner, index) => (
-                <div key={index} className="w-full h-44 overflow-hidden">
-                  <img
-                    src={banner.web}
-                    alt={`banner-${index + 1}`}
-                    className="w-full h-full object-cover overflow-hidden"
-                    onError={(e) => {
-                      e.target.src = defaultBanner;
-                    }}
-                  />
-                </div>
-              ))}
-            </Carousel>
-          </div>
-        ) : (
-          <div className="w-full h-full overflow-hidden">
-            <img
-              src={banners[0]?.web || defaultBanner}
-              alt="banner"
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                e.target.src = defaultBanner;
-              }}
-            />
-          </div>
-        )}
+      <div className="relative h-44 overflow-hidden">
+        <Image
+          src={banners[0]?.web || defaultBanner}
+          preview={false}
+          onError={(e) => {
+            e.target.src = defaultBanner;
+          }}
+        />
         <Badge
           count={tournament.status}
           className={`absolute top-3 right-3 text-xs font-semibold rounded-full text-white px-3 py-1 capitalize ${getStatusColor(
@@ -93,9 +68,9 @@ const TournamentCard = ({ tournament }) => {
             />
           </div>
           <div className="flex-grow">
-            <h3 className="text-xl font-semibold text-gray-900 line-clamp-1">
+            <p className="font-semibold text-gray-900 text-sm">
               {tournament.tournament_name}
-            </h3>
+            </p>
             <div className="flex items-center mt-2 text-sm text-gray-600">
               <MapPin size={14} className="mr-1" />
               <span>{tournament.location}</span>
@@ -117,11 +92,17 @@ const TournamentCard = ({ tournament }) => {
                 <Calendar size={14} className="mr-1.5" />
                 <span className="font-medium">Period</span>
               </div>
-              <Tag
-                color={tournament.status === "completed" ? "default" : "blue"}
+              <Tooltip
+                title={tournament.sports.join(", ")}
+                className="text-blue"
               >
-                {tournament.sport_type}
-              </Tag>
+                <Tag
+                  className="max-w-[150px] w-fit text-center overflow-hidden text-ellipsis whitespace-nowrap"
+                  color={"blue"}
+                >
+                  {tournament.sports.join(", ")}
+                </Tag>
+              </Tooltip>
             </div>
             <div className="flex items-center justify-between text-sm text-gray-700 flex-wrap gap-2">
               <div>

@@ -21,19 +21,15 @@ const Header = ({ handleMenuClick, isCollapsed, toggleCollapse }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const { xs } = Grid.useBreakpoint();
 
-
-const {mutate:logout, isPending:isLogoutPending} = useApiMutation({
-  queryKey: [CACHE_KEYS.LOGOUT],
-  url: "/iam/logout",
-  method: "POST",
-  onSuccess: () => {
-    clearUserData();
-    window.location.href = "/login";
-  },
-});
-  const handleLogout = async () => {
-    await logout();
-  };
+  const { mutate: logout } = useApiMutation({
+    queryKey: [CACHE_KEYS.LOGOUT],
+    url: "/iam/logout",
+    method: "POST",
+    onSuccess: () => {
+      clearUserData();
+      window.location.href = "/login";
+    },
+  });
 
   const getHeaderTitle = () => {
     const ROUTING_PATTRNS = Object.keys(HEADER_TITLES.headerTitles);
@@ -48,9 +44,14 @@ const {mutate:logout, isPending:isLogoutPending} = useApiMutation({
     return "";
   };
 
-  // Memoize the profile menu items to prevent unnecessary re-renders
-  const profileMenuItems = useMemo(
-    () => [
+  // Use a stable callback function that won't change on re-renders
+  const handleOpenChange = useCallback((open) => {
+    setDropdownOpen(open);
+  }, []);
+
+  // Memoize the dropdown menu to prevent re-initialization
+  const dropdownMenu = useMemo(() => {
+    const profileMenuItems = [
       {
         key: "profile",
         label: (
@@ -74,27 +75,19 @@ const {mutate:logout, isPending:isLogoutPending} = useApiMutation({
         key: "logout",
         label: (
           <div
-            onClick={handleLogout}
+            onClick={() => {
+              logout();
+            }}
             className="profile-dropdown-item text-danger"
           >
             <LogoutOutlined /> Logout
           </div>
         ),
       },
-    ],
-    [handleLogout]
-  );
+    ];
 
-  // Use a stable callback function that won't change on re-renders
-  const handleOpenChange = useCallback((open) => {
-    setDropdownOpen(open);
-  }, []);
-
-  // Memoize the dropdown menu to prevent re-initialization
-  const dropdownMenu = useMemo(
-    () => ({ items: profileMenuItems }),
-    [profileMenuItems]
-  );
+    return { items: profileMenuItems };
+  }, [logout]);
 
   return (
     <header>

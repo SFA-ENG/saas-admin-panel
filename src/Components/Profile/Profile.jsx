@@ -23,7 +23,10 @@ import {
   useApiMutation,
 } from "../../hooks/useApiQuery/useApiQuery";
 import { CACHE_KEYS } from "../../commons/constants";
-import { renderErrorNotifications, renderSuccessNotifications } from "../../helpers/error.helpers";
+import {
+  renderErrorNotifications,
+  renderSuccessNotifications,
+} from "../../helpers/error.helpers";
 import { Save } from "lucide-react";
 import AccessControlButton from "Components/AccessControlButton/AccessControlButton";
 
@@ -63,9 +66,10 @@ const Profile = () => {
     refetch: refetchTenantData,
   } = useApiQuery({
     queryKey: [CACHE_KEYS.TENANT_DATA],
-    url: "/iam/tenants-list",
+    url: "/iam/tenants",
     params: {
       tenant_id: userData?.tenant_id,
+      type: "DETAILED",
     },
 
     staleTimeInMinutes: 1,
@@ -132,7 +136,9 @@ const Profile = () => {
   }, [userData, tenantData, form]);
 
   const handleProfileUpdate = (values) => {
-    const phoneNumber = values.tenant_phone?.split(" ").pop()?.trim() || values.phone_number?.trim();
+    const phoneNumber =
+      values.tenant_phone?.split(" ").pop()?.trim() ||
+      values.phone_number?.trim();
 
     if (!phoneNumber) {
       renderErrorNotifications("Phone number is required");
@@ -150,7 +156,7 @@ const Profile = () => {
           number: phoneNumber,
         },
         // profile_picture_url: imageUrl,
-        is_active: true
+        is_active: true,
       };
 
       updateTenant({
@@ -158,7 +164,6 @@ const Profile = () => {
         tenant_id: userData?.tenant_id,
       });
     } else {
-
       const updateData = {
         name: values.name,
         email: values.email,
@@ -167,7 +172,7 @@ const Profile = () => {
           isd_code: "+91",
           number: phoneNumber,
         },
-        is_active: true
+        is_active: true,
       };
 
       updateUser({
@@ -242,12 +247,16 @@ const Profile = () => {
                       beforeUpload={(file) => {
                         const isImage = file.type.startsWith("image/");
                         if (!isImage) {
-                          renderErrorNotifications("You can only upload image files!");
+                          renderErrorNotifications(
+                            "You can only upload image files!"
+                          );
                           return Upload.LIST_IGNORE;
                         }
                         const isLt2M = file.size / 1024 / 1024 < 2;
                         if (!isLt2M) {
-                          renderErrorNotifications("Image must be smaller than 2MB!");
+                          renderErrorNotifications(
+                            "Image must be smaller than 2MB!"
+                          );
                           return Upload.LIST_IGNORE;
                         }
                         return true;
@@ -264,7 +273,6 @@ const Profile = () => {
                       </Button>
                     </Upload>
                   </div>
-
                 </div>
                 <div className="profile-info">
                   <h2 className="role-name">
@@ -360,12 +368,16 @@ const Profile = () => {
                         beforeUpload={(file) => {
                           const isImage = file.type.startsWith("image/");
                           if (!isImage) {
-                            renderErrorNotifications("You can only upload image files!");
+                            renderErrorNotifications(
+                              "You can only upload image files!"
+                            );
                             return Upload.LIST_IGNORE;
                           }
                           const isLt2M = file.size / 1024 / 1024 < 2;
                           if (!isLt2M) {
-                            renderErrorNotifications("Image must be smaller than 2MB!");
+                            renderErrorNotifications(
+                              "Image must be smaller than 2MB!"
+                            );
                             return Upload.LIST_IGNORE;
                           }
                           return true;
@@ -407,16 +419,12 @@ const Profile = () => {
                 <Row gutter={[24, 24]}>
                   <Col xs={24} md={12}>
                     <Form.Item name="address_line_1" label="Address Line 1">
-                      <Input
-                        placeholder="Address Line 1"
-                      />
+                      <Input placeholder="Address Line 1" />
                     </Form.Item>
                   </Col>
                   <Col xs={24} md={12}>
                     <Form.Item name="address_line_2" label="Address Line 2">
-                      <Input
-                        placeholder="Address Line 2"
-                      />
+                      <Input placeholder="Address Line 2" />
                     </Form.Item>
                   </Col>
                 </Row>
@@ -472,13 +480,11 @@ const Profile = () => {
                 </Row>
 
                 <Form.Item className="flex justify-end">
-
                   <AccessControlButton
                     title="Save Changes"
                     icon={Save}
-                    onClick={() => { }}
+                    onClick={() => {}}
                   />
-
                 </Form.Item>
               </Form>
             </Card>

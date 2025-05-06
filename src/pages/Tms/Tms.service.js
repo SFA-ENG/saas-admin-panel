@@ -5,11 +5,12 @@ export const tournaments = {
       tournament_name: "National Sports Championship 2024",
       tournament_description:
         "India's biggest inter-school sports tournament with multi-sport disciplines.",
-      status: "upcoming",
+      status: "UPCOMING",
       is_published: true,
       is_active: true,
       featured: true,
-      sport_type: "multi-sport",
+      sports: ["CRICKET", "FOOTBALL", "TENNIS", "BADMINTON"],
+      genders: ["MALE", "FEMALE"],
       location: "New Delhi",
       participants: 256,
       start_date: "2024-07-15",
@@ -19,14 +20,16 @@ export const tournaments = {
           mobile: "https://cdn.example.com/logo-mobile.png",
           web: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQl84wJ6oOsnRqqVV5UIXa6cyHldHKc0_-EMA&s",
         },
-        league_banner: [{
-          mobile: "https://cdn.example.com/banner-mobile.png",
-          web: "https://www.shutterstock.com/image-vector/banner-template-national-sports-day-260nw-2259724341.jpg",
-        },
-        {
-          mobile: "https://cdn.example.com/banner-mobile.png",
-          web: "https://img.freepik.com/free-vector/flat-national-sports-day-horizontal-banner-template_52683-65864.jpg",
-        },]
+        league_banner: [
+          {
+            mobile: "https://cdn.example.com/banner-mobile.png",
+            web: "https://www.shutterstock.com/image-vector/banner-template-national-sports-day-260nw-2259724341.jpg",
+          },
+          {
+            mobile: "https://cdn.example.com/banner-mobile.png",
+            web: "https://img.freepik.com/free-vector/flat-national-sports-day-horizontal-banner-template_52683-65864.jpg",
+          },
+        ],
       },
     },
     {
@@ -34,11 +37,12 @@ export const tournaments = {
       tournament_name: "Premier Cricket League",
       tournament_description:
         "Annual cricket tournament between state teams with qualifiers and knockout rounds.",
-      status: "active",
+      status: "ACTIVE",
       is_published: true,
       is_active: true,
       featured: true,
-      sport_type: "cricket",
+      sports: ["CRICKET"],
+      genders: ["MALE"],
       location: "Mumbai",
       participants: 32,
       start_date: "2024-04-10",
@@ -48,11 +52,12 @@ export const tournaments = {
           mobile: "https://cdn.example.com/cricket-logo-mobile.png",
           web: "https://img.freepik.com/premium-vector/happy-national-sports-day-vector-illustration_7888-944.jpg",
         },
-        league_banner: [{
-          mobile: "https://cdn.example.com/cricket-banner-mobile.png",
-          web: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQAJZR3Av8qcvcxLUGFVo_ItTsJdBoOwhLGaQ&s",
-        },
-      ],
+        league_banner: [
+          {
+            mobile: "https://cdn.example.com/cricket-banner-mobile.png",
+            web: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQAJZR3Av8qcvcxLUGFVo_ItTsJdBoOwhLGaQ&s",
+          },
+        ],
       },
     },
     {
@@ -60,11 +65,12 @@ export const tournaments = {
       tournament_name: "District Football League",
       tournament_description:
         "Local football league featuring teams from all districts.",
-      status: "completed",
+      status: "COMPLETED",
       is_published: true,
       is_active: false,
       featured: false,
-      sport_type: "football",
+      sports: ["FOOTBALL"],
+      genders: ["MALE"],
       location: "Kolkata",
       participants: 24,
       start_date: "2023-11-15",
@@ -74,11 +80,12 @@ export const tournaments = {
           mobile: "https://cdn.example.com/football-logo-mobile.png",
           web: "https://placehold.co/400/9D174D/FFFFFF?text=DFL",
         },
-        league_banner: [{
-          mobile: "https://cdn.example.com/football-banner-mobile.png",
-          web: "https://www.lsraheja.org/wp-content/uploads/2022/08/National-Sports-Day-Banner-600x337.jpgv",
-        },
-      ],
+        league_banner: [
+          {
+            mobile: "https://cdn.example.com/football-banner-mobile.png",
+            web: "https://www.lsraheja.org/wp-content/uploads/2022/08/National-Sports-Day-Banner-600x337.jpgv",
+          },
+        ],
       },
     },
     {
@@ -86,11 +93,12 @@ export const tournaments = {
       tournament_name: "Basketball Championship Series",
       tournament_description:
         "Elite basketball tournament featuring the top teams from across the country.",
-      status: "upcoming",
+      status: "UPCOMING",
       is_published: true,
       is_active: true,
       featured: false,
-      sport_type: "basketball",
+      sports: ["BASKETBALL"],
+      genders: ["MALE"],
       location: "Bangalore",
       participants: 16,
       start_date: "2024-08-05",
@@ -100,11 +108,12 @@ export const tournaments = {
           mobile: "https://cdn.example.com/bball-logo-mobile.png",
           web: "https://placehold.co/400/D97706/FFFFFF?text=BCS",
         },
-        league_banner: [{
-          mobile: "https://cdn.example.com/bball-banner-mobile.png",
-          web: "https://cdn.vectorstock.com/i/1000v/72/46/national-sports-day-vintage-banner-with-athletes-vector-53297246.jpg",
-        },
-      ],
+        league_banner: [
+          {
+            mobile: "https://cdn.example.com/bball-banner-mobile.png",
+            web: "https://cdn.vectorstock.com/i/1000v/72/46/national-sports-day-vintage-banner-with-athletes-vector-53297246.jpg",
+          },
+        ],
       },
     },
     {
@@ -112,11 +121,12 @@ export const tournaments = {
       tournament_name: "Women's Tennis Open",
       tournament_description:
         "Premier tennis tournament for women players from all states.",
-      status: "active",
+      status: "ACTIVE",
       is_published: true,
       is_active: true,
       featured: true,
-      sport_type: "tennis",
+      sports: ["TENNIS"],
+      genders: ["FEMALE"],
       location: "Chennai",
       participants: 64,
       start_date: "2024-03-20",
@@ -126,11 +136,12 @@ export const tournaments = {
           mobile: "https://cdn.example.com/tennis-logo-mobile.png",
           web: "https://placehold.co/400/7C3AED/FFFFFF?text=WTO",
         },
-        league_banner: [{
-          mobile: "https://cdn.example.com/tennis-banner-mobile.png",
-          web: "https://placehold.co/1200x600/7C3AED/FFFFFF?text=Women's+Tennis+Open",
-        },
-      ],
+        league_banner: [
+          {
+            mobile: "https://cdn.example.com/tennis-banner-mobile.png",
+            web: "https://placehold.co/1200x600/7C3AED/FFFFFF?text=Women's+Tennis+Open",
+          },
+        ],
       },
     },
     {
@@ -138,11 +149,12 @@ export const tournaments = {
       tournament_name: "National Swimming Championship",
       tournament_description:
         "Annual aquatic sports competition featuring the nation's best swimmers.",
-      status: "upcoming",
+      status: "UPCOMING",
       is_published: true,
       is_active: true,
       featured: false,
-      sport_type: "swimming",
+      sports: ["SWIMMING"],
+      genders: ["MALE", "FEMALE"],
       location: "Goa",
       participants: 200,
       start_date: "2024-09-10",
@@ -152,11 +164,12 @@ export const tournaments = {
           mobile: "https://cdn.example.com/swimming-logo-mobile.png",
           web: "https://placehold.co/400/0EA5E9/FFFFFF?text=NSC",
         },
-        league_banner: [{
-          mobile: "https://cdn.example.com/swimming-banner-mobile.png",
-          web: "https://placehold.co/1200x600/0EA5E9/FFFFFF?text=National+Swimming+Championship",
-        },
-      ],
+        league_banner: [
+          {
+            mobile: "https://cdn.example.com/swimming-banner-mobile.png",
+            web: "https://placehold.co/1200x600/0EA5E9/FFFFFF?text=National+Swimming+Championship",
+          },
+        ],
       },
     },
     {
@@ -164,11 +177,12 @@ export const tournaments = {
       tournament_name: "Hockey Premier League",
       tournament_description:
         "Professional hockey league featuring teams from across the country.",
-      status: "completed",
+      status: "COMPLETED",
       is_published: true,
       is_active: false,
       featured: false,
-      sport_type: "hockey",
+      sports: ["HOCKEY"],
+      genders: ["MALE", "FEMALE"],
       location: "Punjab",
       participants: 12,
       start_date: "2023-10-05",
@@ -178,11 +192,12 @@ export const tournaments = {
           mobile: "https://cdn.example.com/hockey-logo-mobile.png",
           web: "https://placehold.co/400/475569/FFFFFF?text=HPL",
         },
-        league_banner: [{
-          mobile: "https://cdn.example.com/hockey-banner-mobile.png",
-          web: "https://placehold.co/1200x600/475569/FFFFFF?text=Hockey+Premier+League",
-        },
-      ],
+        league_banner: [
+          {
+            mobile: "https://cdn.example.com/hockey-banner-mobile.png",
+            web: "https://placehold.co/1200x600/475569/FFFFFF?text=Hockey+Premier+League",
+          },
+        ],
       },
     },
     {
@@ -190,11 +205,12 @@ export const tournaments = {
       tournament_name: "Badminton Super Series",
       tournament_description:
         "Elite badminton tournament featuring singles and doubles competitions.",
-      status: "active",
+      status: "ACTIVE",
       is_published: true,
       is_active: true,
       featured: true,
-      sport_type: "badminton",
+      sports: ["BADMINTON"],
+      genders: ["MALE", "FEMALE"],
       location: "Hyderabad",
       participants: 128,
       start_date: "2024-05-01",
@@ -204,22 +220,30 @@ export const tournaments = {
           mobile: "https://cdn.example.com/badminton-logo-mobile.png",
           web: "https://placehold.co/400/DB2777/FFFFFF?text=BSS",
         },
-        league_banner: [{
-          mobile: "https://cdn.example.com/badminton-banner-mobile.png",
-          web: "https://placehold.co/1200x600/DB2777/FFFFFF?text=Badminton+Super+Series",
-        },
-      ],
+        league_banner: [
+          {
+            mobile: "https://cdn.example.com/badminton-banner-mobile.png",
+            web: "https://placehold.co/1200x600/DB2777/FFFFFF?text=Badminton+Super+Series",
+          },
+        ],
       },
     },
   ],
-  "metadata": {
-    "active_tournaments": 3,
-    "total_tournaments": 10,
-    "upcoming_tournaments": 3,
-    "filters": {
-      "status": ["DRAFT", "PUBLISHED", "COMPLETED"],
-      "genders": ["MALE", "FEMALE", "OTHER"],
-      "sports": ["CRICKET", "FOOTBALL", "TENNIS"],
-    }
-  }
-}
+  metadata: {
+    active_tournaments: 3,
+    total_tournaments: 10,
+    upcoming_tournaments: 20,
+    filters: {
+      status: ["ACTIVE", "UPCOMING", "COMPLETED"],
+      sports: [
+        "CRICKET",
+        "FOOTBALL",
+        "TENNIS",
+        "BASKETBALL",
+        "SWIMMING",
+        "HOCKEY",
+        "BADMINTON",
+      ],
+    },
+  },
+};

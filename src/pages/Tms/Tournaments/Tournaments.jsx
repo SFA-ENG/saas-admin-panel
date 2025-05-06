@@ -4,7 +4,6 @@ import {
   Filter,
   Plus,
   Calendar,
-  Users,
   Award,
   TrendingUp,
   Layers,
@@ -14,107 +13,85 @@ import AccessControlButton from "Components/AccessControlButton/AccessControlBut
 import TournamentCard from "./_blocks/TournamentCard";
 import FullPageLoader from "Components/Loader/Loader";
 import { tournaments as mockTournaments } from "../Tms.service";
+import { getPascalCase } from "helpers/common.helper";
 
 const TournamentsPage = () => {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [tournaments, setTournaments] = useState([]);
+  const [tournaments, setTournaments] = useState(mockTournaments.tournaments);
   const [filteredTournaments, setFilteredTournaments] = useState([]);
   const [filters, setFilters] = useState({
-    status: "all",
-    sport: "all",
-    genders: "all"
+    status: null,
+    sports: null,
   });
 
-  useEffect(() => {
-    // Access the tournaments array from the mock data
-    const tournamentsData = mockTournaments.tournaments;
-    setTournaments(tournamentsData);
-    setFilteredTournaments(tournamentsData);
-  }, []);
+  const dataSource =
+    filteredTournaments.length > 0 ||
+    searchQuery ||
+    filters.status ||
+    filters.sports
+      ? filteredTournaments
+      : tournaments;
 
-  const handleFilterChange = (value, filterType) => {
+  const handleFilterChange = (value) => {
     setFilters((prev) => ({
       ...prev,
-      [filterType]: value,
+      ...value,
     }));
   };
 
   const handleSearch = (e) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-    applyFilters(query);
-  };
-
-  const applyFilters = (searchText = searchQuery) => {
-    const currentTournaments = tournaments;
-  
-    let filtered = [...currentTournaments];
-
-    // Apply search filter
-    if (searchText.length > 0) {
-      filtered = filtered.filter((t) => 
-        t.tournament_name.toLowerCase().includes(searchText.toLowerCase())
-      );
-    }
-
-    // Apply status filter
-    if (filters.status !== "all") {
-      filtered = filtered.filter((t) => 
-        t.status.toLowerCase() === filters.status.toLowerCase()
-      );
-    }
-
-    // Apply gender filter
-    if (filters.genders !== "all") {
-      filtered = filtered.filter((t) => 
-        t.genders.toLowerCase() === filters.genders.toLowerCase()
-      );
-    }
-    
-    // Apply sport filter
-    if (filters.sport !== "all") {
-      filtered = filtered.filter((t) => 
-        t.sport_type.toLowerCase() === filters.sport.toLowerCase()
-      );
-    }
-
-    setFilteredTournaments(filtered);
+    setSearchQuery(e.target.value);
   };
 
   useEffect(() => {
-    if (tournaments.length > 0) {
-      applyFilters();
-    }
-  }, [filters, tournaments]);
+    const q = searchQuery.trim().toLowerCase();
+    const statusFilter = filters.status?.toLowerCase();
+    const sportsFilter = filters.sports?.toLowerCase();
+
+    const filtered = tournaments.filter((t) => {
+      // 1) Search
+      if (q && !t.tournament_name.toLowerCase().includes(q)) {
+        return false;
+      }
+      // 2) Status
+      if (
+        statusFilter &&
+        statusFilter !== "all" &&
+        t.status.toLowerCase() !== statusFilter
+      ) {
+        return false;
+      }
+      // 3) Sports
+      if (
+        sportsFilter &&
+        sportsFilter !== "all" &&
+        !t.sports.some((s) => s.toLowerCase() === sportsFilter)
+      ) {
+        return false;
+      }
+      return true;
+    });
+
+    setFilteredTournaments(filtered);
+  }, [searchQuery, filters, tournaments]);
+
+  const getFilters = (data) => {
+    const filters = data.map((item) => {
+      return {
+        label: getPascalCase(item),
+        value: item.toLowerCase(),
+      };
+    });
+    return [{ label: "All", value: "ALL" }, ...filters];
+  };
 
   if (loading) {
     return <FullPageLoader message="Loading tournaments ..." />;
   }
 
-  // Get unique values for filters from the actual data
-  const getUniqueValues = (key) => {
-    const values = new Set();
-  
-    tournaments.forEach((t) => {
-      const val = t[key];
-      if (Array.isArray(val)) {
-        val.forEach((v) => values.add(v.toLowerCase()));
-      } else if (typeof val === "string") {
-        values.add(val.toLowerCase());
-      }
-    });
-  
-    return Array.from(values).map((value) => ({
-      label: value.charAt(0).toUpperCase() + value.slice(1),
-      value,
-    }));
-  };
-  
-  
-
   return (
-    <Card style={{ backgroundColor: "#F9FAFB", maxWidth: "88vw", padding: "16px" }}>
+    <Card style={{ backgroundColor: "#F9FAFB" }}>
       {/* Header & Add Button */}
       <Row
         justify="space-between"
@@ -150,21 +127,21 @@ const TournamentsPage = () => {
           {
             icon: TrendingUp,
             label: "Active",
-            value: tournaments.filter(t => t.status === "active").length,
+            value: mockTournaments.metadata.active_tournaments,
             bg: "bg-blue-100",
             color: "text-blue-600",
           },
           {
             icon: Calendar,
             label: "Upcoming",
-            value: tournaments.filter(t => t.status === "upcoming").length,
+            value: mockTournaments.metadata.upcoming_tournaments,
             bg: "bg-green-100",
             color: "text-green-600",
           },
           {
             icon: Layers,
             label: "Total",
-            value: tournaments.length,
+            value: mockTournaments.metadata.total_tournaments,
             bg: "bg-purple-100",
             color: "text-purple-600",
           },
@@ -222,33 +199,19 @@ const TournamentsPage = () => {
                 {
                   key: "status",
                   icon: Filter,
-                  opts: [
-                    { label: "All Status", value: "all" },
-                    ...getUniqueValues("status")
-                  ],
+                  opts: getFilters(mockTournaments.metadata.filters.status),
                 },
                 {
-                  key: "genders",
-                  icon: Users,
-                  opts: [
-                    { label: "All Genders", value: "all" },
-                    ...getUniqueValues("genders")
-                  ],
-                },
-                {
-                  key: "sport",
+                  key: "sports",
                   icon: Award,
-                  opts: [
-                    { label: "All Sports", value: "all" },
-                    ...getUniqueValues("sport_type")
-                  ],
+                  opts: getFilters(mockTournaments.metadata.filters.sports),
                 },
               ].map(({ key, icon: Icon, opts }) => (
                 <Select
                   key={key}
-                  defaultValue="all"
-                  onChange={(v) => handleFilterChange(v, key)}
-                  placeholder={key.charAt(0).toUpperCase() + key.slice(1)}
+                  onChange={(v) => handleFilterChange({ [key]: v })}
+                  placeholder={getPascalCase(key)}
+                  allowClear
                   size="large"
                   className="rounded-lg min-w-[160px]"
                   suffixIcon={<Icon size={16} />}
@@ -262,9 +225,9 @@ const TournamentsPage = () => {
 
       {/* Tournament Cards or Empty/Loading */}
       <Row gutter={[16, 16]}>
-        {filteredTournaments.length > 0 ? (
-          filteredTournaments.map((t) => (
-            <Col xs={24} sm={12} lg={8} xxl={6} key={t.tournament_id}>
+        {dataSource.length > 0 ? (
+          dataSource.map((t) => (
+            <Col xs={24} sm={12} lg={8} key={t.tournament_id}>
               <TournamentCard tournament={t} />
             </Col>
           ))
