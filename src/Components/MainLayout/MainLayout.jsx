@@ -17,7 +17,7 @@ const MainLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isAuthorized, setAuthorized] = useState(true);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { userData, token } = useAuthStore();
 
   // Memoize the permission mapping
@@ -33,8 +33,14 @@ const MainLayout = () => {
       const element = ROUTING_PATTRNS[i];
       const match = matchPath(element, pathname);
       if (!_.isEmpty(match)) {
-        const requiredPermission = urlToPermissionMapping[match.pattern.path];
-        const hasAccess = _.intersection(requiredPermission, permissions);
+        const { allowed_permisions, is_public_route } =
+          urlToPermissionMapping[match.pattern.path];
+        if (is_public_route) {
+          return {
+            authzFlag: true,
+          };
+        }
+        const hasAccess = _.intersection(allowed_permisions, permissions);
         return {
           authzFlag: Boolean(hasAccess.length),
         };
@@ -53,14 +59,13 @@ const MainLayout = () => {
   }, [navigate, token, userData?.tenant_user_id]);
 
   useEffect(() => {
-    if (loading) return;
     function controlAcessAndEdit() {
       setLoading(true);
       if (userData?.is_root_user) {
         setAuthorized(true);
       } else {
         const { authzFlag } = checkPermissions({
-          permissions: userData.permissions,
+          permissions: userData?.permissions,
           pathname,
         });
         setAuthorized(authzFlag);
