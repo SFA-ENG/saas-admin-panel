@@ -37,31 +37,32 @@ export const getPermision = (input, publish = false) => {
 export const generatePermissionToURLMapping = ({ sideMenuConfig }) => {
   const headerTitles = {};
   sideMenuConfig.forEach(
-    ({ path: parentPath, allowed_permisions, children }) => {
+    ({
+      path: parentPath,
+      allowed_permisions,
+      children,
+      is_public_route = false,
+    }) => {
       if (children) {
-        children.forEach(({ path: childPath, allowed_permisions }) => {
-          headerTitles[`/${parentPath}/${childPath}`] = allowed_permisions;
-        });
+        children.forEach(
+          ({
+            path: childPath,
+            allowed_permisions,
+            is_public_route = false,
+          }) => {
+            headerTitles[`/${parentPath}/${childPath}`] = {
+              allowed_permisions,
+              is_public_route: is_public_route,
+            };
+          }
+        );
       } else {
-        headerTitles[`/${parentPath}`] = allowed_permisions;
+        headerTitles[`/${parentPath}`] = {
+          allowed_permisions,
+          is_public_route: is_public_route,
+        };
       }
     }
   );
   return headerTitles;
-};
-
-export const getAllowedPermissions = ({ permissionType, sideMenuConfig }) => {
-  const permissions = [];
-  sideMenuConfig.forEach(({ allowed_permisions }) => {
-    const data = allowed_permisions.filter((a) => {
-      return a.startsWith(permissionType);
-    });
-    data.forEach((item) => {
-      permissions.push({
-        name: item,
-        value: item,
-      });
-    });
-  });
-  return permissions;
 };

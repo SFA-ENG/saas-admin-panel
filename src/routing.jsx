@@ -33,13 +33,14 @@ export const sideMenuConfig = [
     icon: <DashboardOutlined />,
     element: <WelcomePage />,
     hideInMenu: true,
-    allowed_permisions: [...getPermision("WELCOME")],
+    is_public_route: true,
   },
   {
     label: "Users",
     path: "users-administration",
     icon: <UsersRound size={18} />,
     element: <Users />,
+    module_name: "USERS_ADMINISTRATION",
     allowed_permisions: [
       ...getPermision("USERS_LIST"),
       ...getPermision("ROLES_LIST"),
@@ -82,6 +83,7 @@ export const sideMenuConfig = [
     path: "tms",
     element: <TmsPage />,
     icon: <TrophyIcon size={18} />,
+    module_name: "TMS",
     allowed_permisions: [
       ...getPermision("TOURNAMENTS", true),
       ...getPermision("DRAWS"),
@@ -91,6 +93,7 @@ export const sideMenuConfig = [
       {
         label: "Tournaments",
         path: "tournaments",
+        sub_module_name: "TOURNAMENTS",
         icon: <Dribbble size={18} />,
         element: <TournamentsPage />,
         allowed_permisions: [...getPermision("TOURNAMENTS", true)],
@@ -99,6 +102,7 @@ export const sideMenuConfig = [
         label: "Tournament Details",
         path: "tournaments/:tournament_id",
         hideInMenu: true,
+        sub_module_name: "TOURNAMENTS",
         element: <TournamentDetailsPage />,
         allowed_permisions: [...getPermision("TOURNAMENTS", true)],
       },
@@ -106,6 +110,7 @@ export const sideMenuConfig = [
       {
         label: "Draws",
         path: "draws",
+        sub_module_name: "DRAWS",
         icon: <Network size={18} />,
         element: <DrawsPage />,
         allowed_permisions: [...getPermision("DRAWS")],
@@ -113,6 +118,7 @@ export const sideMenuConfig = [
       {
         label: "Schedules",
         path: "schedules",
+        sub_module_name: "SCHEDULES",
         icon: <CalendarClock size={18} />,
         element: <SchedulesPage />,
         allowed_permisions: [...getPermision("SCHEDULES", true)],
@@ -124,7 +130,7 @@ export const sideMenuConfig = [
     path: "profile",
     element: <Profile />,
     hideInMenu: true,
-    allowed_permisions: [...getPermision("PROFILE")],
+    is_public_route: true,
   },
 ];
 
