@@ -13,7 +13,7 @@ import AccessControlButton from "Components/AccessControlButton/AccessControlBut
 import TournamentCard from "./_blocks/TournamentCard";
 import FullPageLoader from "Components/Loader/Loader";
 import { tournaments as mockTournaments } from "../Tms.service";
-import { getPascalCase } from "helpers/common.helper";
+import { getPascalCase } from "../../../helpers/common.helper";
 
 const TournamentsPage = () => {
   const [loading, setLoading] = useState(false);
