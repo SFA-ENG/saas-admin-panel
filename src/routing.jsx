@@ -26,6 +26,7 @@ import TournamentsPage from "pages/Tms/Tournaments/Tournaments";
 import DrawsPage from "pages/Tms/Draws/Draws";
 import SchedulesPage from "pages/Tms/Schedules/Schedules";
 import TournamentDetailsPage from "pages/Tms/Tournaments/TournamentDetails/TournamentDetails";
+import ScoringPage from "pages/Tms/Scoring/Scoring";
 export const sideMenuConfig = [
   {
     label: "Welcome",
@@ -121,7 +122,15 @@ export const sideMenuConfig = [
         sub_module_name: "SCHEDULES",
         icon: <CalendarClock size={18} />,
         element: <SchedulesPage />,
-        allowed_permisions: [...getPermision("SCHEDULES", true)],
+        allowed_permisions: [...getPermision("SCHEDULES")],
+      },
+      {
+        label: "Scoring",
+        path: "scoring",
+        sub_module_name: "SCORING",
+        icon: <TrophyIcon size={18} />,
+        element: <ScoringPage />,
+        allowed_permisions: [...getPermision("SCORING")],
       },
     ],
   },

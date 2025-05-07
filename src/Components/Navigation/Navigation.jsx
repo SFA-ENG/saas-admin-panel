@@ -1,4 +1,3 @@
-/* eslint-disable unused-imports/no-unused-vars */
 import { Menu } from "antd";
 import { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
@@ -26,7 +25,7 @@ const getHideClassValue = ({
     : "hide";
 };
 
-const getItems = ({ permissions, rootUser, isCollapsed }) => {
+const getItems = ({ permissions, rootUser, isCollapsed, purchasedModules }) => {
   const processMenuItems = (items, parentPath = "") => {
     return items.map(
       ({ label, path, icon, children, allowed_permisions, hideInMenu }) => {
@@ -78,7 +77,30 @@ const getItems = ({ permissions, rootUser, isCollapsed }) => {
     );
   };
 
-  return processMenuItems(sideMenuConfig);
+  const purchasedModulesMapper = purchasedModules.reduce(
+    (acc, { module_name, submodules }) => {
+      acc[module_name] = [];
+      if (submodules && submodules.length) {
+        submodules.forEach(({ submodule_name }) => {
+          acc[module_name].push(submodule_name);
+        });
+      }
+      return acc;
+    },
+    {}
+  );
+  const filteredSideMenuConfig = sideMenuConfig.filter((item) => {
+    if (
+      item.module_name &&
+      item.module_name !== "USERS_ADMINISTRATION" &&
+      !purchasedModulesMapper?.[item?.module_name]
+    ) {
+      return false;
+    }
+
+    return item;
+  });
+  return processMenuItems(filteredSideMenuConfig);
 };
 
 export const Navigation = ({ closeMenu, isCollapsed, onCollapse }) => {
@@ -131,6 +153,7 @@ export const Navigation = ({ closeMenu, isCollapsed, onCollapse }) => {
           permissions: userData?.permissions,
           rootUser: userData?.is_root_user,
           isCollapsed,
+          purchasedModules: userData?.modules,
         })}
       />
     </div>
