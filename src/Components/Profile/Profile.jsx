@@ -483,7 +483,7 @@ const Profile = () => {
                   <AccessControlButton
                     title="Save Changes"
                     icon={Save}
-                    onClick={() => {}}
+                    onClick={() => form.submit()}
                   />
                 </Form.Item>
               </Form>
