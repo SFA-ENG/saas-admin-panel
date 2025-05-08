@@ -1,4 +1,4 @@
-import { Card, Badge, Tag, Collapse } from "antd";
+import { Card, Badge, Collapse, Tag } from "antd";
 import { Calendar, ClockIcon, MapPinIcon, FlagIcon, ChevronDownIcon } from "../components/Icons";
 import { formatDate, getCardColor } from "../../Tournaments.helper";
 import Sport from "./Sport";
@@ -32,61 +32,65 @@ const Season = ({ season, index }) => {
         <p className="text-gray-600 mb-4">{season.description}</p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-          <div className="bg-blue-50 p-3 rounded-lg">
+          <div className="bg-blue-50 p-2 rounded-lg">
             <div className="flex items-center">
               <Calendar size={16} className="text-blue-600 mr-2" />
-              <span className="text-sm font-medium text-gray-700">
-                Season Dates
+              <span className="text-sm font-medium text-gray-700 mr-2">
+                Season Dates:
               </span>
-            </div>
-            <p className="mt-1 text-xs">
+              <span className="mt-1 text-xs">
               {formatDate(season.startDate)} - {formatDate(season.endDate)}
-            </p>
+            </span>
+            </div>
+            
           </div>
 
           <div className="bg-green-50 p-3 rounded-lg">
             <div className="flex items-center">
               <ClockIcon size={16} className="text-green-600 mr-2" />
-              <span className="text-sm font-medium text-gray-700">
-                Registration
+              <span className="text-sm font-medium text-gray-700 mr-2">
+                Registration:
               </span>
-            </div>
-            <p className="mt-1 text-xs">
+              <span className="mt-1 text-xs">
               {formatDate(season.registrationStartDate)} -{" "}
               {formatDate(season.registrationEndDate)}
-            </p>
+            </span>
+            </div>
+           
           </div>
 
           <div className="bg-yellow-50 p-3 rounded-lg">
             <div className="flex items-center">
               <MapPinIcon size={16} className="text-yellow-600 mr-2" />
-              <span className="text-sm font-medium text-gray-700">
-                Locations
+              <span className="text-sm font-medium text-gray-700 mr-2">
+                Locations:
               </span>
-            </div>
-            <div className="mt-1 flex flex-wrap gap-1">
+              <div className="mt-1 flex flex-wrap gap-1">
               {season.locations.map((loc) => (
                 <Tag key={loc.locationId} color="orange">
                   {loc.name}
                 </Tag>
               ))}
             </div>
+            </div>
+            
           </div>
 
           <div className="bg-purple-50 p-3 rounded-lg">
             <div className="flex items-center">
               <FlagIcon size={16} className="text-purple-600 mr-2" />
-              <span className="text-sm font-medium text-gray-700">
-                Eligibility
+              <span className="text-sm font-medium text-gray-700 mr-2">
+                Eligibility:
               </span>
-            </div>
-            <div className="mt-1 text-xs">
+              <div className="mt-1 text-xs">
               {season.participationRules.AND.map((rule, idx) => (
                 <div key={idx}>
                   {rule.field}: {rule.operator} {rule.value}
                 </div>
               ))}
             </div>
+            </div>
+            
           </div>
         </div>
 
