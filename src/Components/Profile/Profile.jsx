@@ -193,9 +193,13 @@ const Profile = () => {
         setUploading(false);
         setImageUrl(url);
         updateProfileData({ profile_image: url });
-        renderSuccessNotifications("Profile picture updated successfully!");
+        renderSuccessNotifications({
+          title: "Success",
+          message: "Profile picture updated successfully!",
+        });
       });
     }
+
   };
 
   const getBase64 = (img, callback) => {
