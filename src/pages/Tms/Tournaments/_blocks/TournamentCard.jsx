@@ -34,6 +34,7 @@ const TournamentCard = ({ tournament }) => {
         <Image
           src={banners[0]?.web || defaultBanner}
           preview={false}
+          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           onError={(e) => {
             e.target.src = defaultBanner;
           }}

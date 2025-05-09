@@ -10,7 +10,7 @@ import {
 import { useApiMutation } from "../../hooks/useApiQuery/useApiQuery";
 import { renderErrorNotifications } from "helpers/error.helpers";
 import { useNavigate } from "react-router-dom";
-import Login_Banner from "../../../src/assets/banners/Login/Login_Banner.png";
+import Login_Banner from "../../../src/assets/banners/Login/banner.png";
 import Logo from "../../../src/assets/Login_Logo.png";
 const Login = () => {
   const navigate = useNavigate();
@@ -82,7 +82,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex bg-soft-purple">
-      <div className="w-full mx-auto flex flex-col md:flex-row items-center justify-center shadow-xl">
+      <div className="w-full mx-auto flex flex-col md:flex-row items-center justify-center shadow-xl h-screen">
 
         {/* Carousel Section */}
         <div className="hidden md:flex md:w-1/2 h-screen relative overflow-hidden">
@@ -91,10 +91,10 @@ const Login = () => {
             alt="Login"
             className="absolute inset-0 w-full h-full object-center"
           />
-          <h1 className="absolute top-75 left-40 text-white text-6xl font-bold w-[600px]">
+          {/* <h1 className="absolute top-75 left-40 text-white text-6xl font-bold w-[600px]">
             Elevate Your Game
           </h1>
-          <p className="absolute max-w-md top-90 left-40 text-white text-xl w-[600px] mt-2 ">Unlock the full potential of your sports tournaments with our innovative SaaS solution</p>
+          <p className="absolute max-w-md top-90 left-40 text-white text-xl w-[600px] mt-2 ">Unlock the full potential of your sports tournaments with our innovative SaaS solution</p> */}
         </div>
 
         {/* Login/Register Form Section */}
