@@ -28,14 +28,15 @@ const TournamentStructureSection = ({ isExpanded, toggleSection, generateId }) =
           {(seasons, { add: addSeason, remove: removeSeason }) => (
             <>
               {seasons.map((season, seasonIndex) => (
-                <SeasonCard 
-                  key={season.key} 
-                  season={season} 
-                  removeSeason={removeSeason} 
-                  seasons={seasons} 
-                  seasonIndex={seasonIndex} 
-                  generateId={generateId} 
-                />
+                <div key={season.key} className="mb-8">
+                  <SeasonCard 
+                    season={season} 
+                    removeSeason={removeSeason} 
+                    seasons={seasons} 
+                    seasonIndex={seasonIndex} 
+                    generateId={generateId} 
+                  />
+                </div>
               ))}
               
               <Form.Item>
