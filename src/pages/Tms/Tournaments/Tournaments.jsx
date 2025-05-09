@@ -8,14 +8,19 @@ import {
   TrendingUp,
   Layers,
   RefreshCw,
+  XCircle,
 } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 import AccessControlButton from "Components/AccessControlButton/AccessControlButton";
 import TournamentCard from "./_blocks/TournamentCard";
 import FullPageLoader from "Components/Loader/Loader";
 import { tournaments as mockTournaments } from "../Tms.service";
 import { getPascalCase } from "../../../helpers/common.helper";
+import AddTournamentForm from "./_blocks/AddTournamentForm";
 
 const TournamentsPage = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [tournaments, setTournaments] = useState(mockTournaments.tournaments);
@@ -24,6 +29,9 @@ const TournamentsPage = () => {
     status: null,
     sports: null,
   });
+
+  // Check if we're in the tournament creation mode
+  const isAddingTournament = location.hash === "#new";
 
   const dataSource =
     filteredTournaments.length > 0 ||
@@ -86,8 +94,59 @@ const TournamentsPage = () => {
     return [{ label: "All", value: "ALL" }, ...filters];
   };
 
+  // Navigate to tournament add form
+  const handleAddTournament = () => {
+    navigate("#new");
+  };
+
+  // Cancel adding tournament and return to list
+  const handleCancelAdd = () => {
+    navigate("#");
+  };
+
   if (loading) {
     return <FullPageLoader message="Loading tournaments ..." />;
+  }
+
+  // Show the AddTournamentForm if the hash is #new, otherwise show the tournament list
+  if (isAddingTournament) {
+    return (
+      <Card style={{ backgroundColor: "#F9FAFB" }}>
+        {/* Header & Cancel Button */}
+        <Row
+          justify="space-between"
+          align="middle"
+          gutter={[16, 16]}
+          className="mb-4"
+        >
+          <Col xs={24} lg={16}>
+            <div className="flex items-center">
+              <div className="bg-blue-600 h-8 w-2 rounded mr-3"></div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 mb-1">
+                  Add New Tournament
+                </h1>
+                <p className="text-gray-600">
+                  Create a new tournament with seasons, sports, events, and sub-events
+                </p>
+              </div>
+            </div>
+          </Col>
+          <Col>
+            <Button
+              icon={<XCircle size={16} />}
+              onClick={handleCancelAdd}
+              className="flex items-center"
+              type="default"
+            >
+              Cancel
+            </Button>
+          </Col>
+        </Row>
+
+        <AddTournamentForm onCancel={handleCancelAdd} />
+      </Card>
+    );
   }
 
   return (
@@ -116,7 +175,7 @@ const TournamentsPage = () => {
           <AccessControlButton
             title="Add New Tournament"
             icon={Plus}
-            onClick={() => {}}
+            onClick={handleAddTournament}
           />
         </Col>
       </Row>

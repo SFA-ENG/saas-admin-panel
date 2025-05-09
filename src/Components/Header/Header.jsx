@@ -15,6 +15,7 @@ import useAuthStore from "../../stores/AuthStore/AuthStore";
 import "./Header.css";
 import { useApiMutation } from "../../hooks/useApiQuery/useApiQuery";
 import { CACHE_KEYS } from "../../commons/constants";
+import Logo from "../../assets/sfa-play_logo.png";
 const Header = ({ handleMenuClick, isCollapsed, toggleCollapse }) => {
   const { pathname } = useLocation();
   const { clearUserData, userData } = useAuthStore();
@@ -97,9 +98,7 @@ const Header = ({ handleMenuClick, isCollapsed, toggleCollapse }) => {
             <Row align="middle" justify="space-between">
               <Col xs={6} sm={7}>
                 <NavLink className={"logo-link desktop-only"} to={"/"}>
-                  <div className="text-primary font-bold text-lg">
-                    Sports Administration
-                  </div>{" "}
+                  <img src={Logo} alt="Logo" className="logo-image" />
                 </NavLink>
                 <Button
                   type="primary"

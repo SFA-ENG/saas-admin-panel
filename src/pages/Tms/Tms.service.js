@@ -55,7 +55,7 @@ export const tournaments = {
         league_banner: [
           {
             mobile: "https://cdn.example.com/cricket-banner-mobile.png",
-            web: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQAJZR3Av8qcvcxLUGFVo_ItTsJdBoOwhLGaQ&s",
+            web: "https://img.freepik.com/free-psd/sport-games-horizontal-banner-with-photo_23-2149047155.jpg",
           },
         ],
       },
