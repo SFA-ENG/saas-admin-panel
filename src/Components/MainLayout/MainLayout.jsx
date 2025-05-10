@@ -1,24 +1,24 @@
 import { useEffect, useState, useMemo } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import Custom401 from "../401/401";
-import Header from "../Header/Header";
-import "./MainLayout.css";
 import { Drawer } from "antd";
-import Navigation from "Components/Navigation/Navigation";
+import Custom401 from "../401/401";
 import useAuthStore from "../../stores/AuthStore/AuthStore";
 import { HEADER_TITLES, sideMenuConfig } from "../../routing";
 import { matchPath } from "react-router-dom";
 import _ from "lodash";
 import { generatePermissionToURLMapping } from "../../routing.helpers";
+import "./MainLayout.css";
+import Navigation from "../Navigation/Navigation";
+import Header from "../Header/Header";
 
 const MainLayout = () => {
   const navigate = useNavigate();
   const pathname = window.location.pathname;
-  const [collapsed, setCollapsed] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const [isAuthorized, setAuthorized] = useState(true);
   const [loading, setLoading] = useState(true);
-  const { userData, token } = useAuthStore();
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileMenuVisible, setMobileMenuVisible] = useState(false);
+  const { userData, token, clearUserData } = useAuthStore();
 
   // Memoize the permission mapping
   const urlToPermissionMapping = useMemo(() => {
@@ -56,10 +56,11 @@ const MainLayout = () => {
       navigate("/login");
       return;
     }
-  }, [navigate, token, userData?.tenant_user_id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, userData]);
 
   useEffect(() => {
-    function controlAcessAndEdit() {
+    function controlAccessAndEdit() {
       setLoading(true);
       if (userData?.is_root_user) {
         setAuthorized(true);
@@ -73,58 +74,91 @@ const MainLayout = () => {
       setLoading(false);
     }
 
-    controlAcessAndEdit();
+    controlAccessAndEdit();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, userData, loading, urlToPermissionMapping]);
 
-  const toggleCollapse = () => {
-    setCollapsed(!collapsed);
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
   };
 
-  const handleMenuClick = () => {
-    setDrawerOpen(true);
+  const toggleMobileMenu = () => {
+    setMobileMenuVisible(!mobileMenuVisible);
+  };
+
+  const handleMobileMenuClose = () => {
+    setMobileMenuVisible(false);
+  };
+
+  // Get current page title
+  const getCurrentPageTitle = () => {
+    const ROUTING_PATTRNS = Object.keys(HEADER_TITLES.headerTitles);
+    for (let i = 0; i < ROUTING_PATTRNS.length; i++) {
+      const element = ROUTING_PATTRNS[i];
+      const match = matchPath(element, pathname);
+      if (!_.isEmpty(match)) {
+        return HEADER_TITLES.headerTitles[match.pattern.path];
+      }
+    }
+    return "Dashboard";
   };
 
   if (loading === true) return null;
 
   if (!loading) {
     return (
-      <section className="MainLayout">
-        <Header
-          handleMenuClick={handleMenuClick}
-          isCollapsed={collapsed}
-          toggleCollapse={toggleCollapse}
-        />
-        <main>
-          <div className="mobile-only">
-            <Drawer
-              placement="left"
-              onClose={() => setDrawerOpen(false)}
-              open={drawerOpen}
-              width={280}
-              className="main-navigation-drawer"
-            >
-              <Navigation
-                closeMenu={() => setDrawerOpen(false)}
-                isCollapsed={false}
-              />
-            </Drawer>
-          </div>
-          <div className="desktop-only">
-            <aside className={collapsed ? "collapsed" : ""}>
-              <Navigation
-                closeMenu={() => setDrawerOpen(false)}
-                isCollapsed={collapsed}
-              />
-            </aside>
-          </div>
-          <div
-            className={`main-content ${collapsed ? "content-collapsed" : ""}`}
-          >
+      <div className="sports-dashboard">
+        {/* Desktop Sidebar */}
+        <aside
+          className={`sports-sidebar desktop-sidebar ${
+            sidebarOpen ? "expanded" : "collapsed"
+          }`}
+        >
+          <Navigation
+            isCollapsed={!sidebarOpen}
+            onToggleSidebar={toggleSidebar}
+            closeMenu={() => {}}
+          />
+        </aside>
+
+        {/* Mobile Menu Drawer */}
+        <Drawer
+          placement="left"
+          open={mobileMenuVisible}
+          onClose={handleMobileMenuClose}
+          width={280}
+          className="mobile-sidebar-drawer"
+          closeIcon={null}
+          styles={{
+            body: {
+              padding: 0,
+              background: `linear-gradient(135deg, var(--sports-primary), var(--sports-primary-dark))`,
+            },
+          }}
+        >
+          <Navigation
+            isCollapsed={false}
+            onToggleSidebar={handleMobileMenuClose}
+            closeMenu={handleMobileMenuClose}
+            isMobile={true}
+          />
+        </Drawer>
+
+        {/* Main Content Area */}
+        <main className="sports-main">
+          {/* Top Header */}
+          <Header
+            toggleMobileMenu={toggleMobileMenu}
+            userData={userData}
+            getCurrentPageTitle={getCurrentPageTitle}
+          />
+
+          {/* Content Area */}
+          <div className="content-area">
             {isAuthorized ? <Outlet /> : <Custom401 />}
           </div>
         </main>
-      </section>
+      </div>
     );
   }
 

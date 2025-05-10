@@ -1,23 +1,26 @@
-import {
-  LogoutOutlined,
-  MenuFoldOutlined,
-  MenuOutlined,
-  MenuUnfoldOutlined,
-  SettingOutlined,
-  UserOutlined,
-} from "@ant-design/icons";
-import { Avatar, Badge, Button, Col, Dropdown, Grid, Row, Tooltip } from "antd";
+import { LogoutOutlined, UserOutlined } from "@ant-design/icons";
+import { Badge, Grid, Tooltip, Dropdown, Avatar, Col, Row } from "antd";
 import _ from "lodash";
 import { useState, useCallback, useMemo } from "react";
-import { NavLink, matchPath, useLocation } from "react-router-dom";
+import { matchPath, useLocation } from "react-router-dom";
 import { HEADER_TITLES } from "../../routing";
 import useAuthStore from "../../stores/AuthStore/AuthStore";
 import "./Header.css";
 import { useApiMutation } from "../../hooks/useApiQuery/useApiQuery";
 import { CACHE_KEYS } from "../../commons/constants";
-const Header = ({ handleMenuClick, isCollapsed, toggleCollapse }) => {
+import {
+  Bell,
+  Menu as MenuIcon,
+  Users,
+  Settings,
+  HelpCircle,
+  Shield,
+  ChevronRight,
+} from "lucide-react";
+
+const Header = ({ toggleMobileMenu, userData, getCurrentPageTitle }) => {
   const { pathname } = useLocation();
-  const { clearUserData, userData } = useAuthStore();
+  const { clearUserData } = useAuthStore();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const { xs } = Grid.useBreakpoint();
 
@@ -50,116 +53,125 @@ const Header = ({ handleMenuClick, isCollapsed, toggleCollapse }) => {
   }, []);
 
   // Memoize the dropdown menu to prevent re-initialization
-  const dropdownMenu = useMemo(() => {
-    const profileMenuItems = [
-      {
-        key: "profile",
-        label: (
-          <NavLink to="/profile" className="profile-dropdown-item">
-            <UserOutlined /> My Profile
-          </NavLink>
-        ),
-      },
-      {
-        key: "settings",
-        label: (
-          <NavLink to="/settings" className="profile-dropdown-item">
-            <SettingOutlined /> Settings
-          </NavLink>
-        ),
-      },
-      {
-        type: "divider",
-      },
-      {
-        key: "logout",
-        label: (
-          <div
-            onClick={() => {
-              logout();
-            }}
-            className="profile-dropdown-item text-danger"
-          >
-            <LogoutOutlined /> Logout
-          </div>
-        ),
-      },
-    ];
-
-    return { items: profileMenuItems };
-  }, [logout]);
+  const profileMenu = useMemo(() => {
+    return {
+      items: [
+        {
+          key: "profile",
+          label: (
+            <div className="profile-menu-header">
+              <div className="profile-avatar">
+                {userData?.profile_image ? (
+                  <img src={userData.profile_image} alt={userData?.name} />
+                ) : (
+                  <span>{(userData?.name || "A").charAt(0)}</span>
+                )}
+              </div>
+              <div className="profile-info">
+                <div className="profile-name">{userData?.name || "User"}</div>
+                <div className="profile-email">
+                  {userData?.email || "user@example.com"}
+                </div>
+                <div className="profile-plan">
+                  <Shield size={12} />
+                  <span>Pro Plan</span>
+                </div>
+              </div>
+            </div>
+          ),
+        },
+        { key: "divider-1", type: "divider" },
+        {
+          key: "account",
+          label: (
+            <div className="profile-menu-item">
+              <Users size={16} />
+              <span>My Account</span>
+              <ChevronRight size={14} className="menu-item-icon-right" />
+            </div>
+          ),
+        },
+        {
+          key: "preferences",
+          label: (
+            <div className="profile-menu-item">
+              <Settings size={16} />
+              <span>Preferences</span>
+              <ChevronRight size={14} className="menu-item-icon-right" />
+            </div>
+          ),
+        },
+        { key: "divider-2", type: "divider" },
+        {
+          key: "help",
+          label: (
+            <div className="profile-menu-item">
+              <HelpCircle size={16} />
+              <span>Help Center</span>
+              <ChevronRight size={14} className="menu-item-icon-right" />
+            </div>
+          ),
+        },
+        { key: "divider-3", type: "divider" },
+        {
+          key: "logout",
+          label: (
+            <div className="profile-menu-item logout" onClick={() => logout()}>
+              <LogoutOutlined />
+              <span>Log Out</span>
+            </div>
+          ),
+        },
+      ],
+    };
+  }, [userData, logout]);
 
   return (
-    <header>
-      <div className="header-container">
-        <Row justify={"space-between"} align={"middle"} gutter={[16]}>
-          <Col xs={12} sm={12}>
-            <Row align="middle" justify="space-between">
-              <Col xs={6} sm={7}>
-                <NavLink className={"logo-link desktop-only"} to={"/"}>
-                  <div className="text-primary font-bold text-lg">
-                    Sports Administration
-                  </div>{" "}
-                </NavLink>
-                <Button
-                  type="primary"
-                  className="menu-btn mobile-only"
-                  onClick={handleMenuClick}
-                  icon={<MenuOutlined />}
-                />
-              </Col>
-              {xs && (
-                <Col xs={0} sm={3}>
-                  <Button
-                    type="primary"
-                    onClick={toggleCollapse}
-                    className="ml-3"
-                    icon={
-                      isCollapsed ? (
-                        <MenuUnfoldOutlined />
-                      ) : (
-                        <MenuFoldOutlined />
-                      )
-                    }
-                  />
-                </Col>
-              )}
-              <Col xs={18} sm={17}>
-                <h1 className="page-title">{getHeaderTitle()}</h1>
-              </Col>
-            </Row>
-          </Col>
+    <header className="sports-header">
+      <div className="header-left">
+        <button className="mobile-menu-toggle" onClick={toggleMobileMenu}>
+          <MenuIcon size={24} />
+        </button>
+        <h1 className="page-title">{getCurrentPageTitle()}</h1>
+        <span className="page-subtitle">
+          Welcome back, {userData?.name?.split(" ")[0] || "User"}
+        </span>
+      </div>
 
-          <Col xs={12} sm={12}>
-            <Row justify={"end"} align={"middle"} gutter={16}>
-              <Col>
-                <Tooltip title="Profile Menu" placement="bottom">
-                  <Dropdown
-                    menu={dropdownMenu}
-                    placement="bottomRight"
-                    arrow={{ pointAtCenter: true }}
-                    trigger={["click"]}
-                    open={dropdownOpen}
-                    onOpenChange={handleOpenChange}
-                  >
-                    <div
-                      className={`profile-avatar-container ${
-                        dropdownOpen ? "profile-avatar-active" : ""
-                      }`}
-                    >
-                      <Badge dot status="success" offset={[-4, 36]}>
-                        <Avatar
-                          size={42}
-                          src={userData?.profile_image}
-                          icon={!userData?.profile_image && <UserOutlined />}
-                          className="profile-avatar"
-                        />
-                      </Badge>
-                    </div>
-                  </Dropdown>
-                </Tooltip>
-              </Col>
-            </Row>
+      <div className="header-actions">
+        <Tooltip title="Notifications">
+          <button className="icon-button">
+            <Badge count={3} size="small">
+              <Bell size={18} />
+            </Badge>
+          </button>
+        </Tooltip>
+
+        <Row justify={"end"} align={"middle"} gutter={16}>
+          <Col>
+            <Dropdown
+              menu={profileMenu}
+              placement="bottomRight"
+              arrow={{ pointAtCenter: true }}
+              trigger={["click"]}
+              open={dropdownOpen}
+              onOpenChange={handleOpenChange}
+            >
+              <div
+                className={`profile-avatar-container ${
+                  dropdownOpen ? "profile-avatar-active" : ""
+                }`}
+              >
+                <Badge dot status="success" offset={[-4, 36]}>
+                  <Avatar
+                    size={42}
+                    src={userData?.profile_image}
+                    icon={!userData?.profile_image && <UserOutlined />}
+                    className="profile-avatar"
+                  />
+                </Badge>
+              </div>
+            </Dropdown>
           </Col>
         </Row>
       </div>

@@ -1,9 +1,10 @@
 import { Menu } from "antd";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { sideMenuConfig } from "../../routing";
 import useAuthStore from "../../stores/AuthStore/AuthStore";
 import _ from "lodash";
+import { ChevronRight } from "lucide-react";
 import "./Navigation.css";
 
 const getHideClassValue = ({
@@ -12,152 +13,107 @@ const getHideClassValue = ({
   hideInMenuInRouting,
   rootUser,
 }) => {
-  if (hideInMenuInRouting) {
-    return hideInMenuInRouting ? "hide" : "";
-  }
-
-  if (rootUser) {
-    return "";
-  }
-
+  if (hideInMenuInRouting) return "hide";
+  if (rootUser) return "";
   return _.intersection(allowed_permisions, associated_permissions).length > 0
     ? ""
     : "hide";
 };
 
-const getItems = ({ permissions, rootUser, isCollapsed, purchasedModules }) => {
-  const processMenuItems = (items, parentPath = "") => {
-    return items.map(
-      ({ label, path, icon, children, allowed_permisions, hideInMenu }) => {
-        // Handle items without path
-        if (!path && children?.length) {
-          return {
-            label,
-            key: parentPath,
-            icon,
-            className: getHideClassValue({
-              allowed_permisions: allowed_permisions,
-              associated_permissions: permissions,
-              hideInMenuInRouting: hideInMenu,
-              rootUser,
-            }),
-            children: processMenuItems(children, parentPath),
-          };
-        }
+const getMenuItems = ({ permissions, rootUser, purchasedModules }) => {
+  const modules =
+    purchasedModules?.reduce((acc, { module_name, submodules }) => {
+      acc[module_name] = submodules?.map((s) => s.submodule_name) || [];
+      return acc;
+    }, {}) || {};
 
+  const filteredMenu = sideMenuConfig.filter(
+    (item) =>
+      item.module_name === "USERS_ADMINISTRATION" || modules[item.module_name]
+  );
+
+  const mapItems = (items, parentPath = "") =>
+    items.map(
+      ({ label, path, icon, children, allowed_permisions, hideInMenu }) => {
         const fullPath = parentPath ? `${parentPath}/${path}` : path;
 
-        if (!children?.length) {
-          return {
-            label: <NavLink to={fullPath}>{label}</NavLink>,
-            key: `/${fullPath}`,
-            icon,
-            className: getHideClassValue({
-              allowed_permisions: allowed_permisions,
-              associated_permissions: permissions,
-              hideInMenuInRouting: hideInMenu,
-              rootUser,
-            }),
-          };
-        }
-
-        return {
-          label: isCollapsed ? <NavLink to={fullPath}>{label}</NavLink> : label,
+        const item = {
+          label: path ? <NavLink to={`/${fullPath}`}>{label}</NavLink> : label,
           key: `/${fullPath}`,
           icon,
           className: getHideClassValue({
-            allowed_permisions: allowed_permisions,
+            allowed_permisions,
             associated_permissions: permissions,
             hideInMenuInRouting: hideInMenu,
             rootUser,
           }),
-          children: processMenuItems(children, fullPath),
         };
+
+        if (children?.length) {
+          item.children = mapItems(children, fullPath);
+        }
+
+        return item;
       }
     );
-  };
 
-  const purchasedModulesMapper = purchasedModules.reduce(
-    (acc, { module_name, submodules }) => {
-      acc[module_name] = [];
-      if (submodules && submodules.length) {
-        submodules.forEach(({ submodule_name }) => {
-          acc[module_name].push(submodule_name);
-        });
-      }
-      return acc;
-    },
-    {}
-  );
-  const filteredSideMenuConfig = sideMenuConfig.filter((item) => {
-    if (
-      item.module_name &&
-      item.module_name !== "USERS_ADMINISTRATION" &&
-      !purchasedModulesMapper?.[item?.module_name]
-    ) {
-      return false;
-    }
-
-    return item;
-  });
-  return processMenuItems(filteredSideMenuConfig);
+  return mapItems(filteredMenu);
 };
 
-export const Navigation = ({ closeMenu, isCollapsed, onCollapse }) => {
+const Navbar = ({
+  isCollapsed,
+  onToggleSidebar,
+  closeMenu,
+  isMobile = false,
+}) => {
   const { pathname } = useLocation();
   const { userData } = useAuthStore();
-
-  // Track both selected keys and open keys
   const [selectedKeys, setSelectedKeys] = useState([pathname]);
-  const [openKeys, setOpenKeys] = useState([]);
+  const menuRef = useRef();
 
-  // Update open keys when pathname changes to ensure correct submenu expansion
   useEffect(() => {
-    // Extract path segments to determine which submenus should be open
-    const pathSegments = pathname.split("/").filter(Boolean);
-    const newOpenKeys = [];
-
-    // Build open keys from path segments
-    let currentPath = "";
-    pathSegments.forEach((segment) => {
-      currentPath = currentPath ? `${currentPath}/${segment}` : segment;
-      newOpenKeys.push(`/${currentPath}`);
-    });
-
     setSelectedKeys([pathname]);
-    if (!isCollapsed) {
-      setOpenKeys(newOpenKeys);
+
+    // Close all open submenus in collapsed mode after navigation
+    if (isCollapsed) {
+      const openMenus = document.querySelectorAll(".ant-menu-submenu-popup");
+      openMenus.forEach((menu) => (menu.style.display = "none"));
     }
   }, [pathname, isCollapsed]);
 
-  const onClick = (e) => {
+  const handleMenuClick = (e) => {
     setSelectedKeys([e.key]);
-    closeMenu && closeMenu();
-  };
-
-  // Handle submenu open/close
-  const onOpenChange = (keys) => {
-    setOpenKeys(keys);
+    if (closeMenu && isMobile) closeMenu();
   };
 
   return (
-    <div className={`Navigation ${isCollapsed ? "collapsed" : ""}`}>
-      <Menu
-        onClick={onClick}
-        selectedKeys={selectedKeys}
-        openKeys={isCollapsed ? [] : openKeys}
-        onOpenChange={onOpenChange}
-        mode="inline"
-        inlineCollapsed={isCollapsed}
-        items={getItems({
-          permissions: userData?.permissions,
-          rootUser: userData?.is_root_user,
-          isCollapsed,
-          purchasedModules: userData?.modules,
-        })}
-      />
+    <div className={`navbar ${isCollapsed ? "collapsed" : ""}`}>
+      <div className="navbar-header">
+        <div className="logo">
+          <div className="logo-icon">SFA</div>
+          {!isCollapsed && <div className="logo-text">SPORTS ADMIN</div>}
+        </div>
+        <button className="toggle-btn" onClick={onToggleSidebar}>
+          <ChevronRight size={20} />
+        </button>
+      </div>
+
+      <div className="navbar-menu" ref={menuRef}>
+        <Menu
+          mode="inline"
+          inlineCollapsed={isCollapsed}
+          selectedKeys={selectedKeys}
+          onClick={handleMenuClick}
+          items={getMenuItems({
+            permissions: userData?.permissions,
+            rootUser: userData?.is_root_user,
+            purchasedModules: userData?.modules,
+          })}
+          className="navbar-ant-menu"
+        />
+      </div>
     </div>
   );
 };
 
-export default Navigation;
+export default Navbar;

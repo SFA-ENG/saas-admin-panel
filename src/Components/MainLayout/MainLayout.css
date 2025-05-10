@@ -1,47 +1,146 @@
-.MainLayout {
-  min-height: 100vh;
-  background-color: #f4f4f4;
-}
-
-.MainLayout main {
-  padding-top: 60px;
-  min-height: calc(100vh - 60px);
+/* Sports Dashboard Container */
+.sports-dashboard {
   display: flex;
+  min-height: 100vh;
+  background-color: var(--sports-bg);
+  color: var(--sports-text);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-.MainLayout aside {
-  width: 200px;
-  transition: width 0.3s;
+/* Sidebar Styling */
+.sports-sidebar {
+  width: var(--sports-sidebar-width);
+  background: linear-gradient(
+    135deg,
+    var(--sports-primary),
+    var(--sports-primary-dark)
+  );
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  left: 0;
+  transition: var(--sports-sidebar-transition);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
 }
 
-.MainLayout aside.collapsed {
-  width: 80px;
+.sports-sidebar.collapsed {
+  width: var(--sports-sidebar-collapsed-width);
 }
 
-.MainLayout .main-content {
+/* Mobile Sidebar Drawer */
+.mobile-sidebar-drawer .ant-drawer-body {
+  padding: 0 !important;
+}
+
+/* Main Content Area */
+.sports-main {
   flex: 1;
-  margin-left: 200px;
-  transition: margin 0.3s;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
 }
 
-/* Mobile styles */
-@media only screen and (max-width: 1023px) {
-  .MainLayout aside {
+/* Content Area */
+.content-area {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+/* Fix for dark mode inputs - global fix */
+.dark-theme input,
+.dark-theme .ant-select-selector,
+.dark-theme .ant-modal-content,
+.dark-theme .ant-select-dropdown,
+.dark-theme .ant-dropdown-menu,
+.dark-theme textarea,
+.dark-theme .ant-picker,
+.dark-theme .ant-input {
+  background-color: var(--sports-card-bg) !important;
+  color: var(--sports-text) !important;
+  border-color: var(--sports-border) !important;
+}
+
+/* Placeholder color fix for dark mode */
+.dark-theme input::placeholder,
+.dark-theme textarea::placeholder,
+.dark-theme .ant-input::placeholder {
+  color: var(--sports-text-secondary) !important;
+  opacity: 0.7 !important;
+}
+
+/* Card styling fix for dark mode */
+.dark-theme .ant-card,
+.dark-theme .ant-card-head,
+.dark-theme .ant-card-body {
+  background-color: var(--sports-card-bg) !important;
+  color: var(--sports-text) !important;
+  border-color: var(--sports-border) !important;
+}
+
+.dark-theme .ant-card-head-title,
+.dark-theme .ant-card-meta-title {
+  color: var(--sports-text) !important;
+}
+
+.dark-theme .ant-card-meta-description {
+  color: var(--sports-text-secondary) !important;
+}
+
+/* Dropdown menu specific dark theme fixes */
+.dark-theme .ant-dropdown-menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.dark-theme .ant-dropdown-menu-item-divider {
+  background-color: var(--sports-border) !important;
+}
+
+/* Fix drawer and modal styles in dark mode */
+.dark-theme .ant-drawer-content,
+.dark-theme .ant-drawer-header,
+.dark-theme .ant-drawer-body,
+.dark-theme .ant-modal-content,
+.dark-theme .ant-modal-header {
+  background-color: var(--sports-card-bg) !important;
+  color: var(--sports-text) !important;
+  border-color: var(--sports-border) !important;
+}
+
+.dark-theme .ant-drawer-title,
+.dark-theme .ant-modal-title {
+  color: var(--sports-text) !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .desktop-sidebar {
     display: none;
   }
+}
 
-  .MainLayout .main-content {
-    margin-left: 0;
+@media (max-width: 480px) {
+  .content-area {
     padding: 16px;
-  }
-
-  .MainLayout .main-content.content-collapsed {
-    margin-left: 0;
   }
 }
 
-@media only screen and (min-width: 1023px) {
-  .MainLayout .main-content {
-    margin: 16px;
+/* Animation Keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
   }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Content Animation */
+.content-area {
+  animation: fadeIn 0.3s ease-out;
 }

@@ -57,6 +57,39 @@
   --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Sports theme variables */
+  --sports-primary: #2e0473;
+  --sports-primary-light: #4a1ca6;
+  --sports-primary-dark: #1a0147;
+  --sports-secondary: #00c16e;
+  --sports-accent: #ff5722;
+  --sports-bg: #f7f9fc;
+  --sports-card-bg: #ffffff;
+  --sports-text: #252733;
+  --sports-text-secondary: #6e7a8a;
+  --sports-border: #e2e8f0;
+  --sports-success: #00c16e;
+  --sports-warning: #ffb400;
+  --sports-danger: #ff5252;
+  --sports-info: #0091ff;
+
+  /* Sports component dimensions */
+  --sports-sidebar-width: 250px;
+  --sports-sidebar-collapsed-width: 80px;
+  --sports-header-height: 72px;
+  --sports-sidebar-transition: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  --sports-card-radius: 16px;
+  --sports-btn-radius: 8px;
+}
+
+/* Dark theme sports variables */
+.dark-theme {
+  --sports-bg: #12141d;
+  --sports-card-bg: #1e2235;
+  --sports-text: #e4e6f1;
+  --sports-text-secondary: #98a1b3;
+  --sports-border: #2d3348;
 }
 
 .text-primary {
@@ -158,4 +191,3 @@ img {
     margin-top: 0;
   }
 }
-
