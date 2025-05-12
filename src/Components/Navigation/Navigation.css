@@ -162,7 +162,7 @@
   background-color: rgba(74, 28, 166, 0.15) !important;
 }
 
-/* Collapsed menu flyout */
+/* Force submenu popup to show on hover in collapsed mode */
 .ant-menu-inline-collapsed
   .ant-menu-submenu:hover
   .ant-menu-submenu-title
@@ -171,17 +171,21 @@
   position: absolute;
   left: 100%;
   top: 0;
-  z-index: 1000;
+  z-index: 1050;
   background: rgba(74, 28, 166, 0.95);
   box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.15);
   min-width: 180px;
 }
 
-/* Disable tooltip in collapsed mode */
-.ant-menu-submenu-popup {
-  pointer-events: auto !important;
+/* Override any active state that might prevent hover */
+.ant-menu-inline-collapsed
+  .ant-menu-submenu-active:hover
+  .ant-menu-submenu-title
+  + .ant-menu {
+  display: block !important;
 }
 
+/* Disable tooltip in collapsed mode */
 .ant-menu-inline-collapsed-tooltip {
   display: none !important;
 }

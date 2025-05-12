@@ -1,10 +1,10 @@
 import { Menu } from "antd";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { sideMenuConfig } from "../../routing";
 import useAuthStore from "../../stores/AuthStore/AuthStore";
 import _ from "lodash";
-import { ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import "./Navigation.css";
 
 const getHideClassValue = ({
@@ -27,19 +27,18 @@ const getMenuItems = ({ permissions, rootUser, purchasedModules }) => {
       return acc;
     }, {}) || {};
 
-  const filteredMenu = sideMenuConfig.filter(
+  const filtered = sideMenuConfig.filter(
     (item) =>
       item.module_name === "USERS_ADMINISTRATION" || modules[item.module_name]
   );
 
-  const mapItems = (items, parentPath = "") =>
+  const mapItems = (items, parent = "") =>
     items.map(
       ({ label, path, icon, children, allowed_permisions, hideInMenu }) => {
-        const fullPath = parentPath ? `${parentPath}/${path}` : path;
-
+        const full = parent ? `${parent}/${path}` : path;
         const item = {
-          label: path ? <NavLink to={`/${fullPath}`}>{label}</NavLink> : label,
-          key: `/${fullPath}`,
+          label: path ? <NavLink to={`/${full}`}>{label}</NavLink> : label,
+          key: `/${full}`,
           icon,
           className: getHideClassValue({
             allowed_permisions,
@@ -48,19 +47,15 @@ const getMenuItems = ({ permissions, rootUser, purchasedModules }) => {
             rootUser,
           }),
         };
-
-        if (children?.length) {
-          item.children = mapItems(children, fullPath);
-        }
-
+        if (children?.length) item.children = mapItems(children, full);
         return item;
       }
     );
 
-  return mapItems(filteredMenu);
+  return mapItems(filtered);
 };
 
-const Navbar = ({
+export const Navigation = ({
   isCollapsed,
   onToggleSidebar,
   closeMenu,
@@ -69,19 +64,30 @@ const Navbar = ({
   const { pathname } = useLocation();
   const { userData } = useAuthStore();
   const [selectedKeys, setSelectedKeys] = useState([pathname]);
-  const menuRef = useRef();
+  const [openKeys, setOpenKeys] = useState([]);
 
+  // Sync selection & openKeys on route change
   useEffect(() => {
     setSelectedKeys([pathname]);
 
-    // Close all open submenus in collapsed mode after navigation
     if (isCollapsed) {
-      const openMenus = document.querySelectorAll(".ant-menu-submenu-popup");
-      openMenus.forEach((menu) => (menu.style.display = "none"));
+      // close any open submenu in collapsed mode
+      setOpenKeys([]);
+    } else {
+      // expand parent menus in expanded mode
+      const segments = pathname.split("/").filter(Boolean);
+      const parents = segments
+        .slice(0, -1)
+        .map((_, i) => "/" + segments.slice(0, i + 1).join("/"));
+      setOpenKeys(parents);
     }
   }, [pathname, isCollapsed]);
 
-  const handleMenuClick = (e) => {
+  const onOpenChange = (keys) => {
+    setOpenKeys(keys);
+  };
+
+  const onClick = (e) => {
     setSelectedKeys([e.key]);
     if (closeMenu && isMobile) closeMenu();
   };
@@ -94,16 +100,19 @@ const Navbar = ({
           {!isCollapsed && <div className="logo-text">SPORTS ADMIN</div>}
         </div>
         <button className="toggle-btn" onClick={onToggleSidebar}>
-          <ChevronRight size={20} />
+          {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
         </button>
       </div>
 
-      <div className="navbar-menu" ref={menuRef}>
+      <div className="navbar-menu">
         <Menu
           mode="inline"
           inlineCollapsed={isCollapsed}
+          triggerSubMenuAction={isCollapsed ? "hover" : "click"}
           selectedKeys={selectedKeys}
-          onClick={handleMenuClick}
+          openKeys={openKeys}
+          onOpenChange={onOpenChange}
+          onClick={onClick}
           items={getMenuItems({
             permissions: userData?.permissions,
             rootUser: userData?.is_root_user,
@@ -116,4 +125,4 @@ const Navbar = ({
   );
 };
 
-export default Navbar;
+export default Navigation;

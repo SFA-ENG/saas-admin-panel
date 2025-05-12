@@ -1,5 +1,5 @@
 import { LogoutOutlined, UserOutlined } from "@ant-design/icons";
-import { Badge, Grid, Tooltip, Dropdown, Avatar, Col, Row } from "antd";
+import { Badge, Tooltip, Dropdown, Avatar, Col, Row } from "antd";
 import _ from "lodash";
 import { useState, useCallback, useMemo } from "react";
 import { matchPath, useLocation } from "react-router-dom";
@@ -22,7 +22,6 @@ const Header = ({ toggleMobileMenu, userData, getCurrentPageTitle }) => {
   const { pathname } = useLocation();
   const { clearUserData } = useAuthStore();
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const { xs } = Grid.useBreakpoint();
 
   const { mutate: logout } = useApiMutation({
     queryKey: [CACHE_KEYS.LOGOUT],
