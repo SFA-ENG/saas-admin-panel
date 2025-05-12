@@ -97,7 +97,7 @@ const BasicInformationSection = ({ isExpanded, toggleSection, tournamentStatusOp
                 style={{ width: "100%" }} 
                 format="YYYY-MM-DD"
                 placeholder={["Start Date", "End Date"]}
-                className="rounded-lg h-11"
+                className="rounded-lg h-8"
                 placement="bottomLeft"
                 suffixIcon={<Clock size={16} className="text-purple-500" />}
               />

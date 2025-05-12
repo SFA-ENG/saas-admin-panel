@@ -25,13 +25,6 @@ const Season = ({ season, index }) => {
               backgroundColor: season.isActive ? "#52c41a" : "#f5222d",
             }}
           />
-        </div>
-      }
-    >
-      <div className="p-1">
-        <p className="text-gray-600 mb-4">{season.description}</p>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           <div className="bg-blue-50 p-2 rounded-lg">
             <div className="flex items-center">
               <Calendar size={16} className="text-blue-600 mr-2" />
@@ -44,7 +37,14 @@ const Season = ({ season, index }) => {
             </div>
             
           </div>
+        </div>
+      }
+    >
+      
+      <div className="p-1">
+        <p className="text-gray-600 mb-4">{season.description}</p>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           <div className="bg-green-50 p-3 rounded-lg">
             <div className="flex items-center">
               <ClockIcon size={16} className="text-green-600 mr-2" />

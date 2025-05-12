@@ -81,7 +81,7 @@ const EventCard = ({ event, removeEvent, events, eventIndex, generateId }) => {
               >
                 <RangePicker 
                   style={{ width: "100%" }} 
-                  className="rounded-lg h-10"
+                  className="rounded-lg h-8"
                   format="YYYY-MM-DD"
                   placeholder={["Start Date", "End Date"]}
                   suffixIcon={<Calendar size={16} className="text-purple-500" />}

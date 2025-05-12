@@ -60,7 +60,7 @@ const SubEventCard = ({ subEvent, removeSubEvent, subEventIndex }) => (
             >
               <Input 
                 placeholder="e.g., Men's U-18 100m Sprint" 
-                className="rounded-lg h-10"
+                className="rounded-lg h-8"
               />
             </Form.Item>
           </Col>
@@ -100,23 +100,7 @@ const SubEventCard = ({ subEvent, removeSubEvent, subEventIndex }) => (
             </Form.Item>
           </Col>
           
-          <Col xs={24} md={12}>
-            <Form.Item
-              {...subEvent}
-              name={[subEvent.name, "isActive"]}
-              label="Active Status"
-              initialValue={true}
-            >
-              <Radio.Group buttonStyle="solid" className="flex">
-                <Radio.Button value={true} className="flex-1 text-center">
-                  <span className="text-green-600">Active</span>
-                </Radio.Button>
-                <Radio.Button value={false} className="flex-1 text-center">
-                  <span className="text-gray-500">Inactive</span>
-                </Radio.Button>
-              </Radio.Group>
-            </Form.Item>
-          </Col>
+        
           
           <Col xs={24} md={12}>
             <Form.Item
@@ -139,6 +123,23 @@ const SubEventCard = ({ subEvent, removeSubEvent, subEventIndex }) => (
                   </div>
                 </Option>
               </Select>
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={12}>
+            <Form.Item
+              {...subEvent}
+              name={[subEvent.name, "isActive"]}
+              label="Active Status"
+              initialValue={true}
+            >
+              <Radio.Group buttonStyle="solid" className="flex">
+                <Radio.Button value={true} className="flex-1 text-center">
+                  <span className="text-green-600">Active</span>
+                </Radio.Button>
+                <Radio.Button value={false} className="flex-1 text-center">
+                  <span className="text-gray-500">Inactive</span>
+                </Radio.Button>
+              </Radio.Group>
             </Form.Item>
           </Col>
         </Row>
@@ -201,12 +202,9 @@ const SubEventCard = ({ subEvent, removeSubEvent, subEventIndex }) => (
                           rules={[{ required: true, message: "Please select an operator" }]}
                         >
                           <Select placeholder="Select operator" className="rounded-lg">
-                            <Option value="=">=</Option>
-                            <Option value="!=">!=</Option>
-                            <Option value=">">&gt;</Option>
-                            <Option value="<">&lt;</Option>
-                            <Option value=">=">&gt;=</Option>
-                            <Option value="<=">&lt;=</Option>
+                            <Option value="EQUALTO">Equal To</Option>
+                            <Option value="NOTEQUALTO">Not Equal To</Option>
+                          
                           </Select>
                         </Form.Item>
                       </Col>
@@ -238,7 +236,7 @@ const SubEventCard = ({ subEvent, removeSubEvent, subEventIndex }) => (
                 <Form.Item>
                   <Button
                     type="dashed"
-                    onClick={() => add({ field: "GENDER", operator: "=", value: "" })}
+                    onClick={() => add({ field: "GENDER", operator: "EQUALTO", value: "" })}
                     icon={<Users size={16} />}
                     className="w-full h-10 rounded-lg hover:border-blue-500 hover:text-blue-500"
                   >
