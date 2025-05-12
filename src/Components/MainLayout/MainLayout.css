@@ -48,73 +48,7 @@
 /* Content Area */
 .content-area {
   flex: 1;
-  padding: 24px;
   overflow-y: auto;
-}
-
-/* Fix for dark mode inputs - global fix */
-.dark-theme input,
-.dark-theme .ant-select-selector,
-.dark-theme .ant-modal-content,
-.dark-theme .ant-select-dropdown,
-.dark-theme .ant-dropdown-menu,
-.dark-theme textarea,
-.dark-theme .ant-picker,
-.dark-theme .ant-input {
-  background-color: var(--sports-card-bg) !important;
-  color: var(--sports-text) !important;
-  border-color: var(--sports-border) !important;
-}
-
-/* Placeholder color fix for dark mode */
-.dark-theme input::placeholder,
-.dark-theme textarea::placeholder,
-.dark-theme .ant-input::placeholder {
-  color: var(--sports-text-secondary) !important;
-  opacity: 0.7 !important;
-}
-
-/* Card styling fix for dark mode */
-.dark-theme .ant-card,
-.dark-theme .ant-card-head,
-.dark-theme .ant-card-body {
-  background-color: var(--sports-card-bg) !important;
-  color: var(--sports-text) !important;
-  border-color: var(--sports-border) !important;
-}
-
-.dark-theme .ant-card-head-title,
-.dark-theme .ant-card-meta-title {
-  color: var(--sports-text) !important;
-}
-
-.dark-theme .ant-card-meta-description {
-  color: var(--sports-text-secondary) !important;
-}
-
-/* Dropdown menu specific dark theme fixes */
-.dark-theme .ant-dropdown-menu-item:hover {
-  background-color: rgba(255, 255, 255, 0.05) !important;
-}
-
-.dark-theme .ant-dropdown-menu-item-divider {
-  background-color: var(--sports-border) !important;
-}
-
-/* Fix drawer and modal styles in dark mode */
-.dark-theme .ant-drawer-content,
-.dark-theme .ant-drawer-header,
-.dark-theme .ant-drawer-body,
-.dark-theme .ant-modal-content,
-.dark-theme .ant-modal-header {
-  background-color: var(--sports-card-bg) !important;
-  color: var(--sports-text) !important;
-  border-color: var(--sports-border) !important;
-}
-
-.dark-theme .ant-drawer-title,
-.dark-theme .ant-modal-title {
-  color: var(--sports-text) !important;
 }
 
 /* Responsive Design */

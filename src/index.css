@@ -83,15 +83,6 @@
   --sports-btn-radius: 8px;
 }
 
-/* Dark theme sports variables */
-.dark-theme {
-  --sports-bg: #12141d;
-  --sports-card-bg: #1e2235;
-  --sports-text: #e4e6f1;
-  --sports-text-secondary: #98a1b3;
-  --sports-border: #2d3348;
-}
-
 .text-primary {
   color: var(--color-primary);
 }

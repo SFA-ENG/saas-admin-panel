@@ -127,7 +127,8 @@ const TournamentsPage = () => {
                   Add New Tournament
                 </h1>
                 <p className="text-gray-600">
-                  Create a new tournament with seasons, sports, events, and sub-events
+                  Create a new tournament with seasons, sports, events, and
+                  sub-events
                 </p>
               </div>
             </div>
@@ -138,7 +139,6 @@ const TournamentsPage = () => {
               title="Cancel"
               icon={XCircle}
               onClick={handleCancelAdd}
-             
             >
               Cancel
             </AccessControlButton>
