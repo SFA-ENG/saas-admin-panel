@@ -8,7 +8,7 @@ const { RangePicker } = DatePicker;
 /**
  * BasicInformationSection component for tournament basic details
  */
-const BasicInformationSection = ({ isExpanded, toggleSection }) => (
+const BasicInformationSection = ({ isExpanded, toggleSection, tournamentStatusOptions, tournamentTypeOptions }) => (
   <Card 
     className="mb-10 shadow-md rounded-xl border-0 overflow-hidden" 
     bodyStyle={{ padding: isExpanded ? "1.5rem" : "0 1.5rem" }}
@@ -114,25 +114,57 @@ const BasicInformationSection = ({ isExpanded, toggleSection }) => (
               <Select
                 placeholder="Select status"
                 className="rounded-lg h-11"
-                options={[
-                  { value: "UPCOMING", label: (
-                    <div className="flex items-center">
-                      <Badge color="blue" />
-                      <span className="ml-2">Upcoming</span>
-                    </div>
-                  )},
-                  { value: "ACTIVE", label: (
-                    <div className="flex items-center">
-                      <Badge color="green" />
-                      <span className="ml-2">Active</span>
-                    </div>
-                  )},
-                  { value: "COMPLETED", label: (
-                    <div className="flex items-center">
-                      <Badge color="gray" />
-                      <span className="ml-2">Completed</span>
-                    </div>
-                  )},
+                options={tournamentStatusOptions && tournamentStatusOptions.length > 0 
+                  ? tournamentStatusOptions.filter(option => option.value !== 'ALL').map(option => ({
+                      value: option.value,
+                      label: (
+                        <div className="flex items-center">
+                          <Badge color={option.value === "ACTIVE" ? "green" : 
+                                        option.value === "PUBLISHED" ? "blue" :
+                                        option.value === "COMPLETED" ? "gray" :
+                                        option.value === "CANCELLED" ? "red" : "blue"} />
+                          <span className="ml-2">{option.label}</span>
+                        </div>
+                      )
+                    }))
+                  : [
+                      { value: "UPCOMING", label: (
+                        <div className="flex items-center">
+                          <Badge color="blue" />
+                          <span className="ml-2">Upcoming</span>
+                        </div>
+                      )},
+                      { value: "ACTIVE", label: (
+                        <div className="flex items-center">
+                          <Badge color="green" />
+                          <span className="ml-2">Active</span>
+                        </div>
+                      )},
+                      { value: "COMPLETED", label: (
+                        <div className="flex items-center">
+                          <Badge color="gray" />
+                          <span className="ml-2">Completed</span>
+                        </div>
+                      )},
+                    ]
+                }
+              />
+            </Form.Item>
+          </Col>
+          
+          <Col xs={24} md={12} lg={8}>
+            <Form.Item 
+              name="type"
+              label="Tournament Type" 
+              rules={[{ required: true, message: "Please select tournament type" }]}
+            >
+              <Select
+                placeholder="Select tournament type"
+                className="rounded-lg"
+                options={tournamentTypeOptions || [
+                  { value: "OPEN_REGISTRATION_TEAM", label: "Open Registration (Team)" },
+                  { value: "OPEN_REGISTRATION_INDIVIDUAL", label: "Open Registration (Individual)" },
+                  { value: "INVITATION_ONLY", label: "Invitation Only" },
                 ]}
               />
             </Form.Item>

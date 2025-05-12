@@ -133,14 +133,15 @@ const TournamentsPage = () => {
             </div>
           </Col>
           <Col>
-            <Button
-              icon={<XCircle size={16} />}
-              onClick={handleCancelAdd}
-              className="flex items-center"
+            <AccessControlButton
               type="default"
+              title="Cancel"
+              icon={XCircle}
+              onClick={handleCancelAdd}
+             
             >
               Cancel
-            </Button>
+            </AccessControlButton>
           </Col>
         </Row>
 

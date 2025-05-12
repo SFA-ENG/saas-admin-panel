@@ -64,3 +64,99 @@ export const formatDate = (dateString) => {
     };
     return categoryColors[category] || "bg-gray-100 text-gray-600";
   }; 
+
+// Dropdown options data for various tournament fields
+// These will be replaced with API responses in the future
+
+// Tournament status options
+export const tournamentStatusOptions = [
+  { label: "All", value: "ALL" },
+  { label: "Draft", value: "DRAFT" },
+  { label: "Active", value: "ACTIVE" },
+  { label: "Published", value: "PUBLISHED" },
+  { label: "Completed", value: "COMPLETED" },
+  { label: "Cancelled", value: "CANCELLED" },
+];
+
+// Tournament type options
+export const tournamentTypeOptions = [
+  { label: "Open Registration (Team)", value: "OPEN_REGISTRATION_TEAM" },
+  { label: "Open Registration (Individual)", value: "OPEN_REGISTRATION_INDIVIDUAL" },
+  { label: "Invitation Only", value: "INVITATION_ONLY" },
+  { label: "Qualification Based", value: "QUALIFICATION_BASED" },
+];
+
+// Tournament format options
+export const tournamentFormatOptions = [
+  { label: "Knockout", value: "KNOCKOUT" },
+  { label: "League", value: "LEAGUE" },
+  { label: "Round Robin", value: "ROUND_ROBIN" },
+  { label: "Group Stage + Knockout", value: "GROUP_KNOCKOUT" },
+  { label: "Swiss System", value: "SWISS" },
+];
+
+// Sports options
+export const sportsOptions = [
+  { label: "All", value: "ALL" },
+  { label: "Cricket", value: "CRICKET" },
+  { label: "Football", value: "FOOTBALL" },
+  { label: "Tennis", value: "TENNIS" },
+  { label: "Basketball", value: "BASKETBALL" },
+  { label: "Badminton", value: "BADMINTON" },
+  { label: "Swimming", value: "SWIMMING" },
+  { label: "Hockey", value: "HOCKEY" },
+  { label: "Athletics", value: "ATHLETICS" },
+  { label: "Table Tennis", value: "TABLE_TENNIS" },
+  { label: "Volleyball", value: "VOLLEYBALL" },
+];
+
+// Gender options for tournaments
+export const genderOptions = [
+  { label: "Male", value: "MALE" },
+  { label: "Female", value: "FEMALE" },
+  { label: "Both", value: "BOTH" },
+];
+
+// Age group options
+export const ageGroupOptions = [
+  { label: "Under 10", value: "U10" },
+  { label: "Under 12", value: "U12" },
+  { label: "Under 14", value: "U14" },
+  { label: "Under 16", value: "U16" },
+  { label: "Under 18", value: "U18" },
+  { label: "Under 21", value: "U21" },
+  { label: "Senior", value: "SENIOR" },
+  { label: "Veterans", value: "VETERANS" },
+];
+
+// Media category options
+export const mediaCategoryOptions = [
+  { label: "Logo", value: "LOGO" },
+  { label: "Banner", value: "BANNER" },
+  { label: "Poster", value: "POSTER" },
+  { label: "Cover Image", value: "COVER" },
+  { label: "Thumbnail", value: "THUMBNAIL" },
+];
+
+// Marketplace visibility scope options
+export const marketplaceVisibilityOptions = [
+  { label: "B2C - Individual", value: "B2C-INDIVIDUAL" },
+  { label: "B2C - Team", value: "B2C-TEAM" },
+  { label: "B2B - Academy", value: "B2B-ACADEMY" },
+  { label: "B2B - School", value: "B2B-SCHOOL" },
+  { label: "B2B - Club", value: "B2B-CLUB" },
+];
+
+// Location options (Indian cities)
+export const locationOptions = [
+  { label: "New Delhi", value: "NEW_DELHI" },
+  { label: "Mumbai", value: "MUMBAI" },
+  { label: "Bangalore", value: "BANGALORE" },
+  { label: "Hyderabad", value: "HYDERABAD" },
+  { label: "Chennai", value: "CHENNAI" },
+  { label: "Kolkata", value: "KOLKATA" },
+  { label: "Pune", value: "PUNE" },
+  { label: "Ahmedabad", value: "AHMEDABAD" },
+  { label: "Jaipur", value: "JAIPUR" },
+  { label: "Lucknow", value: "LUCKNOW" },
+]; 

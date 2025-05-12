@@ -6,7 +6,19 @@ import SeasonCard from "../cards/SeasonCard";
 /**
  * TournamentStructureSection component for managing tournament structure
  */
-const TournamentStructureSection = ({ isExpanded, toggleSection, generateId }) => (
+const TournamentStructureSection = ({ 
+  isExpanded, 
+  toggleSection, 
+  generateId,
+  tournamentFormatOptions,
+  sportsOptions,
+  genderOptions,
+  ageGroupOptions,
+  locationOptions,
+  countryOptions,
+  cityOptions,
+  stateOptions
+}) => (
   <Card 
     className="mb-10 shadow-md rounded-xl border-0 overflow-hidden" 
     bodyStyle={{ padding: isExpanded ? "1.5rem" : "0 1.5rem" }}
@@ -35,6 +47,14 @@ const TournamentStructureSection = ({ isExpanded, toggleSection, generateId }) =
                     seasons={seasons} 
                     seasonIndex={seasonIndex} 
                     generateId={generateId} 
+                    tournamentFormatOptions={tournamentFormatOptions}
+                    sportsOptions={sportsOptions}
+                    genderOptions={genderOptions}
+                    ageGroupOptions={ageGroupOptions}
+                    locationOptions={locationOptions}
+                    countryOptions={countryOptions}
+                    cityOptions={cityOptions}
+                    stateOptions={stateOptions}
                   />
                 </div>
               ))}

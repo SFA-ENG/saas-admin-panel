@@ -1,37 +1,46 @@
-import React from "react";
-import { Button, Typography, Tooltip } from "antd";
-import { ChevronDown, ChevronUp, Info } from "lucide-react";
+import { Typography, Tooltip } from "antd";
+import { ChevronDown, ChevronUp, HelpCircle } from "lucide-react";
 
 const { Title } = Typography;
 
 /**
- * SectionHeader component for rendering collapsible section headers
+ * SectionHeader component for collapsible section headers
  */
-const SectionHeader = ({ icon, title, sectionId, tooltip, isExpanded, onToggle }) => (
-  <div className="flex items-center justify-between mb-5">
+const SectionHeader = ({ icon, title, sectionId, tooltip, isExpanded, onToggle,}) => (
+  <div 
+    className="flex items-center justify-between py-2 cursor-pointer w-full" 
+    onClick={() => onToggle(sectionId)}
+  >
     <div className="flex items-center">
-      {React.cloneElement(icon, { 
-        size: 22, 
-        className: "text-blue-600 mr-3"
-      })}
-      <Title level={4} className="!mb-0 !text-gray-800">
-        {title}
-      </Title>
+      <div className="p-2 rounded-lg bg-blue-50 mr-3">
+        {icon}
+      </div>
+      <div>
+        <h3 className="text-lg font-medium text-gray-800 mb-0">{title}</h3>
+      </div>
+      
       {tooltip && (
-        <Tooltip title={tooltip}>
-          <Info size={16} className="text-gray-400 ml-2 cursor-help" />
+        <Tooltip title={tooltip} placement="right">
+          <div className="flex items-center ml-2">
+            <HelpCircle size={16} className="text-gray-400 hover:text-blue-500" />
+          </div>
         </Tooltip>
       )}
     </div>
-    <Button
-      type="text"
-      icon={isExpanded 
-        ? <ChevronUp size={18} className="text-gray-500" /> 
-        : <ChevronDown size={18} className="text-gray-500" />
-      }
-      onClick={() => onToggle(sectionId)}
-      className="hover:bg-gray-100 rounded-full h-9 w-9 flex items-center justify-center p-0"
-    />
+    
+    <div className="flex items-center text-gray-500">
+      {isExpanded ? (
+        <div className="flex items-center text-blue-500">
+          <span className="mr-2 text-sm">Collapse</span>
+          <ChevronUp size={18} />
+        </div>
+      ) : (
+        <div className="flex items-center text-gray-500">
+          <span className="mr-2 text-sm">Expand</span>
+          <ChevronDown size={18} />
+        </div>
+      )}
+    </div>
   </div>
 );
 
