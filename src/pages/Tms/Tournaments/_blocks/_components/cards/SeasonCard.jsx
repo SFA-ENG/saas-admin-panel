@@ -645,8 +645,8 @@ const SeasonCard = ({
                           rules={[{ required: true, message: "Please select an operator" }]}
                         >
                           <Select placeholder="Select operator" className="rounded-lg">
-                            <Option value="=">Equal To</Option>
-                            <Option value="!=">Not Equal To</Option>
+                            <Option value="EQUALTO">Equal To</Option>
+                            <Option value="NOTEQUALTO">Not Equal To</Option>
                           
                           </Select>
                         </Form.Item>
