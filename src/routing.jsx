@@ -105,7 +105,7 @@ export const sideMenuConfig = [
         hideInMenu: true,
         sub_module_name: "TOURNAMENTS",
         element: <TournamentDetailsPage />,
-        allowed_permisions: [...getPermision("TOURNAMENTS", true)],
+        allowed_permisions: [...getPermision("TOURNAMENTS")],
       },
 
       {

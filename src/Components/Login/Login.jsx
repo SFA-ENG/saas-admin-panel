@@ -1,15 +1,17 @@
-import { Button, Checkbox, Form, Input, Select } from "antd";
+import { Form, Button, Checkbox, Input, Select } from "antd";
 import { useEffect, useState } from "react";
 import useAuthStore from "../../stores/AuthStore/AuthStore";
-import LoginCarousel from "./LoginCarousel";
 import {
   CACHE_KEYS,
   countryCodeOptions,
   countryCodes,
+  tenant_type, 
 } from "../../commons/constants";
 import { useApiMutation } from "../../hooks/useApiQuery/useApiQuery";
 import { renderErrorNotifications } from "helpers/error.helpers";
 import { useNavigate } from "react-router-dom";
+import Login_Banner from "../../../src/assets/banners/Login/banner.png";
+import Logo from "../../../src/assets/Login_Logo.png";
 const Login = () => {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
@@ -80,11 +82,35 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex bg-soft-purple">
-      <div className="w-full max-w-[1440px] mx-auto flex flex-col md:flex-row items-center justify-center shadow-xl">
+      <div className="w-full mx-auto flex flex-col md:flex-row items-center justify-center shadow-xl h-screen">
+
+        {/* Carousel Section */}
+        <div className="hidden md:flex md:w-1/2 h-screen relative overflow-hidden">
+          <img
+            src={Login_Banner}
+            alt="Login"
+            className="absolute inset-0 w-full h-full object-center"
+          />
+          {/* <h1 className="absolute top-75 left-40 text-white text-6xl font-bold w-[600px]">
+            Elevate Your Game
+          </h1>
+          <p className="absolute max-w-md top-90 left-40 text-white text-xl w-[600px] mt-2 ">Unlock the full potential of your sports tournaments with our innovative SaaS solution</p> */}
+        </div>
+
         {/* Login/Register Form Section */}
+
         <div className="w-full md:w-1/2 flex flex-col justify-center p-6">
-          <div className="max-w-md mx-auto w-full">
-            <h2 className="text-3xl font-bold mb-8 text-center text-primary-purple">
+        <div className="mb-12 flex justify-center items-center">
+              <img 
+                src={Logo} 
+                alt="Logo" 
+                style={{
+                  width: '193.17739868164062px',
+                  height: '49px'
+                }} 
+              />
+            </div>  
+          <div className="max-w-md mx-auto w-full mt-12">            <h2 className="text-3xl font-bold mb-8 text-center text-primary-purple">
               {isLogin ? "Welcome Back" : "Create Account"}
             </h2>
 
@@ -150,8 +176,21 @@ const Login = () => {
               >
                 <Input placeholder="Email" />
               </Form.Item>
+              
               {!isLogin && (
                 <>
+                <Form.Item
+                  label="Tenant Type"
+                  name="tenant_type"
+                  rules={[
+                    { required: true, message: "Please select your tenant type!" },
+                  ]}
+                >
+                  <Select
+                    placeholder="Select Tenant Type"
+                    options={tenant_type}
+                  />
+                </Form.Item>
                   <Form.Item
                     label="Country Code"
                     name="countryCode"
@@ -252,16 +291,10 @@ const Login = () => {
             </Form>
           </div>
         </div>
-
-        {/* Carousel Section */}
-        <div className="hidden md:block md:w-1/2 h-screen">
-          <div className="h-full">
-            <LoginCarousel />
-          </div>
-        </div>
       </div>
     </div>
   );
 };
 
 export default Login;
+

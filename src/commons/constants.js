@@ -30,6 +30,21 @@ export const countryCodes = {
   UK: "+44",
 };
 
+export const tenant_type = [
+  { label: "Tournament Creator", value: "Tournament Creator" },
+  { label: "Coach", value: "Coach" },
+  { label: "Technical Official", value: "Technical Official" },
+  { label: "Physio", value: "Physio" },
+  { label: "Tournament Sponsorer", value: "Tournament Sponsorer" },
+  { label: "Association/Federation", value: "Association/Federation" },
+  { label: "Schools", value: "Schools" },
+  { label: "Colleges", value: "Colleges" },
+  { label: "Academics", value: "Academics" },
+  { label: "Clubs", value: "Clubs" },
+  { label: "Corporate", value: "Corporate" },
+  { label: "Other", value: "Other" }
+];
+
 export const countryCodeOptions = Object.entries(countryCodes).map(
   ([key, value]) => ({
     value: key,
