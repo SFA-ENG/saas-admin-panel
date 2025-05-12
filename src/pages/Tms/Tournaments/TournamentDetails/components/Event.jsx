@@ -42,7 +42,7 @@ const Event = ({ event, eventIndex }) => {
           {/* SubEvents */}
           <div className="mt-3">
             <p className="text-sm font-medium text-gray-700 mb-2">Sub-Events</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3">
               {event.subEvents.map((subEvent) => (
                 <SubEvent key={subEvent.subEventId} subEvent={subEvent} />
               ))}

@@ -1,12 +1,26 @@
-import { useState, useEffect } from "react";
-import { Card, Row, Col, Form, Input, DatePicker, Button, Tooltip, Select, Tabs, Upload } from "antd";
-import { CalendarPlus, Trash2, Medal, PlusCircle, Calendar, Clock, FileText, Map, Image, Upload as UploadIcon, Plus, Monitor, Smartphone, HelpCircle, Link } from "lucide-react";
+import React,{ useState, useEffect } from "react";
+import { Card, Row, Col, Form, Input, DatePicker, Button, Tooltip, Select, Tabs, Badge, Upload} from "antd";
+import { CalendarPlus, Trash2, Medal, PlusCircle,HelpCircle, Calendar, Clock, Smartphone ,Monitor, FileText, Map, Image, Link, Plus, Upload as UploadIcon } from "lucide-react";
 import SportCard from "./SportCard";
 
 const { RangePicker } = DatePicker;
 const { TextArea } = Input;
 const { TabPane } = Tabs;
 const { Option } = Select;
+
+// Custom Tab component with indicator for mobile
+const CustomTab = ({ icon, title, badgeCount, isMobile }) => (
+  <div className="flex items-center">
+    {icon && React.cloneElement(icon, { size: isMobile ? 14 : 16, className: isMobile ? "mb-1" : "mr-2 text-blue-600" })}
+    {!isMobile && <span>{title}</span>}
+    {isMobile && (
+      <div className="flex flex-col items-center">
+        <span className="text-xs font-medium">{title}</span>
+        {badgeCount > 0 && <Badge count={badgeCount} size="small" className="mt-1" />}
+      </div>
+    )}
+  </div>
+);
 
 /**
  * SeasonCard component for tournament seasons
@@ -24,14 +38,21 @@ const SeasonCard = ({
   locationOptions,
   countryOptions,
   cityOptions,
-  stateOptions
+  stateOptions,
+  isMobile
 }) => {
   const seasonId = `season_${seasonIndex}`;
   const formInstance = Form.useFormInstance();
   const [activeMediaTabsMap, setActiveMediaTabsMap] = useState({});
+  const [activeTabKey, setActiveTabKey] = useState("basic");
 
   // For tracking selected field types in participation rules
   const [fieldTypes, setFieldTypes] = useState({});
+
+  // Handle tab change
+  const handleTabChange = (key) => {
+    setActiveTabKey(key);
+  };
 
   // Handle tab change for media source in season
   const handleSeasonMediaSourceChange = (key, field) => {
@@ -88,18 +109,26 @@ const SeasonCard = ({
     setFieldTypes(initialFieldTypes);
   }, [formInstance, seasonIndex]);
 
+  // Calculate sports count for the badge
+  const sportsCount = formInstance.getFieldValue(['seasons', seasonIndex, 'sports'])?.length || 0;
+
   return (
     <Card
       key={season.key}
-      className="mb-10 border border-blue-100 shadow-sm hover:shadow-md transition-shadow rounded-xl overflow-hidden"
-      headStyle={{ backgroundColor: "#EFF6FF", padding: "0.75rem 1rem" }}
-      bodyStyle={{ padding: "1.25rem" }}
+      className={`${isMobile ? 'border border-gray-200 shadow-sm' : 'border border-blue-100 shadow-sm hover:shadow-md'} transition-shadow rounded-lg overflow-hidden`}
+      headStyle={{ 
+        backgroundColor: "#EFF6FF", 
+        padding: isMobile ? "0.5rem 0.75rem" : "0.75rem 1rem" 
+      }}
+      bodyStyle={{ 
+        padding: isMobile ? "0.75rem" : "1.25rem",
+      }}
       title={
         <div className="flex items-center">
-          <div className="bg-blue-100 p-1.5 rounded-lg mr-3">
-            <CalendarPlus size={18} className="text-blue-600" />
+          <div className="bg-blue-100 p-1.5 rounded-lg mr-2">
+            <CalendarPlus size={isMobile ? 16 : 18} className="text-blue-600" />
           </div>
-          <span className="font-medium text-blue-800">Season {seasonIndex + 1}</span>
+          <span className={`${isMobile ? 'text-sm' : ''} font-medium text-blue-800`}>Season {seasonIndex + 1}</span>
         </div>
       }
       extra={
@@ -416,9 +445,8 @@ const SeasonCard = ({
                             label="Media Source"
                             initialValue="url"
                             rules={[{ required: true }]}
-                          >
-                            <Input type="hidden" />
-                          </Form.Item>
+                          />
+                           
 
                           {/* Tabs for choosing media source */}
                           <Tabs
@@ -429,7 +457,7 @@ const SeasonCard = ({
                             <TabPane
                               tab={
                                 <div className="flex items-center">
-                                  <Link size={16} className="mr-2 text-blue-600" />
+                                  <Link size={16} className="text-blue-600" />
                                   <span>Direct URL</span>
                                 </div>
                               }
@@ -449,7 +477,7 @@ const SeasonCard = ({
                                 <Input
                                   placeholder="https://example.com/image.jpg"
                                   className="rounded-lg"
-                                  prefix={<Link size={16} className="text-blue-500 mr-2" />}
+                                  prefix={<Link size={16} className="text-blue-500" />}
                                 />
                               </Form.Item>
                               <div className="text-sm text-gray-500 mt-1">

@@ -4,7 +4,7 @@ import { getFormatLabel } from "../../Tournaments.helper";
 
 const SubEvent = ({ subEvent }) => {
   return (
-    <div className="border border-gray-200 rounded-lg p-3 bg-white hover:shadow transition-shadow">
+    <div className="border border-gray-200 rounded-lg p-3 bg-white hover:shadow transition-shadow w-full">
       <div className="flex justify-between mb-2">
         <h4 className="font-medium text-blue-800">{subEvent.name}</h4>
         <Tag color={subEvent.isActive ? "success" : "default"}>

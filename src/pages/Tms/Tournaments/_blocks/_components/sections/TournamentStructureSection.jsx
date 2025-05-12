@@ -17,11 +17,12 @@ const TournamentStructureSection = ({
   locationOptions,
   countryOptions,
   cityOptions,
-  stateOptions
+  stateOptions,
+  isMobile
 }) => (
   <Card 
-    className="mb-10 shadow-md rounded-xl border-0 overflow-hidden" 
-    bodyStyle={{ padding: isExpanded ? "1.5rem" : "0 1.5rem" }}
+    className={`mb-10 ${isMobile ? 'shadow-sm rounded-lg' : 'shadow-md rounded-xl'} border-0 overflow-hidden`} 
+    bodyStyle={{ padding: isExpanded ? (isMobile ? "1rem" : "1.5rem") : "0 1.5rem" }}
     headStyle={{ backgroundColor: "#f8fafc", borderBottom: isExpanded ? "1px solid #e2e8f0" : "none" }}
     title={
       <SectionHeader
@@ -31,6 +32,7 @@ const TournamentStructureSection = ({
         tooltip="Set up the hierarchical structure: Seasons → Sports → Events → Sub-events"
         isExpanded={isExpanded}
         onToggle={toggleSection}
+        isMobile={isMobile}
       />
     }
   >
@@ -55,6 +57,7 @@ const TournamentStructureSection = ({
                     countryOptions={countryOptions}
                     cityOptions={cityOptions}
                     stateOptions={stateOptions}
+                    isMobile={isMobile}
                   />
                 </div>
               ))}
