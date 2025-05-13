@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Form,
+  Tabs,
+  Affix
 } from "antd";
 
 // Import Components
@@ -10,6 +12,7 @@ import TournamentStructureSection from "./_components/sections/TournamentStructu
 import MarketplaceSection from "./_components/sections/MarketplaceSection";
 import FormActions from "./_components/FormActions";
 import { renderSuccessNotifications } from "helpers/error.helpers";
+import { FileText, ShoppingCart, Image, TrendingUp } from "lucide-react";
 
 // Import dropdown options from helper file
 import {
@@ -80,6 +83,25 @@ const AddTournamentForm = ({ onCancel }) => {
     marketplace: true,
     seasons: true
   });
+
+  const [isMobile, setIsMobile] = useState(false);
+  const [activeTab, setActiveTab] = useState("basic");
+  
+  // Check if the screen is mobile size
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    // Initial check
+    checkIfMobile();
+    
+    // Add event listener for window resize
+    window.addEventListener('resize', checkIfMobile);
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', checkIfMobile);
+  }, []);
   
   // Process media items to extract the correct data based on the mediaSource
   const processMediaItems = (mediaItems) => {
@@ -234,6 +256,46 @@ const AddTournamentForm = ({ onCancel }) => {
   // Function to generate a unique ID for new items
   const generateId = () => `item_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
 
+  // Tab items for mobile navigation
+  const tabItems = [
+    {
+      key: "basic",
+      label: (
+        <div className="flex flex-col items-center text-xs">
+          <FileText size={16} />
+          <span>Basic</span>
+        </div>
+      ),
+    },
+    {
+      key: "marketplace",
+      label: (
+        <div className="flex flex-col items-center text-xs">
+          <ShoppingCart size={16} />
+          <span>Market</span>
+        </div>
+      ),
+    },
+    {
+      key: "media",
+      label: (
+        <div className="flex flex-col items-center text-xs">
+          <Image size={16} />
+          <span>Media</span>
+        </div>
+      ),
+    },
+    {
+      key: "seasons",
+      label: (
+        <div className="flex flex-col items-center text-xs">
+          <TrendingUp size={16} />
+          <span>Structure</span>
+        </div>
+      ),
+    },
+  ];
+
   return (
       <Form
         form={form}
@@ -251,45 +313,75 @@ const AddTournamentForm = ({ onCancel }) => {
         }}
         className="tournament-form"
       >
-        {/* Tournament Basic Information */}
-        <BasicInformationSection 
-          isExpanded={isSectionExpanded("basic")} 
-          toggleSection={toggleSection} 
-          tournamentTypeOptions={tournamentTypeOptions}
-          tournamentStatusOptions={tournamentStatusOptions}
-        />
+        {/* Mobile Tab Navigation */}
+        {isMobile && (
+          <Affix offsetTop={0}>
+            <div className="bg-white shadow-md border-b border-gray-200">
+              <Tabs 
+                items={tabItems}
+                activeKey={activeTab}
+                onChange={setActiveTab}
+                centered
+                size="small"
+                className="tournament-tabs"
+              />
+            </div>
+          </Affix>
+        )}
 
-        {/* Marketplace Configuration */}
-        <MarketplaceSection
-          isExpanded={isSectionExpanded("marketplace")}
-          toggleSection={toggleSection}
-          marketplaceVisibilityOptions={marketplaceVisibilityOptions}
-        />
+        <div className={`tournament-form-container px-2 sm:px-4 md:px-6 ${isMobile ? 'pt-2' : ''}`}>
+          {/* Tournament Basic Information */}
+          <div id="basic" className={isMobile && activeTab !== "basic" ? "hidden" : ""}>
+            <BasicInformationSection 
+              isExpanded={isSectionExpanded("basic")} 
+              toggleSection={toggleSection} 
+              tournamentTypeOptions={tournamentTypeOptions}
+              tournamentStatusOptions={tournamentStatusOptions}
+              isMobile={isMobile}
+            />
+          </div>
 
-        {/* Tournament Media */}
-        <MediaSection 
-          isExpanded={isSectionExpanded("media")} 
-          toggleSection={toggleSection} 
-          mediaCategoryOptions={mediaCategoryOptions}
-        />
-        
-        {/* Tournament Structure */}
-        <TournamentStructureSection 
-          isExpanded={isSectionExpanded("seasons")} 
-          toggleSection={toggleSection} 
-          generateId={generateId} 
-          tournamentFormatOptions={tournamentFormatOptions}
-          sportsOptions={sportsOptions}
-          genderOptions={genderOptions}
-          ageGroupOptions={ageGroupOptions}
-          locationOptions={locationOptions}
-          countryOptions={countryOptions}
-          cityOptions={cityOptions}
-          stateOptions={stateOptions}
-        />
+          {/* Marketplace Configuration */}
+          <div id="marketplace" className={isMobile && activeTab !== "marketplace" ? "hidden" : ""}>
+            <MarketplaceSection
+              isExpanded={isSectionExpanded("marketplace")}
+              toggleSection={toggleSection}
+              marketplaceVisibilityOptions={marketplaceVisibilityOptions}
+              isMobile={isMobile}
+            />
+          </div>
+
+          {/* Tournament Media */}
+          <div id="media" className={isMobile && activeTab !== "media" ? "hidden" : ""}>
+            <MediaSection 
+              isExpanded={isSectionExpanded("media")} 
+              toggleSection={toggleSection} 
+              mediaCategoryOptions={mediaCategoryOptions}
+              isMobile={isMobile}
+            />
+          </div>
+          
+          {/* Tournament Structure */}
+          <div id="seasons" className={isMobile && activeTab !== "seasons" ? "hidden" : ""}>
+            <TournamentStructureSection 
+              isExpanded={isSectionExpanded("seasons")} 
+              toggleSection={toggleSection} 
+              generateId={generateId} 
+              tournamentFormatOptions={tournamentFormatOptions}
+              sportsOptions={sportsOptions}
+              genderOptions={genderOptions}
+              ageGroupOptions={ageGroupOptions}
+              locationOptions={locationOptions}
+              countryOptions={countryOptions}
+              cityOptions={cityOptions}
+              stateOptions={stateOptions}
+              isMobile={isMobile}
+            />
+          </div>
+        </div>
         
         {/* Form Actions */}
-        <FormActions onCancel={onCancel} onFinish={onFinish} />
+        <FormActions onCancel={onCancel} onFinish={onFinish} isMobile={isMobile} />
       </Form>
   );
 };

@@ -15,22 +15,23 @@ const SportCard = ({
   seasonId, 
   generateId,
   tournamentFormatOptions,
-  sportsOptions
+  sportsOptions,
+  isMobile
 }) => {
   const sportId = `${seasonId}_sport_${sportIndex}`;
   
   return (
     <Card 
       key={sport.key} 
-      className="mb-8 border border-green-100 shadow-sm hover:shadow-md transition-shadow rounded-xl overflow-hidden"
-      headStyle={{ backgroundColor: "#ECFDF5", padding: "0.75rem 1rem" }}
-      bodyStyle={{ padding: "1.25rem" }}
+      className={`mb-8 border ${isMobile ? 'border-green-50 shadow-sm' : 'border-green-100 shadow-sm hover:shadow-md'} transition-shadow rounded-xl overflow-hidden`}
+      headStyle={{ backgroundColor: "#ECFDF5", padding: isMobile ? "0.5rem 0.75rem" : "0.75rem 1rem" }}
+      bodyStyle={{ padding: isMobile ? "0.75rem" : "1.25rem" }}
       title={
         <div className="flex items-center">
           <div className="bg-green-100 p-1.5 rounded-lg mr-3">
-            <Award size={18} className="text-green-600" />
+            <Award size={isMobile ? 16 : 18} className="text-green-600" />
           </div>
-          <span className="font-medium text-green-800">Sport {sportIndex + 1}</span>
+          <span className={`font-medium text-green-800 ${isMobile ? 'text-sm' : ''}`}>Sport {sportIndex + 1}</span>
         </div>
       }
       extra={
@@ -101,8 +102,8 @@ const SportCard = ({
         <Col span={24}>
           <Divider orientation="left" className="my-2">
             <div className="flex items-center">
-              <Flag size={16} className="text-purple-600 mr-2" />
-              <span className="text-purple-800 font-medium">Events</span>
+              <Flag size={isMobile ? 14 : 16} className="text-purple-600 mr-2" />
+              <span className={`text-purple-800 font-medium ${isMobile ? 'text-xs' : ''}`}>Events</span>
             </div>
           </Divider>
           
@@ -116,7 +117,8 @@ const SportCard = ({
                     removeEvent={removeEvent} 
                     events={events} 
                     eventIndex={eventIndex} 
-                    generateId={generateId} 
+                    generateId={generateId}
+                    isMobile={isMobile}
                   />
                 ))}
                 

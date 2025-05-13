@@ -8,11 +8,19 @@ const { RangePicker } = DatePicker;
 /**
  * BasicInformationSection component for tournament basic details
  */
-const BasicInformationSection = ({ isExpanded, toggleSection, tournamentStatusOptions, tournamentTypeOptions }) => (
+const BasicInformationSection = ({ isExpanded, toggleSection, tournamentStatusOptions, tournamentTypeOptions, isMobile }) => (
   <Card 
-    className="mb-10 shadow-md rounded-xl border-0 overflow-hidden" 
-    bodyStyle={{ padding: isExpanded ? "1.5rem" : "0 1.5rem" }}
-    headStyle={{ backgroundColor: "#f8fafc", borderBottom: isExpanded ? "1px solid #e2e8f0" : "none" }}
+    className={`mb-5 sm:mb-10 ${isMobile ? 'shadow-sm rounded-lg' : 'shadow-md rounded-xl'} border-0 overflow-hidden`}
+    bodyStyle={{ 
+      padding: isExpanded 
+        ? (isMobile ? "0.75rem" : "1.5rem") 
+        : "0 1.5rem" 
+    }}
+    headStyle={{ 
+      backgroundColor: "#f8fafc", 
+      borderBottom: isExpanded ? "1px solid #e2e8f0" : "none",
+      padding: isMobile ? "12px 16px" : "16px 24px"
+    }}
     title={
       <SectionHeader
         icon={<FileText />} 
@@ -21,22 +29,23 @@ const BasicInformationSection = ({ isExpanded, toggleSection, tournamentStatusOp
         tooltip="Core details about your tournament"
         isExpanded={isExpanded}
         onToggle={toggleSection}
+        isMobile={isMobile}
       />
     }
   >
     {isExpanded && (
-      <div className="bg-white py-4">
-        <Row gutter={[24, 24]}>
+      <div className="bg-white py-1 sm:py-4">
+        <Row gutter={[12, 16]}>
           <Col xs={24} md={12} lg={8}>
             <Form.Item
               name="tournament_name"
-              label="Tournament Name"
+              label={<span className={isMobile ? "text-sm" : ""}>Tournament Name</span>}
               rules={[{ required: true, message: "Please enter the tournament name" }]}
             >
               <Input 
                 placeholder="Enter tournament name" 
-                className="rounded-lg h-11" 
-                prefix={<Flag size={16} className="text-blue-500 mr-2" />}
+                className="rounded-lg h-10 sm:h-11" 
+                prefix={<Flag size={isMobile ? 14 : 16} className="text-blue-500 mr-2" />}
               />
             </Form.Item>
           </Col>
@@ -44,13 +53,13 @@ const BasicInformationSection = ({ isExpanded, toggleSection, tournamentStatusOp
           <Col xs={24} md={12} lg={8}>
             <Form.Item
               name="location"
-              label="Location"
+              label={<span className={isMobile ? "text-sm" : ""}>Location</span>}
               rules={[{ required: true, message: "Please enter the location" }]}
             >
               <Input 
-                prefix={<MapPin size={16} className="text-green-500 mr-2" />} 
+                prefix={<MapPin size={isMobile ? 14 : 16} className="text-green-500 mr-2" />} 
                 placeholder="City, State, Country" 
-                className="rounded-lg h-11"
+                className="rounded-lg h-10 sm:h-11"
               />
             </Form.Item>
           </Col>
@@ -58,15 +67,15 @@ const BasicInformationSection = ({ isExpanded, toggleSection, tournamentStatusOp
           <Col xs={24} md={12} lg={8}>
             <Form.Item
               name="participants"
-              label="Expected Participants"
+              label={<span className={isMobile ? "text-sm" : ""}>Expected Participants</span>}
               rules={[{ required: true, message: "Please enter expected participants" }]}
             >
               <Input 
-                prefix={<Users size={16} className="text-orange-500 mr-2" />} 
+                prefix={<Users size={isMobile ? 14 : 16} className="text-orange-500 mr-2" />} 
                 placeholder="Number of teams/participants" 
                 type="number"
                 min={1} 
-                className="rounded-lg h-11"
+                className="rounded-lg h-10 sm:h-11"
               />
             </Form.Item>
           </Col>
@@ -74,12 +83,12 @@ const BasicInformationSection = ({ isExpanded, toggleSection, tournamentStatusOp
           <Col xs={24}>
             <Form.Item
               name="tournament_description"
-              label="Description"
+              label={<span className={isMobile ? "text-sm" : ""}>Description</span>}
               rules={[{ required: true, message: "Please enter a description" }]}
             >
               <TextArea 
                 placeholder="Enter tournament description" 
-                rows={4} 
+                rows={isMobile ? 3 : 4} 
                 showCount 
                 maxLength={500} 
                 className="rounded-lg"
@@ -90,16 +99,16 @@ const BasicInformationSection = ({ isExpanded, toggleSection, tournamentStatusOp
           <Col xs={24} md={12}>
             <Form.Item
               name="date_range"
-              label="Tournament Date Range"
+              label={<span className={isMobile ? "text-sm" : ""}>Tournament Date Range</span>}
               rules={[{ required: true, message: "Please select date range" }]}
             >
               <RangePicker 
                 style={{ width: "100%" }} 
                 format="YYYY-MM-DD"
                 placeholder={["Start Date", "End Date"]}
-                className="rounded-lg h-8"
-                placement="bottomLeft"
-                suffixIcon={<Clock size={16} className="text-purple-500" />}
+                className="rounded-lg h-10 sm:h-8"
+                placement={isMobile ? "bottomRight" : "bottomLeft"}
+                suffixIcon={<Clock size={isMobile ? 14 : 16} className="text-purple-500" />}
               />
             </Form.Item>
           </Col>
@@ -107,13 +116,14 @@ const BasicInformationSection = ({ isExpanded, toggleSection, tournamentStatusOp
           <Col xs={24} md={12}>
             <Form.Item
               name="status"
-              label="Tournament Status"
+              label={<span className={isMobile ? "text-sm" : ""}>Tournament Status</span>}
               rules={[{ required: true, message: "Please select status" }]}
               initialValue="UPCOMING"
             >
               <Select
                 placeholder="Select status"
-                className="rounded-lg h-11"
+                className="rounded-lg h-10 sm:h-11"
+                dropdownMatchSelectWidth={false}
                 options={tournamentStatusOptions && tournamentStatusOptions.length > 0 
                   ? tournamentStatusOptions.filter(option => option.value !== 'ALL').map(option => ({
                       value: option.value,
@@ -155,12 +165,13 @@ const BasicInformationSection = ({ isExpanded, toggleSection, tournamentStatusOp
           <Col xs={24} md={12} lg={8}>
             <Form.Item 
               name="type"
-              label="Tournament Type" 
+              label={<span className={isMobile ? "text-sm" : ""}>Tournament Type</span>}
               rules={[{ required: true, message: "Please select tournament type" }]}
             >
               <Select
                 placeholder="Select tournament type"
                 className="rounded-lg"
+                dropdownMatchSelectWidth={!isMobile}
                 options={tournamentTypeOptions || [
                   { value: "OPEN_REGISTRATION_TEAM", label: "Open Registration (Team)" },
                   { value: "OPEN_REGISTRATION_INDIVIDUAL", label: "Open Registration (Individual)" },
@@ -173,29 +184,35 @@ const BasicInformationSection = ({ isExpanded, toggleSection, tournamentStatusOp
           <Col xs={24} md={12} lg={8}>
             <Form.Item 
               name="genders" 
-              label="Genders" 
+              label={<span className={isMobile ? "text-sm" : ""}>Genders</span>}
               rules={[{ required: true, message: "Please select at least one gender" }]}
             >
               <Select
                 mode="multiple"
                 placeholder="Select genders"
                 className="rounded-lg"
+                dropdownMatchSelectWidth={!isMobile}
                 options={[
                   { value: "MALE", label: "Male" },
                   { value: "FEMALE", label: "Female" },
                   { value: "OTHER", label: "Other" },
                 ]}
                 optionLabelProp="label"
+                maxTagCount={isMobile ? 1 : 3}
               />
             </Form.Item>
           </Col>
           
           <Col xs={24} md={12} lg={8}>
-            <Form.Item name="options" label="Options">
+            <Form.Item 
+              name="options" 
+              label={<span className={isMobile ? "text-sm" : ""}>Options</span>}
+            >
               <Select
                 mode="multiple"
                 placeholder="Select options"
                 className="rounded-lg"
+                dropdownMatchSelectWidth={!isMobile}
                 options={[
                   { 
                     value: "is_active", 
@@ -226,6 +243,7 @@ const BasicInformationSection = ({ isExpanded, toggleSection, tournamentStatusOp
                   },
                 ]}
                 defaultValue={["is_active", "is_published"]}
+                maxTagCount={isMobile ? 1 : 3}
               />
             </Form.Item>
           </Col>

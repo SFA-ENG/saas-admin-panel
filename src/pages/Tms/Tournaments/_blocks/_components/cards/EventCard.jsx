@@ -9,21 +9,21 @@ const { TabPane } = Tabs;
 /**
  * EventCard component for tournament events
  */
-const EventCard = ({ event, removeEvent, events, eventIndex, generateId }) => {
+const EventCard = ({ event, removeEvent, events, eventIndex, generateId, isMobile }) => {
   const eventId = `event_${eventIndex}`;
   
   return (
     <Card 
       key={event.key} 
-      className="mb-8 border border-purple-100 shadow-sm hover:shadow-md transition-shadow rounded-xl overflow-hidden"
-      headStyle={{ backgroundColor: "#F5F3FF", padding: "0.75rem 1rem" }}
-      bodyStyle={{ padding: "1.25rem" }}
+      className={`mb-8 border ${isMobile ? 'border-purple-50 shadow-sm' : 'border-purple-100 shadow-sm hover:shadow-md'} transition-shadow rounded-xl overflow-hidden`}
+      headStyle={{ backgroundColor: "#F5F3FF", padding: isMobile ? "0.5rem 0.75rem" : "0.75rem 1rem" }}
+      bodyStyle={{ padding: isMobile ? "0.75rem" : "1.25rem" }}
       title={
         <div className="flex items-center">
           <div className="bg-purple-100 p-1.5 rounded-lg mr-3">
-            <Flag size={18} className="text-purple-600" />
+            <Flag size={isMobile ? 16 : 18} className="text-purple-600" />
           </div>
-          <span className="font-medium text-purple-800">Event {eventIndex + 1}</span>
+          <span className={`font-medium text-purple-800 ${isMobile ? 'text-sm' : ''}`}>Event {eventIndex + 1}</span>
         </div>
       }
       extra={
@@ -39,17 +39,18 @@ const EventCard = ({ event, removeEvent, events, eventIndex, generateId }) => {
         </Tooltip>
       }
     >
-      <Tabs defaultActiveKey="basic" className="event-tabs">
+      <Tabs defaultActiveKey="basic" className="event-tabs" size={isMobile ? "small" : "default"}>
         <TabPane 
           tab={
             <div className="flex items-center">
-              <FileText size={16} className="mr-2 text-purple-600" />
-              <span>Basic Information</span>
+              <FileText size={isMobile ? 14 : 16} className={isMobile ? "mb-1" : "mr-2 text-purple-600"} />
+              {!isMobile && <span>Basic Information</span>}
+              {isMobile && <span className="text-xs">Basic</span>}
             </div>
           } 
           key="basic"
         >
-          <Row gutter={[24, 24]} className="mt-4">
+          <Row gutter={[24, 24]} className={isMobile ? "mt-2" : "mt-4"}>
             <Col xs={24} md={12}>
               <Form.Item
                 {...event}
@@ -144,18 +145,19 @@ const EventCard = ({ event, removeEvent, events, eventIndex, generateId }) => {
         <TabPane
           tab={
             <div className="flex items-center">
-              <Medal size={16} className="mr-2 text-indigo-600" />
-              <span>Sub-Events</span>
+              <Medal size={isMobile ? 14 : 16} className={isMobile ? "mb-1" : "mr-2 text-indigo-600"} />
+              {!isMobile && <span>Sub-Events</span>}
+              {isMobile && <span className="text-xs">Sub-Events</span>}
             </div>
           }
           key="subEvents"
         >
-          <div className="mt-4">
+          <div className={isMobile ? "mt-2" : "mt-4"}>
             <div className="flex items-center mb-4">
               <div className="bg-indigo-100 p-2 rounded-lg mr-3">
-                <Medal size={18} className="text-indigo-600" />
+                <Medal size={isMobile ? 16 : 18} className="text-indigo-600" />
               </div>
-              <span className="text-lg font-medium text-gray-800">Sub-Events</span>
+              <span className={`${isMobile ? 'text-sm' : 'text-lg'} font-medium text-gray-800`}>Sub-Events</span>
               <Badge 
                 count="Optional" 
                 className="ml-2" 
@@ -166,14 +168,17 @@ const EventCard = ({ event, removeEvent, events, eventIndex, generateId }) => {
             <Form.List name={[event.name, "sub_events"]}>
               {(subEvents, { add: addSubEvent, remove: removeSubEvent }) => (
                 <>
-                  {subEvents.map((subEvent, subEventIndex) => (
-                    <SubEventCard 
-                      key={subEvent.key} 
-                      subEvent={subEvent} 
-                      removeSubEvent={removeSubEvent} 
-                      subEventIndex={subEventIndex} 
-                    />
-                  ))}
+                  <div className={`w-full ${isMobile ? 'space-y-4' : 'overflow-x-visible'}`}>
+                    {subEvents.map((subEvent, subEventIndex) => (
+                      <SubEventCard 
+                        key={subEvent.key} 
+                        subEvent={subEvent} 
+                        removeSubEvent={removeSubEvent} 
+                        subEventIndex={subEventIndex}
+                        isMobile={isMobile}
+                      />
+                    ))}
+                  </div>
                   
                   <Form.Item>
                     <Button
