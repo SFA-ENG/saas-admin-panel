@@ -7,7 +7,7 @@ import { Save, ArrowLeft } from "lucide-react";
 const FormActions = ({ onCancel, onFinish, isMobile }) => {
   return (
     <div className="sticky bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-100 p-4 z-10">
-      <div className={`${isMobile ? 'flex flex-col' : 'flex justify-between items-center'} max-w-7xl mx-auto`}>
+      <div className={`${isMobile ? 'flex flex-col' : 'flex justify-between items-center'} `}>
         <div className={`${isMobile ? 'w-full mb-4 flex justify-center' : ''}`}>
           <AccessControlButton
             type="default"

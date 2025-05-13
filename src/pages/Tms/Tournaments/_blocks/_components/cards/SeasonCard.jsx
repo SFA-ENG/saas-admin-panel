@@ -439,13 +439,7 @@ const SeasonCard = ({
                         </Col>
 
                         <Col xs={24}>
-                          <Form.Item
-                            {...field}
-                            name={[field.name, "mediaSource"]}
-                            label="Media Source"
-                            initialValue="url"
-                            rules={[{ required: true }]}
-                          />
+                         <p>Media Source</p>
                            
 
                           {/* Tabs for choosing media source */}

@@ -199,15 +199,7 @@ const MediaSection = ({ isExpanded, toggleSection, mediaCategoryOptions }) => {
                         </Col>
                         
                         <Col xs={24}>
-                          <Form.Item
-                            {...field}
-                            name={[field.name, "mediaSource"]}
-                            label="Media Source"
-                            initialValue="url"
-                            rules={[{ required: true }]}
-                          >
-                            <Input type="hidden" />
-                          </Form.Item>
+                          <p>Media Source</p>
                           
                           {/* Tabs for choosing media source */}
                           <Tabs 
