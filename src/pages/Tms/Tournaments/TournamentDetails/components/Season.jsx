@@ -5,9 +5,22 @@ import Sport from "./Sport";
 
 const Season = ({ season, index }) => {
   // Create sport items for collapse
-  const sportItems = season.sports.map((sport, sportIndex) => (
+  const sportItems = (season.sports || []).map((sport, sportIndex) => (
     Sport({ sport, sportIndex })
   ));
+
+  // Render participation rules safely
+  const renderParticipationRules = () => {
+    if (!season.participationRules || !season.participationRules.AND || !Array.isArray(season.participationRules.AND)) {
+      return <span className="text-gray-500">No eligibility rules specified</span>;
+    }
+    
+    return season.participationRules.AND.map((rule, idx) => (
+      <div key={idx}>
+        {rule.field}: {rule.operator} {rule.value}
+      </div>
+    ));
+  };
 
   return (
     <Card
@@ -66,7 +79,7 @@ const Season = ({ season, index }) => {
                 Locations:
               </span>
               <div className="mt-1 flex flex-wrap gap-1">
-              {season.locations.map((loc) => (
+              {(season.locations || []).map((loc) => (
                 <Tag key={loc.locationId} color="orange">
                   {loc.name}
                 </Tag>
@@ -83,12 +96,8 @@ const Season = ({ season, index }) => {
                 Eligibility:
               </span>
               <div className="mt-1 text-xs">
-              {season.participationRules.AND.map((rule, idx) => (
-                <div key={idx}>
-                  {rule.field}: {rule.operator} {rule.value}
-                </div>
-              ))}
-            </div>
+                {renderParticipationRules()}
+              </div>
             </div>
             
           </div>

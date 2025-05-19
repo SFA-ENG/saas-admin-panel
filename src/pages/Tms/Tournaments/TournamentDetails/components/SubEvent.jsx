@@ -3,6 +3,20 @@ import { FlagIcon, Users, Trophy, BookOpenIcon } from "../components/Icons";
 import { getFormatLabel } from "../../Tournaments.helper";
 
 const SubEvent = ({ subEvent }) => {
+  // Render participation rules safely
+  const renderParticipationRules = () => {
+    if (!subEvent.participationRules || !subEvent.participationRules.AND || !Array.isArray(subEvent.participationRules.AND)) {
+      return <div className="text-gray-500">No eligibility rules specified</div>;
+    }
+    
+    return subEvent.participationRules.AND.map((rule, idx) => (
+      <div key={idx} className="flex items-center gap-1">
+        <FlagIcon size={10} />
+        {rule.field}: {rule.operator} {rule.value}
+      </div>
+    ));
+  };
+  
   return (
     <div className="border border-gray-200 rounded-lg p-3 bg-white hover:shadow transition-shadow w-full">
       <div className="flex justify-between mb-2">
@@ -22,36 +36,35 @@ const SubEvent = ({ subEvent }) => {
           </div>
         </Tag>
 
-        <Tag color="green">
-          <div className="flex items-center gap-1">
-            <Users size={12} />
-            <span>
-              {subEvent.teamMetadata.minPlayers}-{subEvent.teamMetadata.maxPlayers}{" "}
-              players
-            </span>
-          </div>
-        </Tag>
+        {subEvent.teamMetadata && (
+          <Tag color="green">
+            <div className="flex items-center gap-1">
+              <Users size={12} />
+              <span>
+                {subEvent.teamMetadata.minPlayers}-{subEvent.teamMetadata.maxPlayers}{" "}
+                players
+              </span>
+            </div>
+          </Tag>
+        )}
 
-        <Tag color="blue">
-          <div className="flex items-center gap-1">
-            <BookOpenIcon size={12} />
-            <span>
-              {subEvent.inventoryMetada.available}/{subEvent.inventoryMetada.total}{" "}
-              spots
-            </span>
-          </div>
-        </Tag>
+        {subEvent.inventoryMetada && (
+          <Tag color="blue">
+            <div className="flex items-center gap-1">
+              <BookOpenIcon size={12} />
+              <span>
+                {subEvent.inventoryMetada.available}/{subEvent.inventoryMetada.total}{" "}
+                spots
+              </span>
+            </div>
+          </Tag>
+        )}
       </div>
 
       <div className="mt-2 border-t border-gray-100 pt-2">
         <p className="text-xs font-medium text-gray-700">Eligibility:</p>
         <div className="mt-1 text-xs text-gray-600">
-          {subEvent.participationRules.AND.map((rule, idx) => (
-            <div key={idx} className="flex items-center gap-1">
-              <FlagIcon size={10} />
-              {rule.field}: {rule.operator} {rule.value}
-            </div>
-          ))}
+          {renderParticipationRules()}
         </div>
       </div>
     </div>

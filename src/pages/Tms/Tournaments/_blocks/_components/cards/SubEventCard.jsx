@@ -201,8 +201,8 @@ const SubEventCard = ({ subEvent, removeSubEvent, subEventIndex, isMobile }) => 
                             className="mb-2 flex-1"
                           >
                             <Select placeholder="Select" size="small" className="rounded-lg text-xs">
-                              <Option value="EQUALTO">=</Option>
-                              <Option value="NOTEQUALTO">≠</Option>
+                              <Option value="=">=</Option>
+                              <Option value="!=">≠</Option>
                             </Select>
                           </Form.Item>
                           
@@ -211,7 +211,7 @@ const SubEventCard = ({ subEvent, removeSubEvent, subEventIndex, isMobile }) => 
                             name={[field.name, "value"]}
                             label={<span className="text-xs">Value</span>}
                             rules={[{ required: true }]}
-                            className="mb-2 flex-1"
+                            className="flex-1 h-6"
                           >
                             <Input placeholder="Value" size="small" className="rounded-lg text-xs" />
                           </Form.Item>
@@ -315,7 +315,7 @@ const SubEventCard = ({ subEvent, removeSubEvent, subEventIndex, isMobile }) => 
               >
                 <Select
                   placeholder="Select format"
-                  className="rounded-lg h-10"
+                  className="rounded-lg h-8"
                   suffixIcon={<Gamepad2 size={16} className="text-indigo-500" />}
                 >
                   <Option value="KNOCKOUT">Knockout</Option>

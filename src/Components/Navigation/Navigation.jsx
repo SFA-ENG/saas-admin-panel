@@ -6,7 +6,7 @@ import useAuthStore from "../../stores/AuthStore/AuthStore";
 import _ from "lodash";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import "./Navigation.css";
-
+import sfaLogo from "../../assets/sfa-play_logo.png";
 const getHideClassValue = ({
   allowed_permisions,
   associated_permissions,
@@ -96,8 +96,7 @@ export const Navigation = ({
     <div className={`navbar ${isCollapsed ? "collapsed" : ""}`}>
       <div className="navbar-header">
         <div className="logo">
-          <div className="logo-icon">SFA</div>
-          {!isCollapsed && <div className="logo-text">SPORTS ADMIN</div>}
+         <img src={sfaLogo} alt="Sports Admin Panel" />
         </div>
         <button className="toggle-btn" onClick={onToggleSidebar}>
           {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}

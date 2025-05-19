@@ -194,7 +194,7 @@ const MediaSection = ({ isExpanded, toggleSection, mediaCategoryOptions }) => {
                             label="Position"
                             rules={[{ required: true, message: "Please enter position" }]}
                           >
-                            <Input type="number" min={1} className="rounded-lg" placeholder="Display order" />
+                            <Input type="number" min={1} className="rounded-md h-7" placeholder="Display order" />
                           </Form.Item>
                         </Col>
                         

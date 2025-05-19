@@ -8,11 +8,11 @@ import useAuthStore from "../../stores/AuthStore/AuthStore";
 import "./Header.css";
 import { useApiMutation } from "../../hooks/useApiQuery/useApiQuery";
 import { CACHE_KEYS } from "../../commons/constants";
+import { useNavigate } from "react-router-dom";
 import {
   Bell,
   Menu as MenuIcon,
   Users,
-  Settings,
   HelpCircle,
   Shield,
   ChevronRight,
@@ -22,6 +22,7 @@ const Header = ({ toggleMobileMenu, userData, getCurrentPageTitle }) => {
   const { pathname } = useLocation();
   const { clearUserData } = useAuthStore();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const navigate = useNavigate();
 
   const { mutate: logout } = useApiMutation({
     queryKey: [CACHE_KEYS.LOGOUT],
@@ -83,23 +84,22 @@ const Header = ({ toggleMobileMenu, userData, getCurrentPageTitle }) => {
         {
           key: "account",
           label: (
-            <div className="profile-menu-item">
+            <div className="profile-menu-item" onClick={() => navigate("/profile")}>
               <Users size={16} />
               <span>My Account</span>
-              <ChevronRight size={14} className="menu-item-icon-right" />
             </div>
           ),
         },
-        {
-          key: "preferences",
-          label: (
-            <div className="profile-menu-item">
-              <Settings size={16} />
-              <span>Preferences</span>
-              <ChevronRight size={14} className="menu-item-icon-right" />
-            </div>
-          ),
-        },
+        // {
+        //   key: "preferences",
+        //   label: (
+        //     <div className="profile-menu-item">
+        //       <Settings size={16} />
+        //       <span>Preferences</span>
+        //       <ChevronRight size={14} className="menu-item-icon-right" />
+        //     </div>
+        //   ),
+        // },
         { key: "divider-2", type: "divider" },
         {
           key: "help",

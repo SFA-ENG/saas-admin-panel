@@ -76,21 +76,28 @@ const SeasonCard = ({
 
   // Get options for participation rule value based on selected field
   const getValueOptions = (fieldType) => {
+    let options = [];
     switch (fieldType) {
       case 'COUNTRY':
-        return countryOptions || [];
+        options = countryOptions || [];
+        break;
       case 'GENDER':
-        return genderOptions || [];
+        options = genderOptions || [];
+        break;
       case 'AGE':
         // For age, we'll use a number input instead of dropdown
         return null;
       case 'CITY':
-        return cityOptions || [];
+        options = cityOptions || [];
+        break;
       case 'STATE':
-        return stateOptions || [];
+        options = stateOptions || [];
+        break;
       default:
-        return [];
+        options = [];
     }
+    console.log(`Options for ${fieldType}:`, options);
+    return options;
   };
 
   // Effect to initialize field types from form values
@@ -434,7 +441,7 @@ const SeasonCard = ({
                             label="Position"
                             rules={[{ required: true, message: "Please enter position" }]}
                           >
-                            <Input type="number" min={1} className="rounded-lg" placeholder="Display order" />
+                            <Input type="number" min={1} className="rounded-md h-7" placeholder="Display order" />
                           </Form.Item>
                         </Col>
 
@@ -666,7 +673,7 @@ const SeasonCard = ({
                           label="Operator"
                           rules={[{ required: true, message: "Please select an operator" }]}
                         >
-                          <Select placeholder="Select operator" className="rounded-lg">
+                          <Select placeholder="Select operator" className="rounded-lg h-8">
                             <Option value="=">Equal To</Option>
                             <Option value="!=">Not Equal To</Option>
                           
@@ -687,16 +694,19 @@ const SeasonCard = ({
                               min={0}
                               max={100}
                               placeholder="Enter age"
-                              className="rounded-lg"
+                              className="rounded-lg h-7"
                             />
                           ) : (
                             <Select
                               placeholder="Select value"
                               className="rounded-lg"
                               showSearch
-                              optionFilterProp="label"
-                              options={getValueOptions(fieldTypes[index])}
-                            />
+                              optionFilterProp="children"
+                            >
+                              {getValueOptions(fieldTypes[index])?.map(option => (
+                                <Option key={option.value} value={option.value}>{option.label}</Option>
+                              ))}
+                            </Select>
                           )}
                         </Form.Item>
                       </Col>

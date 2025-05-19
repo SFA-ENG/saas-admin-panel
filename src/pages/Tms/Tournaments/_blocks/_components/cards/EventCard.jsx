@@ -60,7 +60,7 @@ const EventCard = ({ event, removeEvent, events, eventIndex, generateId, isMobil
               >
                 <Select
                   placeholder="Select event type"
-                  className="rounded-lg h-10"
+                  className="rounded-lg h-8"
                   options={[
                     { value: "6237e481-e097-4080-8ffd-f719f1ce54fd", label: "Men's Singles" },
                     { value: "8a4e2c7b-9f53-4d68-b12e-7395a8fd64e9", label: "Women's Singles" },

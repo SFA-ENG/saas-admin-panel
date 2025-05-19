@@ -1,28 +1,48 @@
 import { Avatar, Badge } from "antd";
 import { TrophyIcon } from "lucide-react";
-import { getStatusColor } from "../../Tournaments.helper";
 
 const TournamentBanner = ({ tournament }) => {
-  // Find banner and logo
-  const logo = tournament.medias.find((m) => m.usage === "LOGO")?.url;
-  const banner = tournament.medias.find((m) => m.usage === "BANNER")?.url;
+  // Get media URLs directly or through getMediaUrl function
+  const bannerUrl = tournament.banner || getMediaUrl("BANNER");
+  const logoUrl = tournament.logo || getMediaUrl("LOGO");
+  
+  // Check if medias exists before trying to find properties
+  function getMediaUrl(usage) {
+    // First check if medias array exists directly
+    if (tournament.medias && Array.isArray(tournament.medias)) {
+      const mediaItem = tournament.medias.find((m) => m.usage === usage);
+      if (mediaItem) return mediaItem.url;
+    }
+    
+    // Check if medias exists in rawData
+    if (tournament.rawData && tournament.rawData.medias && Array.isArray(tournament.rawData.medias)) {
+      const mediaItem = tournament.rawData.medias.find((m) => m.usage === usage);
+      if (mediaItem) return mediaItem.url;
+    }
+    
+    // Default fallbacks
+    if (usage === "LOGO") return "https://placehold.co/100/e2e8f0/64748b?text=Logo";
+    if (usage === "BANNER") return "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b";
+    
+    return null;
+  }
+  
+  // Get sports safely
+  const sports = tournament.sports || [];
 
   return (
     <div
-      className="w-full h-100 bg-cover bg-center relative mb-2"
+      className="w-full h-64 bg-cover bg-center relative mb-2"
       style={{
-        backgroundImage: `url(${
-          banner ||
-          "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b"
-        })`,
+        backgroundImage: `url(${bannerUrl})`,
         backgroundSize: "cover",
       }}
     >
       <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/70 flex items-end">
         <div className="flex items-center p-6 text-white">
-          {logo && (
+          {logoUrl && (
             <Avatar
-              src={logo}
+              src={logoUrl}
               size={80}
               className="border-4 border-white shadow-lg"
             />
@@ -32,13 +52,13 @@ const TournamentBanner = ({ tournament }) => {
             <div className="flex items-center space-x-4">
               <span className="mr-4">
                 <Badge
-                  className={`${getStatusColor(tournament.status)}`}
+                  // className={`${getStatusColor(tournament.status)}`}
                   count={tournament.status}
                 />
               </span>
               <span className="flex items-center gap-1">
                 <TrophyIcon size={16} />
-                {tournament.sports.join(", ")}
+                {sports.join(", ")}
               </span>
             </div>
           </div>
