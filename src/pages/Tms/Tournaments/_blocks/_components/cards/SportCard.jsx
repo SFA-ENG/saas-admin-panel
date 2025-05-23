@@ -1,6 +1,8 @@
-import { Card, Row, Col, Form, Select, Button, Divider, Tooltip } from "antd";
+import { Card, Row, Col, Form, Select, Button, Divider, Tooltip, notification } from "antd";
 import { Award, Trash2, Flag, PlusCircle, Gamepad2 } from "lucide-react";
 import EventCard from "./EventCard";
+import { useEffect, useState } from "react";
+import { renderSuccessNotifications } from "../../../../../../helpers/error.helpers";
 
 const { Option } = Select;
 
@@ -16,10 +18,113 @@ const SportCard = ({
   generateId,
   tournamentFormatOptions,
   sportsOptions,
-  isMobile
+  sportsData,
+  isMobile,
+  form
 }) => {
   const sportId = `${seasonId}_sport_${sportIndex}`;
+  const [selectedSportEvents, setSelectedSportEvents] = useState([]);
+  const [selectedSportId, setSelectedSportId] = useState(null);
   
+  // Debug log to check received props
+  useEffect(() => {
+    console.log(`SportCard ${sportId} received sportsOptions:`, sportsOptions);
+    console.log(`SportCard ${sportId} received sportsData:`, sportsData);
+    
+    // Check if sport ID is already selected in form
+    const currentFormValues = form.getFieldsValue();
+    const sportFieldName = sport.name;
+    
+    if (currentFormValues && 
+        currentFormValues[sportFieldName] && 
+        currentFormValues[sportFieldName].sportsId) {
+      const existingSportId = currentFormValues[sportFieldName].sportsId;
+      console.log(`SportCard ${sportId} has existing sport ID:`, existingSportId);
+      
+      // If we have a selected sport ID, populate events
+      if (existingSportId && sportsData) {
+        setSelectedSportId(existingSportId);
+        handleSportChange(existingSportId);
+      }
+    }
+  }, [sportsOptions, sportId, sportsData, form, sport.name]);
+  
+  // Handle sport selection change
+  const handleSportChange = (sportId) => {
+    console.log(`Sport selection changed to ID: ${sportId}`);
+    setSelectedSportId(sportId);
+    
+    if (!sportsData || !Array.isArray(sportsData)) {
+      console.warn("No sports data available");
+      setSelectedSportEvents([]);
+      return;
+    }
+    
+    const selectedSport = sportsData.find(sport => sport.sport_id === sportId);
+    
+    if (selectedSport && selectedSport.events) {
+      console.log(`Found events for sport ${selectedSport.name}:`, selectedSport.events);
+      
+      // Clear any existing events in the form when sport changes
+      const currentFormValues = form.getFieldsValue();
+      const sportFieldName = sport.name;
+      
+      if (currentFormValues && currentFormValues[sportFieldName]) {
+        // Reset events array to empty
+        form.setFieldsValue({
+          [sportFieldName]: {
+            ...currentFormValues[sportFieldName],
+            events: []
+          }
+        });
+        
+        // Add a default event with the first available event ID
+        if (selectedSport.events.length > 0) {
+          const defaultEvent = {
+            id: generateId(),
+            master_sport_events_id: selectedSport.events[0].event_id,
+            eventName: selectedSport.events[0].type || "Default Event",
+            eventType: selectedSport.events[0].type || "SINGLES"
+          };
+          
+          setTimeout(() => {
+            const updatedValues = form.getFieldsValue();
+            form.setFieldsValue({
+              [sportFieldName]: {
+                ...updatedValues[sportFieldName],
+                events: [defaultEvent]
+              }
+            });
+            
+           renderSuccessNotifications(`Added default event for ${selectedSport.name}`);
+          }, 100);
+        }
+      }
+      
+      // Store the events for selection in EventCard components
+      setSelectedSportEvents(selectedSport.events);
+    } else {
+      console.warn(`No events found for sport ID ${sportId}`);
+      setSelectedSportEvents([]);
+      
+      notification.warning({
+        message: "No Events Available",
+        description: "This sport doesn't have any associated events. Please select a different sport.",
+        duration: 4
+      });
+    }
+  };
+ 
+  // Use either provided sports or defaults
+  const sportSelectOptions = sportsOptions && sportsOptions.length > 0 
+    ? sportsOptions.map(option => ({
+        value: option.value,
+        label: option.label
+      }))
+    : [];
+    
+  console.log(`SportCard ${sportId} using sportSelectOptions:`, sportSelectOptions);
+
   return (
     <Card 
       key={sport.key} 
@@ -58,42 +163,14 @@ const SportCard = ({
             <Select
               placeholder="Select sport"
               className="rounded-lg h-10"
-              options={sportsOptions && sportsOptions.length > 0 
-                ? sportsOptions.filter(option => option.value !== 'ALL').map(option => ({
-                    value: option.value,
-                    label: option.label
-                  }))
-                : [
-                    { value: "82bdf0d6-a1fd-4934-bef4-98127a86d11e", label: "Cricket" },
-                    { value: "7ab3e138-5c64-4c4a-8b91-9d6a8e71ebf2", label: "Football" },
-                    { value: "9c12e4a7-8f3b-4d7e-a51d-532b62e5a662", label: "Tennis" },
-                    { value: "6d45a8c2-1e9f-4b8a-937c-f18d42967890", label: "Basketball" },
-                    { value: "3a7e9d5b-2f8c-4e1a-b90d-675438e219a4", label: "Swimming" },
-                    { value: "5c8b2e7f-4a96-48d3-ba1e-9f8c67d2134a", label: "Hockey" },
-                    { value: "1d6a7e9c-5f82-43b1-9e67-a8d429b57f20", label: "Badminton" },
-                  ]
-              }
+              options={sportSelectOptions}
               suffixIcon={<Gamepad2 size={16} className="text-green-500" />}
-            />
-          </Form.Item>
-        </Col>
-        
-        <Col xs={24} md={12} lg={8}>
-          <Form.Item
-            {...sport}
-            name={[sport.name, "gameFormat"]}
-            label="Game Format"
-            rules={[{ required: true, message: "Please select a format" }]}
-          >
-            <Select
-              placeholder="Select format"
-              className="rounded-lg h-10"
-              options={tournamentFormatOptions || [
-                { value: "LEAGUE", label: "League" },
-                { value: "KNOCKOUT", label: "Knockout" },
-                { value: "ROUND_ROBIN", label: "Round Robin" },
-                { value: "GROUP_STAGE", label: "Group Stage" },
-              ]}
+              onChange={handleSportChange}
+              showSearch
+              optionFilterProp="label"
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
             />
           </Form.Item>
         </Col>
@@ -107,6 +184,12 @@ const SportCard = ({
             </div>
           </Divider>
           
+          {selectedSportEvents.length === 0 && selectedSportId && (
+            <div className="bg-yellow-50 p-3 mb-4 rounded-lg border border-yellow-100">
+              <p className="text-yellow-700 text-sm">No events found for this sport. Please select another sport or contact the administrator.</p>
+            </div>
+          )}
+          
           <Form.List name={[sport.name, "events"]}>
             {(events, { add: addEvent, remove: removeEvent }) => (
               <>
@@ -119,13 +202,42 @@ const SportCard = ({
                     eventIndex={eventIndex} 
                     generateId={generateId}
                     isMobile={isMobile}
+                    eventTypeOptions={[
+                      { value: "SINGLES", label: "Singles" },
+                      { value: "DOUBLES", label: "Doubles" },
+                      { value: "TEAM", label: "Team Event" },
+                      { value: "RELAY", label: "Relay" },
+                      { value: "TOURNAMENT", label: "Tournament" }
+                    ]}
+                    availableSportEvents={selectedSportEvents}
                   />
                 ))}
                 
                 <Form.Item>
                   <Button
                     type="dashed"
-                    onClick={() => addEvent({ id: generateId() })}
+                    onClick={() => {
+                      if (selectedSportEvents.length === 0) {
+                        notification.warning({
+                          message: "No Events Available",
+                          description: "Please select a sport first to see available events.",
+                          duration: 3
+                        });
+                        return;
+                      }
+                      
+                      // If events are available, add a new event with the first available event ID
+                      const defaultEventId = selectedSportEvents[0]?.event_id;
+                      const defaultEventType = selectedSportEvents[0]?.type || "SINGLES";
+                      const defaultEventName = selectedSportEvents[0]?.type || "New Event";
+                      
+                      addEvent({ 
+                        id: generateId(),
+                        master_sport_events_id: defaultEventId,
+                        eventType: defaultEventType,
+                        eventName: defaultEventName
+                      });
+                    }}
                     block
                     icon={<PlusCircle size={16} />}
                     className="hover:border-purple-500 hover:text-purple-500 rounded-lg h-10 mt-2"

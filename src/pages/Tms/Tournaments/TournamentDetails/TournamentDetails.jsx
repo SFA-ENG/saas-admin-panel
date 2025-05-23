@@ -16,7 +16,7 @@ const TournamentDetailsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
-
+  
   const {
     data: tournamentsData,
     isFetching: tournamentsLoading,
@@ -25,7 +25,9 @@ const TournamentDetailsPage = () => {
   } = useApiQuery({
     queryKey: [CACHE_KEYS.TOURNAMENTS],
     url: `/tms/tournaments`,
-    type: "DETAILED"
+    params: {
+      type: "DETAILED"
+    }
   });
   
   // Try to get tournament data from navigation state
@@ -68,26 +70,74 @@ const TournamentDetailsPage = () => {
     if (tournament) {
       try {
         // Create a consistent data structure for components to use
+        const normalizeSubEvent = (sub) => ({
+          subEventId: sub.sub_event_id,
+          name: sub.name,
+          description: sub.description,
+          isActive: sub.is_active,
+          isPublished: sub.is_published,
+          status: sub.status,
+          inventoryMetadata: sub.inventory_metadata || {},
+          gameFormat: sub.game_format,
+          metaData: sub.meta_data || {},
+          pricing: sub.pricing || {},
+          participationRules: sub.participation_rules || {},
+        });
+        
+        const normalizeEvent = (event) => ({
+          ...event,
+          eventId: event.event_id,
+          name: event.name,
+          status: event.status,
+          startDate: event.start_date,
+          endDate: event.end_date,
+          categoryTree: event.category_tree || {},
+          eventType: event.type || "Individual",
+          type: event.type,
+          subEvents: (event.sub_events || []).map(normalizeSubEvent),
+        });
+        
+        const normalizeSport = (sport) => {
+          // Check if events exist and are properly structured
+          let eventsArray = [];
+          if (sport.events && Array.isArray(sport.events)) {
+            eventsArray = sport.events.map(normalizeEvent);
+          }
+          
+          return {
+            ...sport,
+            sportsId: sport.sports_id || `sport-${sport.name}`, // Ensure sportsId exists
+            name: sport.name || "Unknown Sport",
+            events: eventsArray,
+          };
+        };
+        
+        const normalizeSeason = (season) => ({
+          seasonId: season.season_id,
+          name: season.name,
+          description: season.description,
+          startDate: season.start_date,
+          endDate: season.end_date,
+          registrationStartDate: season.registration_start_date,
+          registrationEndDate: season.registration_end_date,
+          isActive: season.is_active,
+          isPublished: season.is_published,
+          participationRules: season.participation_rules || {},
+          termsAndConditions: season.terms_and_conditions || {},
+          rulesAndRegulations: season.rules_and_regulations || {},
+          medias: season.medias || [],
+          locations: season.locations || [],
+          sports: (season.sports || []).map(normalizeSport),
+        });
+        
         const prepared = {
           id: tournament.tournament_id || tournament.tournamentId || (tournament.rawData && tournament.rawData.tournament_id),
           name: tournament.name,
           description: tournament.description,
           status: tournament.status,
           rawData: tournament.rawData || tournament,
-          // Ensure media is available in expected format
           medias: tournament.rawData?.medias || tournament.medias || [],
-          // Map other properties as needed
-          seasons: (tournament.rawData?.seasons || tournament.seasons || []).map(season => ({
-            ...season,
-            seasonId: season.season_id || season.seasonId,
-            startDate: season.start_date || season.startDate,
-            endDate: season.end_date || season.endDate,
-            registrationStartDate: season.registration_start_date || season.registrationStartDate,
-            registrationEndDate: season.registration_end_date || season.registrationEndDate,
-            isActive: season.is_active || season.isActive,
-            isPublished: season.is_published || season.isPublished,
-            participationRules: season.participation_rules || season.participationRules
-          })),
+          seasons: (tournament.rawData?.seasons || tournament.seasons || []).map(normalizeSeason),
           sports: tournament.rawData?.sports || tournament.sports || [],
           locations: tournament.rawData?.locations || tournament.locations || [],
           participationRules: tournament.rawData?.participation_rules || tournament.participation_rules || {},

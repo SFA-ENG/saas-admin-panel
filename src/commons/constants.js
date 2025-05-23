@@ -60,4 +60,5 @@ export const CACHE_KEYS = {
   USERS_LIST: "users_list",
   ROLES_LIST: "roles_list",
   GET_USER_BY_PHONE: "get_user_by_phone",
+  TOURNAMENTS: "tournaments",
 };

@@ -132,7 +132,7 @@ const StatsTab = ({ tournament }) => {
           <StatCard
             icon={<User size={20} className="text-red-600" />}
             bgColor="bg-red-50"
-            title="Available Spots"
+            title="Available Sports"
             value={calculateAvailableSpots()}
           />
 

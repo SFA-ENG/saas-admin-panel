@@ -28,8 +28,9 @@ const TournamentsPage = () => {
     sports: null,
   });
 
+  const [currentHash, setCurrentHash] = useState(location.hash);
   // Check if we're in the tournament creation mode
-  const isAddingTournament = location.hash === "#new";
+  const isAddingTournament = currentHash === "#new";
 
   const {
     data: tournamentsData,
@@ -38,7 +39,9 @@ const TournamentsPage = () => {
   } = useApiQuery({
     queryKey: [CACHE_KEYS.TOURNAMENTS],
     url: "/tms/tournaments",
-    type: "SUMMARY"
+    params: {
+      type: "DETAILED"
+    }
   });
 
   // Extract tournaments and metadata from API response - updated to match actual API structure
@@ -143,14 +146,45 @@ const TournamentsPage = () => {
     return [{ label: "All", value: "ALL" }, ...filters];
   };
 
+
+useEffect(() => {
+  const handleHashChange = () => {
+    const previousHash = currentHash;
+    const newHash = window.location.hash;
+    
+    // Update the hash in state
+    setCurrentHash(newHash);
+    
+    // If we're returning from tournament creation (hash changed from #new to empty)
+    // then trigger a refetch of the tournaments data
+    if (previousHash === "#new" && newHash === "") {
+      refetchTournaments();
+    }
+  };
+
+  window.addEventListener("hashchange", handleHashChange);
+
+  return () => {
+    window.removeEventListener("hashchange", handleHashChange);
+  };
+}, [currentHash, refetchTournaments]);
+
   // Navigate to tournament add form
   const handleAddTournament = () => {
-    navigate("#new");
+    // Update the hash in the URL
+    window.location.hash = "#new";
+    // Also update the state directly to ensure a re-render
+    setCurrentHash("#new");
   };
 
   // Cancel adding tournament and return to list
   const handleCancelAdd = () => {
-    navigate("#");
+    // Update the hash in the URL
+    window.location.hash = "";
+    // Also update the state directly to ensure a re-render
+    setCurrentHash("");
+    // Refresh tournaments data
+    refetchTournaments();
   };
 
   if (tournamentsLoading) {
@@ -194,7 +228,10 @@ const TournamentsPage = () => {
           </Col>
         </Row>
 
-        <AddTournamentForm onCancel={handleCancelAdd} />
+        <AddTournamentForm 
+          onCancel={handleCancelAdd} 
+          refetchTournaments={refetchTournaments}
+        />
       </Card>
     );
   }

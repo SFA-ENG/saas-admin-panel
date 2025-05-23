@@ -23,6 +23,9 @@ const MediaSection = ({ isExpanded, toggleSection, mediaCategoryOptions }) => {
   const formInstance = Form.useFormInstance();
   const [activeTabsMap, setActiveTabsMap] = useState({});
   
+  // State for managing file lists
+  const [mediaFileLists, setMediaFileLists] = useState({});
+  
   // Handle tab change for media source
   const handleMediaSourceChange = (key, field) => {
     // Update the local state immediately for UI response
@@ -33,6 +36,15 @@ const MediaSection = ({ isExpanded, toggleSection, mediaCategoryOptions }) => {
     
     // Set the form value
     formInstance.setFieldValue(['medias', field.name, 'mediaSource'], key);
+  };
+
+  // Handle file changes for media uploads
+  const handleMediaFileChange = (fieldName, { fileList }) => {
+    setMediaFileLists(prev => ({
+      ...prev,
+      [fieldName]: fileList
+    }));
+    formInstance.setFieldValue(['medias', fieldName, 'fileUpload'], { fileList });
   };
 
   return (
@@ -123,18 +135,9 @@ const MediaSection = ({ isExpanded, toggleSection, mediaCategoryOptions }) => {
                             rules={[{ required: true, message: "Please select category" }]}
                           >
                             <Select placeholder="Select category" className="rounded-lg">
-                              {mediaCategoryOptions && mediaCategoryOptions.length > 0 ? 
-                                mediaCategoryOptions.map(option => (
-                                  <Option key={option.value} value={option.value}>
-                                    {option.label}
-                                  </Option>
-                                )) : (
-                                  <>
                                     <Option value="IMAGE">Image</Option>
                                     <Option value="VIDEO">Video</Option>
-                                  </>
-                                )
-                              }
+                             
                             </Select>
                           </Form.Item>
                         </Col>
@@ -143,17 +146,18 @@ const MediaSection = ({ isExpanded, toggleSection, mediaCategoryOptions }) => {
                           <Form.Item
                             {...field}
                             name={[field.name, "usage"]}
-                            label="Usage"
-                            rules={[{ required: true, message: "Please select usage" }]}
+                            label="Usage (Type)"
+                            tooltip="This will be converted to 'type' in the API"
+                            rules={[{ required: true, message: "Please select usage/type" }]}
                           >
-                            <Select placeholder="Select usage" className="rounded-lg">
-                              <Option value="LOGO">
+                            <Select placeholder="Select type" className="rounded-lg">
+                              <Option value="logo">
                                 <div className="flex items-center">
                                   <Image size={14} className="text-blue-500 mr-1" />
                                   <span>Logo</span>
                                 </div>
                               </Option>
-                              <Option value="BANNER">
+                              <Option value="banner">
                                 <div className="flex items-center">
                                   <Image size={14} className="text-green-500 mr-1" />
                                   <span>Banner</span>
@@ -263,16 +267,25 @@ const MediaSection = ({ isExpanded, toggleSection, mediaCategoryOptions }) => {
                                   maxCount={1}
                                   beforeUpload={() => false} // Prevent auto upload
                                   className="w-full"
+                                  fileList={mediaFileLists[field.name] || []}
+                                  onChange={(info) => handleMediaFileChange(field.name, info)}
+                                  showUploadList={{
+                                    showPreviewIcon: true,
+                                    showRemoveIcon: true,
+                                    showDownloadIcon: false,
+                                  }}
                                 >
-                                  <div className="flex flex-col items-center justify-center">
-                                    <div className="bg-purple-50 p-3 rounded-full">
-                                      <UploadIcon size={24} className="text-purple-600" />
+                                  {(mediaFileLists[field.name]?.length || 0) < 1 && (
+                                    <div className="flex flex-col items-center justify-center">
+                                      <div className="bg-purple-50 p-3 rounded-full">
+                                        <UploadIcon size={24} className="text-purple-600" />
+                                      </div>
+                                      <div className="text-xs text-center text-gray-600 font-medium">
+                                        Upload Media
+                                      </div>
+                                      <div className="text-xs text-gray-400">Click or drag file</div>
                                     </div>
-                                    <div className="text-xs text-center text-gray-600 font-medium">
-                                      Upload Media
-                                    </div>
-                                    <div className="text-xs text-gray-400">Click or drag file</div>
-                                  </div>
+                                  )}
                                 </Upload>
                               </Form.Item>
                               <div className="text-sm text-gray-500 mt-1">

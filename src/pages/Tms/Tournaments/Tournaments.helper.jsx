@@ -53,17 +53,39 @@ export const formatDate = (dateString) => {
   };
   
   export const getIconBgColor = (category) => {
+    if (!category) {
+      return "bg-gray-100 text-gray-600"; // default
+    }
+    
     const categoryColors = {
-      Athletics: "bg-red-100 text-red-600",
-      Badminton: "bg-green-100 text-green-600",
-      Swimming: "bg-blue-100 text-blue-600",
-      TRACK: "bg-orange-100 text-orange-600",
-      FIELD: "bg-yellow-100 text-yellow-600",
-      INDOOR: "bg-indigo-100 text-indigo-600",
-      WATER: "bg-cyan-100 text-cyan-600",
+      // Original categories
+      "Athletics": "bg-red-100 text-red-600",
+      "Badminton": "bg-green-100 text-green-600",
+      "Swimming": "bg-blue-100 text-blue-600",
+      "TRACK": "bg-orange-100 text-orange-600",
+      "FIELD": "bg-yellow-100 text-yellow-600",
+      "INDOOR": "bg-indigo-100 text-indigo-600",
+      "WATER": "bg-cyan-100 text-cyan-600",
+      
+      // Add more categories 
+      "Football": "bg-emerald-100 text-emerald-600",
+      "Cricket": "bg-sky-100 text-sky-600",
+      "Team Sport": "bg-blue-100 text-blue-600",
+      "Individual": "bg-purple-100 text-purple-600",
+      "Team": "bg-orange-100 text-orange-600",
     };
-    return categoryColors[category] || "bg-gray-100 text-gray-600";
-  }; 
+    
+    // Case-insensitive match
+    const match = Object.keys(categoryColors).find(
+      key => key.toLowerCase() === category.toLowerCase()
+    );
+    
+    if (match) {
+      return categoryColors[match];
+    }
+    
+    return "bg-gray-100 text-gray-600"; // default
+  };
 
 // Dropdown options data for various tournament fields
 // These will be replaced with API responses in the future

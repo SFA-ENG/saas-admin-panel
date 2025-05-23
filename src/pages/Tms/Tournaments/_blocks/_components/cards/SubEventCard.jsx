@@ -49,7 +49,7 @@ const SubEventCard = ({ subEvent, removeSubEvent, subEventIndex, isMobile }) => 
             
             <Form.Item
               {...subEvent}
-              name={[subEvent.name, "sub_event_name"]}
+              name={[subEvent.name, "name"]}
               label={<span className="text-xs">Name</span>}
               rules={[{ required: true, message: "Required" }]}
             >
@@ -81,13 +81,32 @@ const SubEventCard = ({ subEvent, removeSubEvent, subEventIndex, isMobile }) => 
             
             <Form.Item
               {...subEvent}
-              name={[subEvent.name, "sub_event_description"]}
-              label={<span className="text-xs">Description</span>}
+              name={[subEvent.name, "type"]}
+              label={<span className="text-xs">Type</span>}
               rules={[{ required: true, message: "Required" }]}
             >
+              <Select
+                placeholder="Select type"
+                className="rounded-lg"
+                size="small"
+              >
+                <Option value="Individual">Individual</Option>
+                <Option value="Team">Team</Option>
+                <Option value="Doubles">Doubles</Option>
+                <Option value="Mixed">Mixed</Option>
+              </Select>
+            </Form.Item>
+            
+            <Form.Item
+              {...subEvent}
+              name={[subEvent.name, "description"]}
+              label={<span className="text-xs">Description</span>}
+              rules={[{ required: true, message: "Required" }]}
+              className="mb-6"
+            >
               <TextArea 
-                placeholder="Description" 
-                rows={2}
+                placeholder="Describe the sub-event in detail" 
+                rows={3}
                 className="rounded-lg text-sm"
                 size="small"
               />
@@ -109,6 +128,7 @@ const SubEventCard = ({ subEvent, removeSubEvent, subEventIndex, isMobile }) => 
               label={<span className="text-xs">Currency</span>}
               rules={[{ required: true, message: "Required" }]}
               initialValue="INR"
+              className="mb-6"
             >
               <Select 
                 placeholder="Select currency" 
@@ -160,7 +180,7 @@ const SubEventCard = ({ subEvent, removeSubEvent, subEventIndex, isMobile }) => 
             } 
             key="rules"
           >
-            <Form.List name={[subEvent.name, "participationRules", "AND"]}>
+            <Form.List name={[subEvent.name, "participation_rules", "AND"]}>
               {(fields, { add, remove }) => (
                 <>
                   {fields.length === 0 ? (
@@ -254,7 +274,7 @@ const SubEventCard = ({ subEvent, removeSubEvent, subEventIndex, isMobile }) => 
       key={subEvent.key} 
       className="mb-6 border border-indigo-100 shadow-sm hover:shadow-md transition-shadow rounded-xl overflow-hidden w-full"
       headStyle={{ backgroundColor: "#EEF2FF", padding: "0.75rem 1rem" }}
-      bodyStyle={{ padding: "1.25rem" }}
+      bodyStyle={{ padding: "1.25rem 1.25rem 2rem 1.25rem" }}
       title={
         <div className="flex items-center">
           <div className="bg-indigo-100 p-1.5 rounded-lg mr-3">
@@ -283,6 +303,7 @@ const SubEventCard = ({ subEvent, removeSubEvent, subEventIndex, isMobile }) => 
           } 
           key="basic"
         >
+          <div className="pb-6">
           <Row gutter={[24, 24]} className="mt-4">
             <Form.Item
               {...subEvent}
@@ -295,7 +316,7 @@ const SubEventCard = ({ subEvent, removeSubEvent, subEventIndex, isMobile }) => 
             <Col xs={24} md={12}>
               <Form.Item
                 {...subEvent}
-                name={[subEvent.name, "sub_event_name"]}
+                name={[subEvent.name, "name"]}
                 label="Sub-Event Name"
                 rules={[{ required: true, message: "Please enter sub-event name" }]}
               >
@@ -326,12 +347,32 @@ const SubEventCard = ({ subEvent, removeSubEvent, subEventIndex, isMobile }) => 
               </Form.Item>
             </Col>
             
+            <Col xs={24} md={12}>
+              <Form.Item
+                {...subEvent}
+                name={[subEvent.name, "type"]}
+                label="Sub-Event Type"
+                rules={[{ required: true, message: "Please select sub-event type" }]}
+              >
+                <Select
+                  placeholder="Select type"
+                  className="rounded-lg h-8"
+                >
+                  <Option value="Individual">Individual</Option>
+                  <Option value="Team">Team</Option>
+                  <Option value="Doubles">Doubles</Option>
+                  <Option value="Mixed">Mixed</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            
             <Col xs={24}>
               <Form.Item
                 {...subEvent}
-                name={[subEvent.name, "sub_event_description"]}
+                name={[subEvent.name, "description"]}
                 label="Description"
                 rules={[{ required: true, message: "Please enter description" }]}
+                className="mb-6"
               >
                 <TextArea 
                   placeholder="Describe the sub-event in detail" 
@@ -341,7 +382,9 @@ const SubEventCard = ({ subEvent, removeSubEvent, subEventIndex, isMobile }) => 
               </Form.Item>
             </Col>
             
-          
+            <Col xs={24}>
+              <div className="h-4"></div>
+            </Col>
             
             <Col xs={24} md={12}>
               <Form.Item
@@ -384,6 +427,7 @@ const SubEventCard = ({ subEvent, removeSubEvent, subEventIndex, isMobile }) => 
               </Form.Item>
             </Col>
           </Row>
+          </div>
         </TabPane>
         
         <TabPane 
@@ -395,7 +439,7 @@ const SubEventCard = ({ subEvent, removeSubEvent, subEventIndex, isMobile }) => 
           } 
           key="rules"
         >
-          <div className="mt-4">
+          <div className="mt-4 pb-6">
             <div className="bg-blue-50 p-4 rounded-lg mb-6">
               <div className="flex items-start">
                 <HelpCircle size={18} className="text-blue-600 mr-2 mt-0.5" />
@@ -408,7 +452,7 @@ const SubEventCard = ({ subEvent, removeSubEvent, subEventIndex, isMobile }) => 
               </div>
             </div>
             
-            <Form.List name={[subEvent.name, "participationRules", "AND"]}>
+            <Form.List name={[subEvent.name, "participation_rules", "AND"]}>
               {(fields, { add, remove }) => (
                 <>
                   {fields.map((field, index) => (
@@ -457,7 +501,7 @@ const SubEventCard = ({ subEvent, removeSubEvent, subEventIndex, isMobile }) => 
                             label="Value"
                             rules={[{ required: true, message: "Please enter a value" }]}
                           >
-                            <Input placeholder="Enter value" className="rounded-lg" />
+                            <Input placeholder="Enter value" className="rounded-lg h-8" />
                           </Form.Item>
                         </Col>
                         
@@ -499,7 +543,7 @@ const SubEventCard = ({ subEvent, removeSubEvent, subEventIndex, isMobile }) => 
           } 
           key="pricing"
         >
-          <div className="mt-4">
+          <div className="mt-4 pb-6">
             <div className="bg-green-50 p-4 rounded-lg mb-6">
               <div className="flex items-start">
                 <HelpCircle size={18} className="text-green-600 mr-2 mt-0.5" />
@@ -520,6 +564,7 @@ const SubEventCard = ({ subEvent, removeSubEvent, subEventIndex, isMobile }) => 
                   label="Currency"
                   rules={[{ required: true, message: "Please select currency" }]}
                   initialValue="INR"
+                  className="mb-6"
                 >
                   <Select 
                     placeholder="Select currency" 
@@ -534,6 +579,8 @@ const SubEventCard = ({ subEvent, removeSubEvent, subEventIndex, isMobile }) => 
                 </Form.Item>
               </Col>
             </Row>
+            
+            <div className="h-4 mb-4"></div>
             
             <Row gutter={[24, 24]}>
               <Col xs={24} md={12}>
@@ -567,7 +614,7 @@ const SubEventCard = ({ subEvent, removeSubEvent, subEventIndex, isMobile }) => 
               </Col>
             </Row>
             
-            <div className="bg-yellow-50 p-3 rounded-lg mb-4 text-yellow-800 text-xs">
+            <div className="bg-yellow-50 p-3 rounded-lg mb-4 text-yellow-800 text-xs mt-8">
               <HelpCircle size={14} className="inline mr-1 text-yellow-600" />
               Note: You can either use simple pricing (above) or advanced pricing tiers (below), but not both. If you add price tiers, the simple pricing will be ignored.
             </div>
@@ -694,7 +741,7 @@ const SubEventCard = ({ subEvent, removeSubEvent, subEventIndex, isMobile }) => 
           } 
           key="metadata"
         >
-          <div className="mt-4">
+          <div className="mt-4 pb-6">
             <Row gutter={[24, 24]}>
               <Col xs={24} md={12}>
                 <Card
@@ -708,7 +755,7 @@ const SubEventCard = ({ subEvent, removeSubEvent, subEventIndex, isMobile }) => 
                 >
                   <Form.Item
                     {...subEvent}
-                    name={[subEvent.name, "teamMetadata", "maxPlayers"]}
+                    name={[subEvent.name, "meta_data", "team", "max_players_count"]}
                     label="Maximum Players per Team"
                     rules={[{ required: true, message: "Please enter max players" }]}
                   >
@@ -733,7 +780,7 @@ const SubEventCard = ({ subEvent, removeSubEvent, subEventIndex, isMobile }) => 
                 >
                   <Form.Item
                     {...subEvent}
-                    name={[subEvent.name, "inventoryMetadata", "total"]}
+                    name={[subEvent.name, "expected_participants"]}
                     label="Total Available Slots"
                     rules={[{ required: true, message: "Please enter total slots" }]}
                   >

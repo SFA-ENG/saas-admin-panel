@@ -1,5 +1,5 @@
 import { Card, Row, Col, Form, Input, DatePicker, Select, Badge } from "antd";
-import { FileText, Flag, MapPin, Users, Clock } from "lucide-react";
+import { FileText, Flag } from "lucide-react";
 import SectionHeader from "../utils/SectionHeader";
 
 const { TextArea } = Input;
@@ -9,23 +9,23 @@ const { RangePicker } = DatePicker;
  * BasicInformationSection component for tournament basic details
  */
 const BasicInformationSection = ({ isExpanded, toggleSection, tournamentStatusOptions, tournamentTypeOptions, isMobile }) => (
-  <Card 
+  <Card
     className={`mb-5 sm:mb-10 ${isMobile ? 'shadow-sm rounded-lg' : 'shadow-md rounded-xl'} border-0 overflow-hidden`}
-    bodyStyle={{ 
-      padding: isExpanded 
-        ? (isMobile ? "0.75rem" : "1.5rem") 
-        : "0 1.5rem" 
+    bodyStyle={{
+      padding: isExpanded
+        ? (isMobile ? "0.75rem" : "1.5rem")
+        : "0 1.5rem"
     }}
-    headStyle={{ 
-      backgroundColor: "#f8fafc", 
+    headStyle={{
+      backgroundColor: "#f8fafc",
       borderBottom: isExpanded ? "1px solid #e2e8f0" : "none",
       padding: isMobile ? "12px 16px" : "16px 24px"
     }}
     title={
       <SectionHeader
-        icon={<FileText />} 
-        title="Basic Information" 
-        sectionId="basic" 
+        icon={<FileText />}
+        title="Basic Information"
+        sectionId="basic"
         tooltip="Core details about your tournament"
         isExpanded={isExpanded}
         onToggle={toggleSection}
@@ -38,19 +38,19 @@ const BasicInformationSection = ({ isExpanded, toggleSection, tournamentStatusOp
         <Row gutter={[12, 16]}>
           <Col xs={24} md={12} lg={8}>
             <Form.Item
-              name="tournament_name"
+              name="name"
               label={<span className={isMobile ? "text-sm" : ""}>Tournament Name</span>}
               rules={[{ required: true, message: "Please enter the tournament name" }]}
             >
-              <Input 
-                placeholder="Enter tournament name" 
-                className="rounded-lg h-10 sm:h-11" 
+              <Input
+                placeholder="Enter tournament name"
+                className="rounded-lg h-8"
                 prefix={<Flag size={isMobile ? 14 : 16} className="text-blue-500 mr-2" />}
               />
             </Form.Item>
           </Col>
-          
-          <Col xs={24} md={12} lg={8}>
+
+          {/* <Col xs={24} md={12} lg={8}>
             <Form.Item
               name="location"
               label={<span className={isMobile ? "text-sm" : ""}>Location</span>}
@@ -62,9 +62,9 @@ const BasicInformationSection = ({ isExpanded, toggleSection, tournamentStatusOp
                 className="rounded-lg h-10 sm:h-11"
               />
             </Form.Item>
-          </Col>
-          
-          <Col xs={24} md={12} lg={8}>
+          </Col> */}
+
+          {/* <Col xs={24} md={12} lg={8}>
             <Form.Item
               name="participants"
               label={<span className={isMobile ? "text-sm" : ""}>Expected Participants</span>}
@@ -78,93 +78,12 @@ const BasicInformationSection = ({ isExpanded, toggleSection, tournamentStatusOp
                 className="rounded-lg h-10 sm:h-11"
               />
             </Form.Item>
-          </Col>
-          
-          <Col xs={24}>
-            <Form.Item
-              name="tournament_description"
-              label={<span className={isMobile ? "text-sm" : ""}>Description</span>}
-              rules={[{ required: true, message: "Please enter a description" }]}
-            >
-              <TextArea 
-                placeholder="Enter tournament description" 
-                rows={isMobile ? 3 : 4} 
-                showCount 
-                maxLength={500} 
-                className="rounded-lg"
-              />
-            </Form.Item>
-          </Col>
-          
-          <Col xs={24} md={12}>
-            <Form.Item
-              name="date_range"
-              label={<span className={isMobile ? "text-sm" : ""}>Tournament Date Range</span>}
-              rules={[{ required: true, message: "Please select date range" }]}
-            >
-              <RangePicker 
-                style={{ width: "100%" }} 
-                format="YYYY-MM-DD"
-                placeholder={["Start Date", "End Date"]}
-                className="rounded-lg h-8"
-                placement={isMobile ? "bottomRight" : "bottomLeft"}
-                suffixIcon={<Clock size={isMobile ? 14 : 16} className="text-purple-500" />}
-              />
-            </Form.Item>
-          </Col>
-          
-          <Col xs={24} md={12}>
-            <Form.Item
-              name="status"
-              label={<span className={isMobile ? "text-sm" : ""}>Tournament Status</span>}
-              rules={[{ required: true, message: "Please select status" }]}
-              initialValue="UPCOMING"
-            >
-              <Select
-                placeholder="Select status"
-                className="rounded-lg h-8"
-                dropdownMatchSelectWidth={false}
-                options={tournamentStatusOptions && tournamentStatusOptions.length > 0 
-                  ? tournamentStatusOptions.filter(option => option.value !== 'ALL').map(option => ({
-                      value: option.value,
-                      label: (
-                        <div className="flex items-center">
-                          <Badge color={option.value === "ACTIVE" ? "green" : 
-                                        option.value === "PUBLISHED" ? "blue" :
-                                        option.value === "COMPLETED" ? "gray" :
-                                        option.value === "CANCELLED" ? "red" : "blue"} />
-                          <span className="ml-2">{option.label}</span>
-                        </div>
-                      )
-                    }))
-                  : [
-                      { value: "UPCOMING", label: (
-                        <div className="flex items-center">
-                          <Badge color="blue" />
-                          <span className="ml-2">Upcoming</span>
-                        </div>
-                      )},
-                      { value: "ACTIVE", label: (
-                        <div className="flex items-center">
-                          <Badge color="green" />
-                          <span className="ml-2">Active</span>
-                        </div>
-                      )},
-                      { value: "COMPLETED", label: (
-                        <div className="flex items-center">
-                          <Badge color="gray" />
-                          <span className="ml-2">Completed</span>
-                        </div>
-                      )},
-                    ]
-                }
-              />
-            </Form.Item>
-          </Col>
-          
+          </Col> */}
+
+
           <Col xs={24} md={12} lg={8}>
-            <Form.Item 
-              name="type"
+            <Form.Item
+              name="competition_type"
               label={<span className={isMobile ? "text-sm" : ""}>Tournament Type</span>}
               rules={[{ required: true, message: "Please select tournament type" }]}
             >
@@ -173,14 +92,106 @@ const BasicInformationSection = ({ isExpanded, toggleSection, tournamentStatusOp
                 className="rounded-lg"
                 dropdownMatchSelectWidth={!isMobile}
                 options={tournamentTypeOptions || [
-                  { value: "OPEN_REGISTRATION_TEAM", label: "Open Registration (Team)" },
-                  { value: "OPEN_REGISTRATION_INDIVIDUAL", label: "Open Registration (Individual)" },
-                  { value: "INVITATION_ONLY", label: "Invitation Only" },
+                  { value: "Open_Registration_Team", label: "Open Registration (Team)" },
+                  { value: "Open_Registration_Individual", label: "Open Registration (Individual)" },
+                  { value: "League", label: "League" },
                 ]}
               />
             </Form.Item>
           </Col>
-          
+
+          <Col xs={24} md={12} lg={8}>
+            <Form.Item
+              name="status"
+              label={<span className={isMobile ? "text-sm" : ""}>Tournament Status</span>}
+              rules={[{ required: true, message: "Please select status" }]}
+              initialValue="Draft"
+            >
+              <Select
+                placeholder="Select status"
+                className="rounded-lg h-8"
+                dropdownMatchSelectWidth={false}
+                options={tournamentStatusOptions && tournamentStatusOptions.length > 0
+                  ? tournamentStatusOptions.filter(option => option.value !== 'ALL').map(option => ({
+                    value: option.value,
+                    label: (
+                      <div className="flex items-center">
+                        <Badge color={option.value === "ACTIVE" ? "green" :
+                          option.value === "PUBLISHED" ? "blue" :
+                            option.value === "COMPLETED" ? "gray" :
+                              option.value === "CANCELLED" ? "red" : "blue"} />
+                        <span className="ml-2">{option.label}</span>
+                      </div>
+                    )
+                  }))
+                  : [
+                    {
+                      value: "UPCOMING", label: (
+                        <div className="flex items-center">
+                          <Badge color="blue" />
+                          <span className="ml-2">Upcoming</span>
+                        </div>
+                      )
+                    },
+                    {
+                      value: "ACTIVE", label: (
+                        <div className="flex items-center">
+                          <Badge color="green" />
+                          <span className="ml-2">Active</span>
+                        </div>
+                      )
+                    },
+                    {
+                      value: "COMPLETED", label: (
+                        <div className="flex items-center">
+                          <Badge color="gray" />
+                          <span className="ml-2">Completed</span>
+                        </div>
+                      )
+                    },
+                  ]
+                }
+              />
+            </Form.Item>
+          </Col>
+
+          <Col xs={24}>
+            <Form.Item
+              name="description"
+              label={<span className={isMobile ? "text-sm" : ""}>Description</span>}
+              rules={[{ required: true, message: "Please enter a description" }]}
+            >
+              <TextArea
+                placeholder="Enter tournament description"
+                rows={isMobile ? 3 : 4}
+                showCount
+                maxLength={500}
+                className="rounded-lg"
+              />
+            </Form.Item>
+          </Col>
+
+          {/* <Col xs={24} md={12}>
+            <Form.Item
+              name="date_range"
+              label={<span className={isMobile ? "text-sm" : ""}>Tournament Date Range</span>}
+              rules={[{ required: true, message: "Please select date range" }]}
+            >
+              <RangePicker
+                style={{ width: "100%" }}
+                format="YYYY-MM-DD"
+                placeholder={["Start Date", "End Date"]}
+                className="rounded-lg h-8"
+                placement={isMobile ? "bottomRight" : "bottomLeft"}
+                suffixIcon={<Clock size={isMobile ? 14 : 16} className="text-purple-500" />}
+              />
+            </Form.Item>
+          </Col> */}
+
+         
+
+
+          {/*           
           <Col xs={24} md={12} lg={8}>
             <Form.Item 
               name="genders" 
@@ -201,9 +212,9 @@ const BasicInformationSection = ({ isExpanded, toggleSection, tournamentStatusOp
                 maxTagCount={isMobile ? 1 : 3}
               />
             </Form.Item>
-          </Col>
-          
-          <Col xs={24} md={12} lg={8}>
+          </Col> */}
+
+          {/* <Col xs={24} md={12} lg={8}>
             <Form.Item 
               name="options" 
               label={<span className={isMobile ? "text-sm" : ""}>Options</span>}
@@ -246,7 +257,7 @@ const BasicInformationSection = ({ isExpanded, toggleSection, tournamentStatusOp
                 maxTagCount={isMobile ? 1 : 3}
               />
             </Form.Item>
-          </Col>
+          </Col> */}
         </Row>
       </div>
     )}
