@@ -35,7 +35,7 @@ const MarketplaceSection = ({ isExpanded, toggleSection, marketplaceVisibilityOp
         <Row gutter={[12, 16]}>
           <Col xs={24} md={12}>
             <Form.Item
-              name="marketplaceVisibilityScope"
+              name="marketplace_visibility_scope"
               label={
                 <div className="flex items-center">
                   <span className={isMobile ? "text-sm" : ""}>Marketplace Visibility Scope</span>
@@ -53,11 +53,8 @@ const MarketplaceSection = ({ isExpanded, toggleSection, marketplaceVisibilityOp
                 dropdownMatchSelectWidth={!isMobile}
                 maxTagCount={isMobile ? 1 : 3}
                 options={marketplaceVisibilityOptions || [
-                  { value: "B2C-INDIVIDUAL", label: "Individual Customers" },
-                  { value: "B2C-TEAM", label: "Team Customers" },
-                  { value: "B2B-SCHOOL", label: "Schools" },
-                  { value: "B2B-ACADEMY", label: "Academies" },
-                  { value: "B2B-CLUB", label: "Clubs" },
+                  { value: "PUBLIC", label: "Public Users" },
+                  { value: "MEMBERS", label: "Members Only" }
                 ]}
                 optionLabelProp="label"
               />
@@ -66,7 +63,7 @@ const MarketplaceSection = ({ isExpanded, toggleSection, marketplaceVisibilityOp
           
           <Col xs={24} md={12}>
             <Form.Item
-              name="marketplaceActionScope"
+              name="marketplace_action_scope"
               label={
                 <div className="flex items-center">
                   <span className={isMobile ? "text-sm" : ""}>Marketplace Action Scope</span>
@@ -83,15 +80,9 @@ const MarketplaceSection = ({ isExpanded, toggleSection, marketplaceVisibilityOp
                 className="rounded-lg"
                 dropdownMatchSelectWidth={!isMobile}
                 maxTagCount={isMobile ? 1 : 3}
-                options={marketplaceVisibilityOptions ? marketplaceVisibilityOptions.map(option => ({
-                  value: option.value,
-                  label: option.label
-                })) : [
-                  { value: "B2B-Academy", label: "Academies" },
-                  { value: "B2B-School", label: "Schools" },
-                  { value: "B2B-Club", label: "Clubs" },
-                  { value: "B2C-Individual", label: "Individual Customers" },
-                  { value: "B2C-Team", label: "Team Customers" },
+                options={[
+                  { value: "REGISTER", label: "Registration Allowed" },
+                  { value: "VIEW", label: "View Only" }
                 ]}
                 optionLabelProp="label"
               />

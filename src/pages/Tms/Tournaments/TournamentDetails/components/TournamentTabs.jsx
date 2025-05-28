@@ -5,14 +5,19 @@ import { BarChart } from "../components/Icons";
 import OverviewTab from "./OverviewTab";
 import StatsTab from "./StatsTab";
 
-const TournamentTabs = ({ tournament }) => {
-  const [activeKey, setActiveKey] = useState("overview");
+const TournamentTabs = ({ tournament, activeTab, handleTabChange }) => {
+  // Use internal state if props are not provided for backward compatibility
+  const [internalActiveKey, setInternalActiveKey] = useState("overview");
+  
+  // Determine which active key and change handler to use
+  const effectiveActiveKey = activeTab || internalActiveKey;
+  const effectiveChangeHandler = handleTabChange || setInternalActiveKey;
   
   return (
     <Tabs
       type="card"
-      activeKey={activeKey}
-      onChange={(key) => setActiveKey(key)}
+      activeKey={effectiveActiveKey}
+      onChange={(key) => effectiveChangeHandler(key)}
       className="bg-white rounded-xl shadow-sm"
       items={[
         {

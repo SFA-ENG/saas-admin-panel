@@ -3,6 +3,18 @@ import { Globe } from '../components/Icons';
 import SeasonsSection from './SeasonsSection';
 
 const OverviewTab = ({ tournament }) => {
+  // Helper to safely get type with fallback
+  const getFormattedType = () => {
+    // Try different property paths depending on data structure
+    const type = tournament.type || 
+                 tournament.competition_type || 
+                 tournament.rawData?.competition_type || 
+                 "Unknown Type";
+    
+    // Make sure to replace underscores with spaces
+    return typeof type === 'string' ? type.replace(/_/g, " ") : type;
+  };
+  
   return (
     <div className="p-4">
       <div className="mb-6 bg-blue-50 p-4 rounded-lg">
@@ -19,7 +31,7 @@ const OverviewTab = ({ tournament }) => {
             <div>
               <span className="text-xs text-gray-500 mr-2">Type:</span>
               <span className="font-medium">
-                {tournament.type.replace(/_/g, " ")}
+                {getFormattedType()}
               </span>
             </div>
           </div>
@@ -34,7 +46,7 @@ const OverviewTab = ({ tournament }) => {
             <div>
               <span className="text-xs text-gray-500 mr-2">Status:</span>
               <span className="font-medium">
-                {tournament.isActive ? "Active" : "Inactive"}
+                {(tournament.isActive || tournament.is_active) ? "Active" : "Inactive"}
               </span>
             </div>
           </div>
@@ -46,7 +58,7 @@ const OverviewTab = ({ tournament }) => {
             <div>
               <span className="text-xs text-gray-500 mr-2">Visibility:</span>
               <span className="font-medium">
-                {tournament.isPublished
+                {(tournament.isPublished || tournament.is_published)
                   ? "Published"
                   : "Not Published"}
               </span>
@@ -55,7 +67,7 @@ const OverviewTab = ({ tournament }) => {
         </div>
       </div>
 
-      <SeasonsSection seasons={tournament.seasons} />
+      <SeasonsSection seasons={tournament.seasons || tournament.rawData?.seasons || []} />
     </div>
   );
 };

@@ -1,0 +1,16 @@
+{
+  "short_name": "Sports Admin Panel",
+  "name": "Sports Admin Panel",
+  "icons": [
+    {
+      "src": "/sfa-logo.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}

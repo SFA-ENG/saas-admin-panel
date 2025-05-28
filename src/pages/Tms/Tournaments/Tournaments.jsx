@@ -14,24 +14,74 @@ import { useNavigate, useLocation } from "react-router-dom";
 import AccessControlButton from "Components/AccessControlButton/AccessControlButton";
 import TournamentCard from "./_blocks/TournamentCard";
 import FullPageLoader from "Components/Loader/Loader";
-import { tournaments as mockTournaments } from "../Tms.service";
 import { getPascalCase } from "../../../helpers/common.helper";
 import AddTournamentForm from "./_blocks/AddTournamentForm";
+import { useApiQuery } from "hooks/useApiQuery/useApiQuery";
+import { CACHE_KEYS } from "../../../commons/constants";
 
 const TournamentsPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [tournaments, setTournaments] = useState(mockTournaments.tournaments);
-  const [filteredTournaments, setFilteredTournaments] = useState([]);
   const [filters, setFilters] = useState({
     status: null,
     sports: null,
   });
 
+  const [currentHash, setCurrentHash] = useState(location.hash);
   // Check if we're in the tournament creation mode
-  const isAddingTournament = location.hash === "#new";
+  const isAddingTournament = currentHash === "#new";
+
+  const {
+    data: tournamentsData,
+    isFetching: tournamentsLoading,
+    refetch: refetchTournaments,
+  } = useApiQuery({
+    queryKey: [CACHE_KEYS.TOURNAMENTS],
+    url: "/tms/tournaments",
+    params: {
+      type: "DETAILED"
+    }
+  });
+
+  // Extract tournaments and metadata from API response - updated to match actual API structure
+  const tournaments = tournamentsData?.tournaments || [];
+  const metadata = tournamentsData?.meta || {
+    active_tournaments: 0,
+    total_tournaments: 0,
+    upcoming_tournaments: 0,
+    filters: { status: [], sports: [] }
+  };
+
+  // Transform the tournaments to have the expected structure for rendering
+  const transformedTournaments = tournaments.map(t => {
+    // Extract all sports from all seasons
+    const allSports = t.seasons?.flatMap(season => 
+      season.sports?.map(sport => sport.name) || []
+    ) || [];
+    
+    // Remove duplicates
+    const uniqueSports = [...new Set(allSports)];
+    
+    return {
+      tournamentId: t.tournament_id,
+      tenantId: t.tenant_id,
+      name: t.name,
+      description: t.description,
+      status: t.status,
+      isActive: t.is_active,
+      isPublished: t.is_published,
+      // Add other fields as needed
+      sports: uniqueSports,
+      // Extract logo and banner if needed
+      logo: t.medias?.find(m => m.usage === "LOGO")?.url,
+      banner: t.medias?.find(m => m.usage === "BANNER")?.url,
+      // Store original data for details page
+      rawData: t
+    };
+  });
+
+  const [filteredTournaments, setFilteredTournaments] = useState([]);
 
   const dataSource =
     filteredTournaments.length > 0 ||
@@ -39,7 +89,7 @@ const TournamentsPage = () => {
     filters.status ||
     filters.sports
       ? filteredTournaments
-      : tournaments;
+      : transformedTournaments;
 
   const handleFilterChange = (value) => {
     setFilters((prev) => ({
@@ -53,13 +103,15 @@ const TournamentsPage = () => {
   };
 
   useEffect(() => {
+    if (!transformedTournaments || transformedTournaments.length === 0) return;
+    
     const q = searchQuery.trim().toLowerCase();
     const statusFilter = filters.status?.toLowerCase();
     const sportsFilter = filters.sports?.toLowerCase();
 
-    const filtered = tournaments.filter((t) => {
+    const filtered = transformedTournaments.filter((t) => {
       // 1) Search
-      if (q && !t.tournament_name.toLowerCase().includes(q)) {
+      if (q && !t.name.toLowerCase().includes(q)) {
         return false;
       }
       // 2) Status
@@ -82,7 +134,7 @@ const TournamentsPage = () => {
     });
 
     setFilteredTournaments(filtered);
-  }, [searchQuery, filters, tournaments]);
+  }, [searchQuery, filters, transformedTournaments]);
 
   const getFilters = (data) => {
     const filters = data.map((item) => {
@@ -94,17 +146,48 @@ const TournamentsPage = () => {
     return [{ label: "All", value: "ALL" }, ...filters];
   };
 
+
+useEffect(() => {
+  const handleHashChange = () => {
+    const previousHash = currentHash;
+    const newHash = window.location.hash;
+    
+    // Update the hash in state
+    setCurrentHash(newHash);
+    
+    // If we're returning from tournament creation (hash changed from #new to empty)
+    // then trigger a refetch of the tournaments data
+    if (previousHash === "#new" && newHash === "") {
+      refetchTournaments();
+    }
+  };
+
+  window.addEventListener("hashchange", handleHashChange);
+
+  return () => {
+    window.removeEventListener("hashchange", handleHashChange);
+  };
+}, [currentHash, refetchTournaments]);
+
   // Navigate to tournament add form
   const handleAddTournament = () => {
-    navigate("#new");
+    // Update the hash in the URL
+    window.location.hash = "#new";
+    // Also update the state directly to ensure a re-render
+    setCurrentHash("#new");
   };
 
   // Cancel adding tournament and return to list
   const handleCancelAdd = () => {
-    navigate("#");
+    // Update the hash in the URL
+    window.location.hash = "";
+    // Also update the state directly to ensure a re-render
+    setCurrentHash("");
+    // Refresh tournaments data
+    refetchTournaments();
   };
 
-  if (loading) {
+  if (tournamentsLoading) {
     return <FullPageLoader message="Loading tournaments ..." />;
   }
 
@@ -134,18 +217,21 @@ const TournamentsPage = () => {
             </div>
           </Col>
           <Col>
-            <AccessControlButton
+            <Button
               type="default"
-              title="Cancel"
-              icon={XCircle}
+              className="bg-red-600 hover:bg-red-700 text-white p-4 rounded-lg"
+              icon={<XCircle size={20} />}
               onClick={handleCancelAdd}
             >
               Cancel
-            </AccessControlButton>
+            </Button>
           </Col>
         </Row>
 
-        <AddTournamentForm onCancel={handleCancelAdd} />
+        <AddTournamentForm 
+          onCancel={handleCancelAdd} 
+          refetchTournaments={refetchTournaments}
+        />
       </Card>
     );
   }
@@ -187,21 +273,21 @@ const TournamentsPage = () => {
           {
             icon: TrendingUp,
             label: "Active",
-            value: mockTournaments.metadata.active_tournaments,
+            value: metadata.active_tournaments,
             bg: "bg-blue-100",
             color: "text-blue-600",
           },
           {
             icon: Calendar,
             label: "Upcoming",
-            value: mockTournaments.metadata.upcoming_tournaments,
+            value: metadata.upcoming_tournaments,
             bg: "bg-green-100",
             color: "text-green-600",
           },
           {
             icon: Layers,
             label: "Total",
-            value: mockTournaments.metadata.total_tournaments,
+            value: metadata.total_tournaments,
             bg: "bg-purple-100",
             color: "text-purple-600",
           },
@@ -259,12 +345,12 @@ const TournamentsPage = () => {
                 {
                   key: "status",
                   icon: Filter,
-                  opts: getFilters(mockTournaments.metadata.filters.status),
+                  opts: getFilters(metadata.filters.status),
                 },
                 {
                   key: "sports",
                   icon: Award,
-                  opts: getFilters(mockTournaments.metadata.filters.sports),
+                  opts: getFilters(metadata.filters.sports),
                 },
               ].map(({ key, icon: Icon, opts }) => (
                 <Select
@@ -287,7 +373,7 @@ const TournamentsPage = () => {
       <Row gutter={[16, 16]}>
         {dataSource.length > 0 ? (
           dataSource.map((t) => (
-            <Col xs={24} sm={12} lg={8} key={t.tournament_id}>
+            <Col xs={24} sm={12} lg={8} key={t.tournamentId}>
               <TournamentCard tournament={t} />
             </Col>
           ))

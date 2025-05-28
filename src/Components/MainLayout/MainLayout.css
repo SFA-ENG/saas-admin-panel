@@ -9,12 +9,12 @@
 
 /* Sidebar Styling */
 .sports-sidebar {
-  width: var(--sports-sidebar-width);
-  background: linear-gradient(
+  /* width: var(--sports-sidebar-width); */
+  /* background: linear-gradient(
     135deg,
     var(--sports-primary),
     var(--sports-primary-dark)
-  );
+  ); */
   height: 100vh;
   position: sticky;
   top: 0;

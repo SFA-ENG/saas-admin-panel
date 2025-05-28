@@ -6,7 +6,6 @@ import useAuthStore from "../../stores/AuthStore/AuthStore";
 import _ from "lodash";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import "./Navigation.css";
-
 const getHideClassValue = ({
   allowed_permisions,
   associated_permissions,
@@ -95,7 +94,7 @@ export const Navigation = ({
   return (
     <div className={`navbar ${isCollapsed ? "collapsed" : ""}`}>
       <div className="navbar-header">
-        <div className="logo">
+      <div className="logo">
           <div className="logo-icon">SFA</div>
           {!isCollapsed && <div className="logo-text">SPORTS ADMIN</div>}
         </div>

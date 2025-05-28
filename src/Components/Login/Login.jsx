@@ -2,7 +2,6 @@ import { Form, Button, Checkbox, Input, Select } from "antd";
 import { useEffect, useState } from "react";
 import useAuthStore from "../../stores/AuthStore/AuthStore";
 import {
-  CACHE_KEYS,
   countryCodeOptions,
   countryCodes,
   tenant_type, 
@@ -20,7 +19,6 @@ const Login = () => {
 
   const { mutate: onboardTenant, isPending: isOnboardingTenantPending } =
     useApiMutation({
-      queryKey: [CACHE_KEYS.ONBOARD_TENANT],
       url: "/iam/onboard-tenant",
       method: "POST",
       onSuccess: (data) => {
@@ -31,7 +29,6 @@ const Login = () => {
     });
 
   const { mutate: login, isPending: isLoginPending } = useApiMutation({
-    queryKey: [CACHE_KEYS.LOGIN],
     url: "/iam/login",
     method: "POST",
     onSuccess: (data) => {

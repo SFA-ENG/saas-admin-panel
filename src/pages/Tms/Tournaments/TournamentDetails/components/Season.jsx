@@ -1,13 +1,23 @@
-import { Card, Badge, Collapse, Tag } from "antd";
-import { Calendar, ClockIcon, MapPinIcon, FlagIcon, ChevronDownIcon } from "../components/Icons";
+import { Card, Badge, Tag } from "antd";
+import { Calendar, ClockIcon, MapPinIcon, FlagIcon } from "../components/Icons";
 import { formatDate, getCardColor } from "../../Tournaments.helper";
 import Sport from "./Sport";
 
 const Season = ({ season, index }) => {
-  // Create sport items for collapse
-  const sportItems = season.sports.map((sport, sportIndex) => (
-    Sport({ sport, sportIndex })
-  ));
+  // No need to map sports to sportItems anymore, we'll render them directly
+  
+  // Render participation rules safely
+  const renderParticipationRules = () => {
+    if (!season.participationRules || !season.participationRules.AND || !Array.isArray(season.participationRules.AND)) {
+      return <span className="text-gray-500">No eligibility rules specified</span>;
+    }
+    
+    return season.participationRules.AND.map((rule, idx) => (
+      <div key={idx}>
+        {rule.field}: {rule.operator} {rule.value}
+      </div>
+    ));
+  };
 
   return (
     <Card
@@ -66,7 +76,7 @@ const Season = ({ season, index }) => {
                 Locations:
               </span>
               <div className="mt-1 flex flex-wrap gap-1">
-              {season.locations.map((loc) => (
+              {(season.locations || []).map((loc) => (
                 <Tag key={loc.locationId} color="orange">
                   {loc.name}
                 </Tag>
@@ -83,30 +93,24 @@ const Season = ({ season, index }) => {
                 Eligibility:
               </span>
               <div className="mt-1 text-xs">
-              {season.participationRules.AND.map((rule, idx) => (
-                <div key={idx}>
-                  {rule.field}: {rule.operator} {rule.value}
-                </div>
-              ))}
-            </div>
+                {renderParticipationRules()}
+              </div>
             </div>
             
           </div>
         </div>
 
-        {/* Sports Accordion */}
-        <Collapse
-          className="mt-4 bg-transparent border-0"
-          bordered={false}
-          expandIconPosition="end"
-          expandIcon={({ isActive }) => (
-            <ChevronDownIcon
-              size={16}
-              className={isActive ? "rotate-180" : ""}
-            />
+        {/* Sports - Direct rendering */}
+        <div className="mt-4 space-y-3">
+          <h3 className="text-lg font-semibold text-blue-800 mb-3">Sports</h3>
+          {season.sports && season.sports.length > 0 ? (
+            season.sports.map((sport, sportIndex) => (
+              <Sport key={sport.sportsId || `sport-${sportIndex}`} sport={sport} sportIndex={sportIndex} />
+            ))
+          ) : (
+            <p className="text-gray-500">No sports available for this season.</p>
           )}
-          items={sportItems}
-        />
+        </div>
       </div>
     </Card>
   );
