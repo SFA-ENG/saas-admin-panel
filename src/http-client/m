@@ -1,0 +1,22 @@
+{
+    "name": "Summer Camp 111",
+    "description": "Summer Camp 111",
+    "competition_type": "Open_Registration_Team",
+    "status": "draft",
+    "is_active": false,
+    "is_published": false,
+    "publish_to_marketplace": false,
+    "marketplace_visibility_scope": ["PUBLIC", "MEMBERS"],
+    "marketplace_action_scope": ["REGISTER", "VIEW"],
+    "medias": [
+      {
+        "category": "IMAGE",
+        "usage": "logo",
+        "variant": "DESKTOP",
+        "url": "https://www.shutterstock.com/shutterstock/photos/2278726727/display_1500/stock-vector-minimalistic-circular-logo-sample-vector-2278726727.jpg",
+        "position": 1,
+        "mediaSource": "url"
+      }
+    ]
+  }
+  

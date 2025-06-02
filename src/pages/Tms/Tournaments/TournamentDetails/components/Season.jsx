@@ -1,9 +1,14 @@
-import { Card, Badge, Tag } from "antd";
-import { Calendar, ClockIcon, MapPinIcon, FlagIcon } from "../components/Icons";
+import { Card, Badge, Tag, Button, Tooltip } from "antd";
+import { Calendar, ClockIcon, MapPinIcon, FlagIcon, Trash2 } from "../components/Icons";
 import { formatDate, getCardColor } from "../../Tournaments.helper";
 import Sport from "./Sport";
+import { useDeleteEntity } from "../hooks/useDeleteEntity";
+import { useParams } from "react-router-dom";
 
 const Season = ({ season, index }) => {
+  const { tournament_id: tournamentId } = useParams();
+  const { handleDelete, isDeleting } = useDeleteEntity(tournamentId);
+
   // No need to map sports to sportItems anymore, we'll render them directly
   
   // Render participation rules safely
@@ -29,12 +34,25 @@ const Season = ({ season, index }) => {
             <Calendar className="mr-2 text-blue-600" size={18} />
             <span className="font-bold">{season.name}</span>
           </div>
-          <Badge
-            count={season.isActive ? "Active" : "Inactive"}
-            style={{
-              backgroundColor: season.isActive ? "#52c41a" : "#f5222d",
-            }}
-          />
+          <div className="flex items-center gap-2">
+            <Badge
+              count={season.isActive ? "Active" : "Inactive"}
+              style={{
+                backgroundColor: season.isActive ? "#52c41a" : "#f5222d",
+              }}
+            />
+            <Tooltip title="Delete Season">
+              <Button
+                type="text"
+                danger
+                shape="circle"
+                icon={<Trash2 size={16} />}
+                loading={isDeleting}
+                onClick={() => handleDelete('season', season.name)}
+                className="hover:bg-red-50"
+              />
+            </Tooltip>
+          </div>
           <div className="bg-blue-50 p-2 rounded-lg">
             <div className="flex items-center">
               <Calendar size={16} className="text-blue-600 mr-2" />

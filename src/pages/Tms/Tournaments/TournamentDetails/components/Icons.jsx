@@ -15,6 +15,7 @@ import {
   Users,
   Medal,
   FileText,
+  Trash2,
 } from "lucide-react";
 
 // Icon component wrappers
@@ -99,4 +100,5 @@ export {
   Users,
   Medal,
   FileText,
+  Trash2,
 }; 

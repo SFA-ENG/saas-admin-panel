@@ -8,7 +8,373 @@ const { Option } = Select;
 /**
  * SubEventCard component for tournament sub-events
  */
-const SubEventCard = ({ subEvent, removeSubEvent, subEventIndex, isMobile }) => {
+const SubEventCard = ({ subEvent, removeSubEvent, subEventIndex, isMobile, sportsData, selectedSportId, selectedEventId }) => {
+  // Helper function to get scoring metadata for the selected sport and event
+  const getScoringMetadata = () => {
+    console.log('SubEventCard - getScoringMetadata called with:', {
+      sportsData: sportsData?.length || 0,
+      selectedSportId,
+      selectedEventId,
+      availableSports: sportsData?.map(s => ({ id: s.sport_id, name: s.name })) || [],
+      subEventIndex
+    });
+    
+    if (!sportsData || !selectedSportId) {
+      console.log('SubEventCard - Missing required data for scoring metadata (no sportsData or selectedSportId)');
+      return null;
+    }
+    
+    const sport = sportsData.find(s => s.sport_id === selectedSportId);
+    console.log('SubEventCard - Found sport:', sport?.name, 'with events count:', sport?.events?.length || 0);
+    
+    if (!sport) {
+      console.log('SubEventCard - No sport found for ID:', selectedSportId);
+      console.log('SubEventCard - Available sport IDs:', sportsData.map(s => s.sport_id));
+      return null;
+    }
+    
+    if (!sport.events || sport.events.length === 0) {
+      console.log('SubEventCard - No events found for sport:', sport.name);
+      return null;
+    }
+    
+    // Try to find the specific event by selectedEventId
+    let event = null;
+    if (selectedEventId) {
+      event = sport.events.find(e => e.event_id === selectedEventId);
+      console.log('SubEventCard - Found event by selectedEventId:', event?.type);
+    }
+    
+    // If no event found by selectedEventId, use the first event from the sport as fallback
+    if (!event) {
+      event = sport.events[0];
+      console.log('SubEventCard - Using first available event as fallback:', event?.type, 'with ID:', event?.event_id);
+    }
+    
+    if (!event) {
+      console.log('SubEventCard - No event found for sport:', sport.name);
+      return null;
+    }
+    
+    const scoringData = event.metadata?.scoring;
+    console.log('SubEventCard - Scoring metadata:', scoringData);
+    
+    return scoringData || null;
+  };
+
+  const scoringMetadata = getScoringMetadata();
+
+  // Debug section - remove this after testing
+  console.log('SubEventCard - Debug info:', {
+    subEventIndex,
+    selectedSportId,
+    selectedEventId,
+    scoringMetadata
+  });
+
+  // Function to render dynamic scoring fields based on the metadata structure
+  const renderScoringFields = (isMobileView = false) => {
+    if (!scoringMetadata) {
+      console.log('SubEventCard - No scoring metadata available');
+      return null;
+    }
+
+    const fields = [];
+    const fieldSize = isMobileView ? "small" : "default";
+    const labelClass = isMobileView ? "text-xs" : "";
+
+    // Handle no_of_games field (Badminton, etc.)
+    if (scoringMetadata.no_of_games && Array.isArray(scoringMetadata.no_of_games)) {
+      const displayName = scoringMetadata.display_name || 'Games';
+      const fieldComponent = (
+        <Form.Item
+          {...subEvent}
+          name={[subEvent.name, "meta_data", "scoring", "no_of_games"]}
+          label={
+            isMobileView ? (
+              <span className={labelClass}>No. of {displayName}</span>
+            ) : (
+              `No. of ${displayName}`
+            )
+          }
+          tooltip={`Select the number of ${displayName.toLowerCase()} for this sub-event`}
+          key="no_of_games"
+        >
+          <Select
+            placeholder={`Select number of ${displayName.toLowerCase()}`}
+            className="rounded-lg"
+            size={fieldSize}
+          >
+            {scoringMetadata.no_of_games.map(count => (
+              <Option key={count} value={count}>
+                {count} {count === 1 ? displayName.slice(0, -1) : displayName}
+              </Option>
+            ))}
+          </Select>
+        </Form.Item>
+      );
+
+      if (isMobileView) {
+        fields.push(fieldComponent);
+      } else {
+        fields.push(
+          <Col xs={24} md={12} key="no_of_games">
+            {fieldComponent}
+          </Col>
+        );
+      }
+    }
+
+    // Handle no_of_points field (Badminton, etc.)
+    if (scoringMetadata.no_of_points && Array.isArray(scoringMetadata.no_of_points)) {
+      const fieldComponent = (
+        <Form.Item
+          {...subEvent}
+          name={[subEvent.name, "meta_data", "scoring", "no_of_points"]}
+          label={
+            isMobileView ? (
+              <span className={labelClass}>Number of Points</span>
+            ) : (
+              "Number of Points"
+            )
+          }
+          tooltip="Select the number of points required to win each game"
+          key="no_of_points"
+        >
+          <Select
+            placeholder="Select points to win"
+            className="rounded-lg"
+            size={fieldSize}
+          >
+            {scoringMetadata.no_of_points.map(points => (
+              <Option key={points} value={points}>
+                {points} Points
+              </Option>
+            ))}
+          </Select>
+        </Form.Item>
+      );
+
+      if (isMobileView) {
+        fields.push(fieldComponent);
+      } else {
+        fields.push(
+          <Col xs={24} md={12} key="no_of_points">
+            {fieldComponent}
+          </Col>
+        );
+      }
+    }
+
+    // Handle no_of_period field (Football, etc.)
+    if (scoringMetadata.no_of_period && Array.isArray(scoringMetadata.no_of_period)) {
+      const displayName = scoringMetadata.display_name || 'Periods';
+      const fieldComponent = (
+        <Form.Item
+          {...subEvent}
+          name={[subEvent.name, "meta_data", "scoring", "no_of_period"]}
+          label={
+            isMobileView ? (
+              <span className={labelClass}>No. of {displayName}</span>
+            ) : (
+              `No. of ${displayName}`
+            )
+          }
+          tooltip={`Select the number of ${displayName.toLowerCase()} for this sub-event`}
+          key="no_of_period"
+        >
+          <Select
+            placeholder={`Select number of ${displayName.toLowerCase()}`}
+            className="rounded-lg"
+            size={fieldSize}
+          >
+            {scoringMetadata.no_of_period.map(count => (
+              <Option key={count} value={count}>
+                {count} {count === 1 ? displayName.slice(0, -1) : displayName}
+              </Option>
+            ))}
+          </Select>
+        </Form.Item>
+      );
+
+      if (isMobileView) {
+        fields.push(fieldComponent);
+      } else {
+        fields.push(
+          <Col xs={24} md={12} key="no_of_period">
+            {fieldComponent}
+          </Col>
+        );
+      }
+    }
+
+    // Handle minutes_in_period field (Football, etc.)
+    if (scoringMetadata.minutes_in_period && Array.isArray(scoringMetadata.minutes_in_period)) {
+      const fieldComponent = (
+        <Form.Item
+          {...subEvent}
+          name={[subEvent.name, "meta_data", "scoring", "minutes_in_period"]}
+          label={
+            isMobileView ? (
+              <span className={labelClass}>Minutes per Period</span>
+            ) : (
+              "Minutes per Period"
+            )
+          }
+          tooltip="Select the duration in minutes for each period"
+          key="minutes_in_period"
+        >
+          <Select
+            placeholder="Select minutes per period"
+            className="rounded-lg"
+            size={fieldSize}
+          >
+            {scoringMetadata.minutes_in_period.map(minutes => (
+              <Option key={minutes} value={minutes}>
+                {minutes} Minutes
+              </Option>
+            ))}
+          </Select>
+        </Form.Item>
+      );
+
+      if (isMobileView) {
+        fields.push(fieldComponent);
+      } else {
+        fields.push(
+          <Col xs={24} md={12} key="minutes_in_period">
+            {fieldComponent}
+          </Col>
+        );
+      }
+    }
+
+    // Handle no_of_lanes field (Athletics, etc.)
+    if (scoringMetadata.no_of_lanes && Array.isArray(scoringMetadata.no_of_lanes)) {
+      const fieldComponent = (
+        <Form.Item
+          {...subEvent}
+          name={[subEvent.name, "meta_data", "scoring", "no_of_lanes"]}
+          label={
+            isMobileView ? (
+              <span className={labelClass}>Number of Lanes</span>
+            ) : (
+              "Number of Lanes"
+            )
+          }
+          tooltip="Select the number of lanes for this track event"
+          key="no_of_lanes"
+        >
+          <Select
+            placeholder="Select number of lanes"
+            className="rounded-lg"
+            size={fieldSize}
+          >
+            {scoringMetadata.no_of_lanes.map(lanes => (
+              <Option key={lanes} value={lanes}>
+                {lanes} Lanes
+              </Option>
+            ))}
+          </Select>
+        </Form.Item>
+      );
+
+      if (isMobileView) {
+        fields.push(fieldComponent);
+      } else {
+        fields.push(
+          <Col xs={24} md={12} key="no_of_lanes">
+            {fieldComponent}
+          </Col>
+        );
+      }
+    }
+
+    // Handle semi_final_required field (Athletics, etc.)
+    if (scoringMetadata.semi_final_required && Array.isArray(scoringMetadata.semi_final_required)) {
+      const fieldComponent = (
+        <Form.Item
+          {...subEvent}
+          name={[subEvent.name, "meta_data", "scoring", "semi_final_required"]}
+          label={
+            isMobileView ? (
+              <span className={labelClass}>Semi-Final Required</span>
+            ) : (
+              "Semi-Final Required"
+            )
+          }
+          tooltip="Select whether semi-finals are required for this event"
+          key="semi_final_required"
+        >
+          <Select
+            placeholder="Select semi-final requirement"
+            className="rounded-lg"
+            size={fieldSize}
+          >
+            {scoringMetadata.semi_final_required.map(required => (
+              <Option key={required.toString()} value={required}>
+                {required ? 'Yes' : 'No'}
+              </Option>
+            ))}
+          </Select>
+        </Form.Item>
+      );
+
+      if (isMobileView) {
+        fields.push(fieldComponent);
+      } else {
+        fields.push(
+          <Col xs={24} md={12} key="semi_final_required">
+            {fieldComponent}
+          </Col>
+        );
+      }
+    }
+
+    // Handle no_of_attempts_field_events field (Athletics, etc.)
+    if (scoringMetadata.no_of_attempts_field_events && Array.isArray(scoringMetadata.no_of_attempts_field_events)) {
+      const fieldComponent = (
+        <Form.Item
+          {...subEvent}
+          name={[subEvent.name, "meta_data", "scoring", "no_of_attempts_field_events"]}
+          label={
+            isMobileView ? (
+              <span className={labelClass}>Attempts for Field Events</span>
+            ) : (
+              "Number of Attempts (Field Events)"
+            )
+          }
+          tooltip="Select the number of attempts allowed for field events"
+          key="no_of_attempts_field_events"
+        >
+          <Select
+            placeholder="Select number of attempts"
+            className="rounded-lg"
+            size={fieldSize}
+          >
+            {scoringMetadata.no_of_attempts_field_events.map(attempts => (
+              <Option key={attempts} value={attempts}>
+                {attempts} Attempts
+              </Option>
+            ))}
+          </Select>
+        </Form.Item>
+      );
+
+      if (isMobileView) {
+        fields.push(fieldComponent);
+      } else {
+        fields.push(
+          <Col xs={24} md={12} key="no_of_attempts_field_events">
+            {fieldComponent}
+          </Col>
+        );
+      }
+    }
+
+    return fields;
+  };
+
   // Render a different layout for mobile
   if (isMobile) {
     return (
@@ -96,6 +462,8 @@ const SubEventCard = ({ subEvent, removeSubEvent, subEventIndex, isMobile }) => 
                 <Option value="Mixed">Mixed</Option>
               </Select>
             </Form.Item>
+
+            {renderScoringFields(true)}
             
             <Form.Item
               {...subEvent}
@@ -365,6 +733,8 @@ const SubEventCard = ({ subEvent, removeSubEvent, subEventIndex, isMobile }) => 
                 </Select>
               </Form.Item>
             </Col>
+
+            {renderScoringFields()}
             
             <Col xs={24}>
               <Form.Item

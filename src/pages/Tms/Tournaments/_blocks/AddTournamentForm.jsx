@@ -6,6 +6,7 @@ import {
   Button,
   notification
 } from "antd";
+import moment from "moment";
 // Import Components
 import BasicInformationSection from "./_components/sections/BasicInformationSection";
 import MediaSection from "./_components/sections/MediaSection";
@@ -76,7 +77,7 @@ const stateOptions = [
 // Main Component
 // ==========================================
 
-const AddTournamentForm = ({ onCancel, refetchTournaments }) => {
+const AddTournamentForm = ({ onCancel, refetchTournaments, editMode = false, tournamentId = null, tournamentData = null }) => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [expandedSections, setExpandedSections] = useState({
@@ -137,7 +138,8 @@ const AddTournamentForm = ({ onCancel, refetchTournaments }) => {
   };
 
   // Function to get dynamic validation rules based on creation level
-  const getDynamicValidationRules = () => {
+  const getDynamicValidationRules = (levelToUse = null) => {
+    const effectiveLevel = levelToUse || creationLevel;
     const rules = {
       tournament: {
         // Tournament level - only basic fields required
@@ -147,43 +149,46 @@ const AddTournamentForm = ({ onCancel, refetchTournaments }) => {
       season: {
         // Tournament + Season level - tournament fields + season fields required
         required: ['name', 'description', 'competition_type', 'status', 'seasons'],
-        seasonRequired: ['name', 'description', 'start_date', 'end_date', 'registration_start_date', 'registration_end_date'],
+        seasonRequired: ['season_name', 'season_description'],
         optional: ['marketplace_visibility_scope', 'marketplace_action_scope', 'medias']
       },
       event: {
         // Tournament + Season + Event level - previous fields + event fields required
         required: ['name', 'description', 'competition_type', 'status', 'seasons'],
-        seasonRequired: ['name', 'description', 'start_date', 'end_date', 'registration_start_date', 'registration_end_date', 'sports'],
-        eventRequired: ['master_sport_events_id', 'start_date', 'end_date'],
+        seasonRequired: ['season_name', 'season_description', 'sports'],
+        eventRequired: ['master_sport_events_id'],
         optional: ['marketplace_visibility_scope', 'marketplace_action_scope', 'medias']
       },
       subevent: {
         // Complete structure - all fields required
         required: ['name', 'description', 'competition_type', 'status', 'seasons'],
-        seasonRequired: ['name', 'description', 'start_date', 'end_date', 'registration_start_date', 'registration_end_date', 'sports'],
-        eventRequired: ['master_sport_events_id', 'start_date', 'end_date', 'sub_events'],
+        seasonRequired: ['season_name', 'season_description', 'sports'],
+        eventRequired: ['master_sport_events_id', 'sub_events'],
         subeventRequired: ['name', 'description', 'expected_participants', 'participation_rules', 'meta_data', 'pricing'],
         optional: ['marketplace_visibility_scope', 'marketplace_action_scope', 'medias']
       }
     };
     
-    return rules[creationLevel] || rules.tournament;
+    return rules[effectiveLevel] || rules.tournament;
   };
 
   // Function to validate form based on creation level
-  const validateFormByLevel = (values) => {
-    const rules = getDynamicValidationRules();
+  const validateFormByLevel = (values, levelToValidate = null) => {
+    const effectiveLevel = levelToValidate || (creationLevel === "tournament" && values.seasons && values.seasons.length > 0 ? "season" : creationLevel);
+    const rules = getDynamicValidationRules(effectiveLevel);
     const errors = [];
+
+    console.log("Validating form with effective level:", effectiveLevel);
 
     // Validate tournament level fields
     rules.required.forEach(field => {
       if (!values[field] || (Array.isArray(values[field]) && values[field].length === 0)) {
-        errors.push(`${field} is required for ${creationLevel} level creation`);
+        errors.push(`${field} is required for ${effectiveLevel} level creation`);
       }
     });
 
     // Validate season level fields if applicable
-    if (creationLevel !== 'tournament' && rules.seasonRequired) {
+    if (effectiveLevel !== 'tournament' && rules.seasonRequired) {
       if (!values.seasons || values.seasons.length === 0) {
         errors.push('At least one season is required');
       } else {
@@ -198,7 +203,7 @@ const AddTournamentForm = ({ onCancel, refetchTournaments }) => {
     }
 
     // Validate event level fields if applicable
-    if ((creationLevel === 'event' || creationLevel === 'subevent') && rules.eventRequired) {
+    if ((effectiveLevel === 'event' || effectiveLevel === 'subevent') && rules.eventRequired) {
       if (values.seasons) {
         values.seasons.forEach((season, seasonIndex) => {
           if (!season.sports || season.sports.length === 0) {
@@ -223,7 +228,7 @@ const AddTournamentForm = ({ onCancel, refetchTournaments }) => {
     }
 
     // Validate subevent level fields if applicable
-    if (creationLevel === 'subevent' && rules.subeventRequired) {
+    if (effectiveLevel === 'subevent' && rules.subeventRequired) {
       if (values.seasons) {
         values.seasons.forEach((season, seasonIndex) => {
           if (season.sports) {
@@ -256,11 +261,14 @@ const AddTournamentForm = ({ onCancel, refetchTournaments }) => {
   };
 
   const { mutate: createTournament, isLoading: isCreatingTournament } = useApiMutation({
-    url: "/tms/tournaments",
-    method: "POST",
+    url: editMode ? `/tms/tournaments/${tournamentId}` : "/tms/tournaments",
+    method: editMode ? "PATCH" : "POST",
     onSuccess: (data) => {
       // Show success notification
-      renderSuccessNotifications({title:"Success", message:"Tournament Created Successfully"});
+      renderSuccessNotifications({
+        title: "Success", 
+        message: editMode ? "Tournament Updated Successfully" : "Tournament Created Successfully"
+      });
       
       // Clear saved form data
       localStorage.removeItem('tournamentFormData');
@@ -285,10 +293,9 @@ const AddTournamentForm = ({ onCancel, refetchTournaments }) => {
     onError: (error) => {
       // Check if error is undefined or null, which might indicate a network issue
       if (!error) {
-        renderErrorNotifications({
-          title: "Network Error",
+        renderErrorNotifications([{
           message: "Unable to connect to the server. Please check your internet connection and try again."
-        });
+        }]);
         return;
       }
       
@@ -305,10 +312,9 @@ const AddTournamentForm = ({ onCancel, refetchTournaments }) => {
         const violatingId = error?.errors?.[0]?.message?.match(/Key \(id\)=\((.*?)\)/)?.[1] || 
                             error?.errors?.[0]?.rawErrors?.[0]?.message?.match(/Key \(id\)=\((.*?)\)/)?.[1];
         
-        renderErrorNotifications({
-          title: "ID Conflict Error",
+        renderErrorNotifications([{
           message: `Cannot create tournament because an ID conflict was detected${violatingId ? ` (${violatingId})` : ''}. Please try again with a new submission.`
-        });
+        }]);
       } else {
         // For other errors, extract the error message if possible
         let errorMessage = "Failed to create tournament. Please check the form and try again.";
@@ -321,10 +327,9 @@ const AddTournamentForm = ({ onCancel, refetchTournaments }) => {
           }
         }
         
-        renderErrorNotifications({
-          title: "Error Creating Tournament",
+        renderErrorNotifications([{
           message: errorMessage
-        });
+        }]);
       }
     }
   });
@@ -380,6 +385,9 @@ const AddTournamentForm = ({ onCancel, refetchTournaments }) => {
   
   // Load saved form data from localStorage on component mount
   useEffect(() => {
+    // Don't load saved data when in edit mode
+    if (editMode) return;
+    
     const savedFormData = localStorage.getItem('tournamentFormData');
     if (savedFormData) {
       try {
@@ -423,7 +431,168 @@ const AddTournamentForm = ({ onCancel, refetchTournaments }) => {
         localStorage.removeItem('tournamentFormData');
       }
     }
-  }, [form]);
+  }, [form, editMode]);
+
+  // Pre-fill form with tournament data when in edit mode
+  useEffect(() => {
+    if (editMode && tournamentData) {
+      try {
+        // Clear any existing saved draft data when editing
+        localStorage.removeItem('tournamentFormData');
+        setHasSavedDraft(false);
+        
+        // Transform tournament data to match form structure
+        const rawData = tournamentData.rawData || tournamentData;
+        
+        console.log("Raw tournament data received for edit:", rawData);
+        console.log("Tournament seasons data:", rawData.seasons);
+        
+        // Transform media data
+        const transformedMedias = (rawData.medias || []).map((media, index) => ({
+          key: `media-${index}`,
+          category: media.category || "TOURNAMENT",
+          usage: media.type || media.usage || "BANNER",
+          variant: media.variant || "PRIMARY",
+          position: media.position || 0,
+          mediaSource: "url",
+          url: media.url || ""
+        }));
+        
+        // Transform seasons data to match Form.List structure
+        const transformedSeasons = (rawData.seasons || []).map((season, seasonIndex) => {
+          
+          // Transform sports within season to match Form.List structure
+          const transformedSports = (season.sports || []).map((sport, sportIndex) => {
+            
+            // Transform events within sport to match Form.List structure
+            const transformedEvents = (sport.events || []).map((event, eventIndex) => {
+              
+              // Transform subevents within event to match Form.List structure
+              const transformedSubEvents = (event.sub_events || []).map((subevent, subeventIndex) => ({
+                name: subevent.name || "",
+                description: subevent.description || "",
+                gameFormat: subevent.game_format || subevent.gameFormat || "KNOCKOUT",
+                type: subevent.type || "Individual",
+                status: subevent.status || "DRAFT",
+                isActive: subevent.is_active ?? true,
+                expected_participants: subevent.expected_participants || 32,
+                participation_rules: subevent.participation_rules || {
+                  AND: [{ field: "COUNTRY", operator: "=", value: "India" }]
+                },
+                meta_data: subevent.meta_data || {
+                  team: { 
+                    max_players_count: subevent.meta_data?.team?.max_players_count || 2,
+                    min_players_count: subevent.meta_data?.team?.min_players_count || 2 
+                  },
+                  scoring: {
+                    no_of_games: subevent.meta_data?.scoring?.no_of_games,
+                    no_of_points: subevent.meta_data?.scoring?.no_of_points,
+                    win_margin_points: subevent.meta_data?.scoring?.win_margin_points,
+                    display_name: subevent.meta_data?.scoring?.display_name
+                  }
+                },
+                pricing: subevent.pricing || {
+                  currency: "INR",
+                  type: "MRP",
+                  amount: 699,
+                  prices: [
+                    { type: "MRP", amount: 699, tax_included: false, tax_details: { tax_percentage: 18, tax_amount: 125.82 } },
+                    { type: "Selling Price", amount: 599, tax_included: false, tax_details: { tax_percentage: 18, tax_amount: 107.82 } }
+                  ]
+                }
+              }));
+              
+              // Format category tree for event name display
+              const formatCategoryTreeForEventName = (categoryTree) => {
+                if (!categoryTree) return "";
+                const parts = [
+                  categoryTree.primary,
+                  categoryTree.secondary,
+                  categoryTree.tertiary,
+                  categoryTree.quaternary
+                ].filter(Boolean);
+                return parts.join(', ');
+              };
+              
+              // Get event name from category_tree if available, otherwise use a default
+              const eventName = event.category_tree 
+                ? formatCategoryTreeForEventName(event.category_tree) 
+                : (event.name || "");
+              
+              return {
+                eventName: eventName,
+                eventType: event.type || "Individual", 
+                description: event.description || "",
+                event_duration: event.start_date && event.end_date ? [moment(event.start_date), moment(event.end_date)] : null,
+                master_sport_events_id: event.master_sport_events_id || event.event_id || "",
+                termsAndConditions: event.terms_and_conditions || { content: "", url: "" },
+                rulesAndRegulations: event.rules_and_regulations || { content: "", url: "" },
+                sub_events: transformedSubEvents
+              };
+            });
+            
+            return {
+              sportsId: sport.master_sports_id || sport.sports_id || sport.sport_id || "",
+              sportName: sport.name || "",
+              events: transformedEvents
+            };
+          });
+          
+          return {
+            season_name: season.name || "",
+            season_description: season.description || "", 
+            duration: season.start_date && season.end_date ? [moment(season.start_date), moment(season.end_date)] : null,
+            registration_duration: season.registration_start_date && season.registration_end_date ? [moment(season.registration_start_date), moment(season.registration_end_date)] : null,
+            is_active: season.is_active ?? true,
+            is_published: season.is_published ?? true,
+            participationRules: season.participation_rules || { AND: [] },
+            termsAndConditions: season.terms_and_conditions || { content: "", url: "" },
+            rulesAndRegulations: season.rules_and_regulations || { content: "", url: "" },
+            locations: season.locations_ids || season.locations?.map(loc => loc.location_id) || [],
+            country_code: "IN",
+            sports: transformedSports,
+            medias: (season.medias || []).map((media, index) => ({
+              category: media.category || "SEASON",
+              usage: media.type || media.usage || "BANNER", 
+              variant: media.variant || "PRIMARY",
+              position: parseInt(media.position) || 0,
+              mediaSource: "url",
+              url: media.url || ""
+            }))
+          };
+        });
+        
+        const formData = {
+          name: rawData.name || "",
+          description: rawData.description || "",
+          competition_type: rawData.competition_type || "Open_Registration_Team",
+          status: rawData.status || "DRAFT",
+          is_active: rawData.is_active ?? true,
+          is_published: rawData.is_published ?? true,
+          featured: rawData.featured ?? false,
+          marketplace_visibility_scope: rawData.marketplace_visibility_scope || ["PUBLIC", "MEMBERS"],
+          marketplace_action_scope: rawData.marketplace_action_scope || ["REGISTER", "VIEW"],
+          medias: transformedMedias,
+          seasons: transformedSeasons
+        };
+        
+        
+        
+        // Set the form values
+        form.setFieldsValue(formData);
+        
+      } catch (error) {
+        console.error("Error pre-filling form with tournament data:", error);
+      }
+    } else if (!editMode) {
+      // When not in edit mode, ensure we start with a clean form
+      // Clear any existing tournament data but preserve saved draft if it exists
+      const hasValidSavedData = localStorage.getItem('tournamentFormData');
+      if (!hasValidSavedData) {
+        form.resetFields();
+      }
+    }
+  }, [editMode, tournamentData, form]);
 
   // Save form data to localStorage whenever it changes
   const saveFormData = () => {
@@ -556,62 +725,14 @@ const AddTournamentForm = ({ onCancel, refetchTournaments }) => {
               form.setFieldsValue(form.getFieldsValue());
             }, 100);
           } else {
-            // Provide at least one valid UUID option for testing
-            setSportsOptions([
-              { 
-                label: "Badminton", 
-                value: "e2c7520b-0e8a-55ba-820f-c305a4596fdb", 
-                description: "Badminton sport",
-                events: [
-                  {
-                    label: "Singles",
-                    value: "fdcfa36f-5e44-482e-8634-f99f72d13805",
-                    description: "Individual"
-                  }
-                ]
-              },
-              { 
-                label: "Football", 
-                value: "603273a1-a3ad-5a03-a1f6-e38ec0062e95", 
-                description: "Football sport",
-                events: [
-                  {
-                    label: "Team",
-                    value: "141bff2d-25b7-41ac-9e7d-6dc32ace327b",
-                    description: "Team"
-                  }
-                ] 
-              }
-            ]);
+            // No sports data available
+            setSportsOptions([]);
+            setRawSportsData([]);
           }
         } else {
-          // Provide fallback options
-          setSportsOptions([
-            { 
-              label: "Badminton", 
-              value: "e2c7520b-0e8a-55ba-820f-c305a4596fdb", 
-              description: "Badminton sport",
-              events: [
-                {
-                  label: "Singles",
-                  value: "fdcfa36f-5e44-482e-8634-f99f72d13805",
-                  description: "Individual"
-                }
-              ]
-            },
-            { 
-              label: "Football", 
-              value: "603273a1-a3ad-5a03-a1f6-e38ec0062e95", 
-              description: "Football sport",
-              events: [
-                {
-                  label: "Team",
-                  value: "141bff2d-25b7-41ac-9e7d-6dc32ace327b",
-                  description: "Team"
-                }
-              ]
-            }
-          ]);
+          // No sports response - set empty arrays
+          setSportsOptions([]);
+          setRawSportsData([]);
         }
         
         // We'll fetch locations in a separate function now
@@ -619,10 +740,14 @@ const AddTournamentForm = ({ onCancel, refetchTournaments }) => {
         
         setIsLoadingMasterData(false);
       } catch (error) {
-        renderErrorNotifications({
-          title: "Error",
+        renderErrorNotifications([{
           message: "Failed to load sports and qualifier rules data"
-        });
+        }]);
+        
+        // Set empty arrays for sports data on error
+        setSportsOptions([]);
+        setRawSportsData([]);
+        
         setIsLoadingMasterData(false);
       }
     };
@@ -713,29 +838,7 @@ const AddTournamentForm = ({ onCancel, refetchTournaments }) => {
     }
   };
   
-  // Helper to get fallback locations based on country code
-  const getFallbackLocationsForCountry = (countryCodeToUse) => {
-    if (countryCodeToUse === "IN") {
-      return [
-        { label: "Chennai, Tamil Nadu", value: "56ce426f-e781-4a03-b82f-007c9945d90b" },
-        { label: "Mumbai, Maharashtra", value: "a9cfa75b-89a7-4c36-a982-1f1f8c06dd3b" },
-        { label: "Bangalore, Karnataka", value: "b12d4e3f-c987-4a23-95e2-39b7c1e84f5a" },
-        { label: "Delhi NCR", value: "e2c7520b-0e8a-55ba-820f-c305a4596fdb" },
-        { label: "Hyderabad, Telangana", value: "603273a1-a3ad-5a03-a1f6-e38ec0062e95" }
-      ];
-    } else if (countryCodeToUse === "US") {
-      return [
-        { label: "New York", value: "a1b2c3d4-e5f6-1234-5678-abcdefghijkl" },
-        { label: "Los Angeles", value: "b2c3d4e5-f6a1-2345-6789-bcdefghijklm" },
-        { label: "Chicago", value: "c3d4e5f6-a1b2-3456-789a-defghijklmno" }
-      ];
-    } else {
-      return [
-        { label: "Default Location 1", value: "d4e5f6a1-b2c3-4567-89ab-efghijklmnop" },
-        { label: "Default Location 2", value: "e5f6a1b2-c3d4-5678-9abc-fghijklmnopq" }
-      ];
-    }
-  };
+ 
   
   // Check if the screen is mobile size
   useEffect(() => {
@@ -912,14 +1015,28 @@ const AddTournamentForm = ({ onCancel, refetchTournaments }) => {
   const formatDateToISO = (dateValue) => {
     if (!dateValue) return null;
     
-    // Handle Moment objects
-    if (dateValue._isAMomentObject && dateValue.isValid()) {
-      return dateValue.format('YYYY-MM-DD');
+    console.log("formatDateToISO called with:", dateValue, "Type:", typeof dateValue, "Constructor:", dateValue.constructor?.name);
+    
+    // Add more thorough checking for Moment objects
+    if (dateValue && typeof dateValue === 'object' && dateValue._isAMomentObject) {
+      try {
+        if (typeof dateValue.isValid === 'function' && dateValue.isValid()) {
+          return dateValue.format('YYYY-MM-DD');
+        }
+      } catch (e) {
+        // If moment object is invalid, fall through to other handlers
+      }
     }
     
     // Handle Date objects
     if (dateValue instanceof Date) {
-      return dateValue.toISOString().split('T')[0];
+      try {
+        if (!isNaN(dateValue.getTime())) {
+          return dateValue.toISOString().split('T')[0];
+        }
+      } catch (e) {
+        // Fall through to string handling
+      }
     }
     
     // Handle string dates
@@ -934,20 +1051,56 @@ const AddTournamentForm = ({ onCancel, refetchTournaments }) => {
       }
     }
     
+    // Handle any other object that might have a toDate method (like Moment)
+    if (dateValue && typeof dateValue === 'object' && typeof dateValue.toDate === 'function') {
+      try {
+        const dateObj = dateValue.toDate();
+        if (dateObj instanceof Date && !isNaN(dateObj.getTime())) {
+          return dateObj.toISOString().split('T')[0];
+        }
+      } catch (e) {
+        // Silent error handling
+      }
+    }
+    
+    // Fallback: try to create a date from the value directly
+    try {
+      const fallbackDate = new Date(dateValue);
+      if (!isNaN(fallbackDate.getTime())) {
+        return fallbackDate.toISOString().split('T')[0];
+      }
+    } catch (e) {
+      // Silent error handling
+    }
+    
     return null;
   };
 
   // Form submission handler
   const onFinish = async (values) => {
     try {
+      console.log("onFinish called with values:", values);
+      console.log("Current creationLevel:", creationLevel);
+      
       setIsSubmitting(true);
       
       // Clear any existing form data in localStorage
       window.localStorage.removeItem("tournament_form_data");
 
-      // Validate form based on creation level
-      const levelValidation = validateFormByLevel(values);
+      // Auto-detect creation level based on form data if needed
+      let effectiveCreationLevel = creationLevel;
+      if (creationLevel === "tournament" && values.seasons && values.seasons.length > 0) {
+        // If we have seasons but creation level is tournament, upgrade it
+        effectiveCreationLevel = "season";
+        console.log("Auto-upgrading creation level to season due to presence of seasons data");
+      }
+
+      // Validate form based on effective creation level
+      const levelValidation = validateFormByLevel(values, effectiveCreationLevel);
+      console.log("Level validation result:", levelValidation);
+      
       if (!levelValidation.isValid) {
+        console.log("Validation failed, errors:", levelValidation.errors);
         notification.error({
           message: "Validation Error",
           description: (
@@ -967,7 +1120,7 @@ const AddTournamentForm = ({ onCancel, refetchTournaments }) => {
       }
 
       // Only validate event IDs if we're creating events or subevents
-      if (creationLevel === 'event' || creationLevel === 'subevent') {
+      if (effectiveCreationLevel === 'event' || effectiveCreationLevel === 'subevent') {
         const { isValid, missingEventIds, validEventIds } = validateEventIds(values);
         
         if (!isValid) {
@@ -991,8 +1144,25 @@ const AddTournamentForm = ({ onCancel, refetchTournaments }) => {
         }
       }
       
+      console.log("Validation passed, proceeding with form submission");
+      
       // If we have all necessary validations passed, proceed with form submission
-      let cleanedValues = ensureNoIds(values);
+      let cleanedValues;
+      
+      if (editMode) {
+        // In edit mode, preserve the tournament ID and other necessary IDs
+        cleanedValues = { ...values };
+        if (tournamentId) {
+          cleanedValues.tournament_id = tournamentId;
+        }
+        // Don't remove all IDs in edit mode, just the temp ones
+        cleanedValues = ensureNoTempIds(cleanedValues);
+      } else {
+        // In add mode, remove all IDs as before
+        cleanedValues = ensureNoIds(values);
+      }
+      
+      console.log("Cleaned values before processing:", cleanedValues);
       
       // Final check for proper field names according to API contract
       const verifyFieldNames = (obj) => {
@@ -1029,165 +1199,156 @@ const AddTournamentForm = ({ onCancel, refetchTournaments }) => {
       // Format and validate all data according to API requirements
       if (cleanedValues.seasons && Array.isArray(cleanedValues.seasons)) {
         cleanedValues.seasons = cleanedValues.seasons.map((season, idx) => {
-          // Ensure season name and description are valid strings
-          if (!season.name || typeof season.name !== 'string') {
-            season.name = season.name || `Season ${idx + 1}`;
+          // Transform form field names back to API field names
+          const apiSeason = {
+            name: season.season_name || `Season ${idx + 1}`,
+            description: season.season_description || `Description for Season ${idx + 1}`,
+            is_active: season.is_active ?? true,
+            is_published: season.is_published ?? true,
+            participation_rules: season.participationRules || { AND: [] },
+            terms_and_conditions: season.termsAndConditions || { content: "", url: "" },
+            rules_and_regulations: season.rulesAndRegulations || { content: "", url: "" },
+            medias: season.medias || []
+          };
+
+          // Handle duration (form uses RangePicker)
+          if (season.duration && Array.isArray(season.duration)) {
+            apiSeason.start_date = formatDateToISO(season.duration[0]) || formatDateToISO(new Date());
+            apiSeason.end_date = formatDateToISO(season.duration[1]) || formatDateToISO(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000));
+          } else {
+            apiSeason.start_date = formatDateToISO(new Date());
+            apiSeason.end_date = formatDateToISO(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000));
           }
-          
-          if (!season.description || typeof season.description !== 'string') {
-            season.description = season.description || `Description for Season ${idx + 1}`;
+
+          // Handle registration duration
+          if (season.registration_duration && Array.isArray(season.registration_duration)) {
+            apiSeason.registration_start_date = formatDateToISO(season.registration_duration[0]) || formatDateToISO(new Date());
+            apiSeason.registration_end_date = formatDateToISO(season.registration_duration[1]) || formatDateToISO(new Date(Date.now() + 15 * 24 * 60 * 60 * 1000));
+          } else {
+            apiSeason.registration_start_date = formatDateToISO(new Date());
+            apiSeason.registration_end_date = formatDateToISO(new Date(Date.now() + 15 * 24 * 60 * 60 * 1000));
           }
-          
-          // Format dates to ISO 8601 format (YYYY-MM-DD)
-          season.start_date = formatDateToISO(season.start_date) || formatDateToISO(new Date());
-          season.end_date = formatDateToISO(season.end_date) || formatDateToISO(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)); // 30 days from now
-          season.registration_start_date = formatDateToISO(season.registration_start_date) || formatDateToISO(new Date());
-          season.registration_end_date = formatDateToISO(season.registration_end_date) || formatDateToISO(new Date(Date.now() + 15 * 24 * 60 * 60 * 1000)); // 15 days from now
-          
-          // Ensure required objects exist
-          season.participation_rules = season.participation_rules || {};
-          season.terms_and_conditions = season.terms_and_conditions || { content: "", url: "" };
-          season.rules_and_regulations = season.rules_and_regulations || { content: "", url: "" };
           
           // Map locations field to locations_ids for API compatibility
           if (season.locations && Array.isArray(season.locations)) {
-            season.locations_ids = season.locations.filter(id => isValidUUID(id));
-            delete season.locations; // Remove the old field name
+            apiSeason.locations_ids = season.locations.filter(id => isValidUUID(id));
           } else {
-            season.locations_ids = [];
-          }
-          
-          // Ensure locations_ids is an array of valid UUIDs
-          if (!season.locations_ids || !Array.isArray(season.locations_ids)) {
-            season.locations_ids = [];
-          } else {
-            // Filter out non-UUID values
-            const originalLength = season.locations_ids.length;
-            season.locations_ids = season.locations_ids.filter(id => {
-              if (!id || typeof id !== 'string') {
-                return false;
-              }
-              if (!isValidUUID(id)) {
-                return false;
-              }
-              return true;
-            });
-          }
-          
-          // Final validation - ensure it's always an array
-          if (!Array.isArray(season.locations_ids)) {
-            season.locations_ids = [];
+            apiSeason.locations_ids = [];
           }
           
           // Process sports
           if (season.sports && Array.isArray(season.sports)) {
-            season.sports = season.sports.map(sport => {
-              // Ensure master_sports_id is valid UUID
-              if (!sport.master_sports_id || !isValidUUID(sport.master_sports_id)) {
-                if (sport.sportsId && isValidUUID(sport.sportsId)) {
-                  sport.master_sports_id = sport.sportsId;
-                }
-              }
+            apiSeason.sports = season.sports.map(sport => {
+              const apiSport = {
+                master_sports_id: sport.sportsId
+              };
               
               // Process events
               if (sport.events && Array.isArray(sport.events)) {
-                sport.events = sport.events.map(event => {
-                  // Copy sport ID to event if missing
-                  if (!event.master_sports_id && sport.master_sports_id) {
-                    event.master_sports_id = sport.master_sports_id;
+                apiSport.events = sport.events.map(event => {
+                  const apiEvent = {
+                    name: event.eventName || "",
+                    type: event.eventType || "",
+                    description: event.description || "",
+                    master_sport_events_id: event.master_sport_events_id || "",
+                    master_sports_id: sport.sportsId,
+                    terms_and_conditions: event.termsAndConditions || { content: "", url: "" },
+                    rules_and_regulations: event.rulesAndRegulations || { content: "", url: "" }
+                  };
+
+                  // Handle event duration
+                  if (event.event_duration && Array.isArray(event.event_duration)) {
+                    apiEvent.start_date = formatDateToISO(event.event_duration[0]) || apiSeason.start_date;
+                    apiEvent.end_date = formatDateToISO(event.event_duration[1]) || apiSeason.end_date;
+                  } else {
+                    apiEvent.start_date = apiSeason.start_date;
+                    apiEvent.end_date = apiSeason.end_date;
                   }
                   
-                  // Format dates
-                  event.start_date = formatDateToISO(event.start_date) || season.start_date;
-                  event.end_date = formatDateToISO(event.end_date) || season.end_date;
-                  
-                  // Ensure required objects exist
-                  event.terms_and_conditions = event.terms_and_conditions || { content: "", url: "" };
-                  event.rules_and_regulations = event.rules_and_regulations || { content: "", url: "" };
-                  
-                  // Handle subevents - transform event itself into a subevent structure if needed
-                  // This ensures the API receives the expected format
-                  if (!event.sub_events || !Array.isArray(event.sub_events) || event.sub_events.length === 0) {
-                    // If we have an event but no sub_events, create a subevent from this event's data
-                    const subevent = {
-                      name: event.eventName || event.name || event.eventType || "Default Subevent",
-                      description: event.description || `${event.eventType || "Default"} Event`,
+                  // Handle subevents
+                  if (event.sub_events && Array.isArray(event.sub_events) && event.sub_events.length > 0) {
+                    apiEvent.sub_events = event.sub_events.map(subevent => ({
+                      name: subevent.name || "",
+                      description: subevent.description || "",
+                      game_format: subevent.gameFormat || "KNOCKOUT",
+                      type: subevent.type || "Individual",
+                      status: subevent.status || "DRAFT",
+                      is_active: subevent.isActive ?? true,
+                      expected_participants: subevent.expected_participants || 32,
+                      participation_rules: subevent.participation_rules || {
+                        AND: [{ field: "COUNTRY", operator: "=", value: "India" }]
+                      },
+                      meta_data: {
+                        team: {
+                          max_players_count: subevent.meta_data?.team?.max_players_count || 2,
+                          min_players_count: subevent.meta_data?.team?.min_players_count || 2
+                        },
+                        scoring: {
+                          no_of_games: subevent.meta_data?.scoring?.no_of_games || 3,
+                          no_of_points: subevent.meta_data?.scoring?.no_of_points || 21,
+                          win_margin_points: subevent.meta_data?.scoring?.win_margin_points || 2,
+                          display_name: subevent.meta_data?.scoring?.display_name || "Games"
+                        }
+                      },
+                      pricing: subevent.pricing || {
+                        currency: "INR",
+                        type: "MRP",
+                        amount: 699,
+                        prices: [
+                          { type: "MRP", amount: 699, tax_included: false, tax_details: { tax_percentage: 18, tax_amount: 125.82 } },
+                          { type: "Selling Price", amount: 599, tax_included: false, tax_details: { tax_percentage: 18, tax_amount: 107.82 } }
+                        ]
+                      }
+                    }));
+                  } else {
+                    // Create default subevent if none exist
+                    apiEvent.sub_events = [{
+                      name: event.eventName || "Default Subevent",
+                      description: event.description || `${event.type || "Default"} Event`,
+                      game_format: "KNOCKOUT",
+                      type: event.type || "Individual",
+                      status: "DRAFT",
+                      is_active: true,
                       expected_participants: 32,
                       participation_rules: {
-                        AND: [
-                          {
-                            field: "COUNTRY",
-                            operator: "=",
-                            value: "India"
-                          }
-                        ]
+                        AND: [{ field: "COUNTRY", operator: "=", value: "India" }]
                       },
-                    meta_data: {
-                      team: {
-                          min_players_count: 2,
-                          max_players_count: 2
+                      meta_data: {
+                        team: { max_players_count: 2, min_players_count: 2 },
+                        scoring: {
+                          no_of_games: 3,
+                          no_of_points: 21,
+                          win_margin_points: 2,
+                          display_name: "Games"
+                        }
                       },
-                      scoring: {
-                        no_of_games: 3,
-                        no_of_points: 21,
-                        win_margin_points: 2,
-                        display_name: "Games"
-                      }
-                    },
-                    pricing: {
-                      currency: "INR",
-                      prices: [
-                        {
-                          type: "MRP",
-                          amount: 699,
-                          tax_included: false,
-                          tax_details: {
-                            tax_percentage: 18,
-                            tax_amount: 125.82
-                          }
-                        },
-                        {
-                          type: "Selling Price",
-                          amount: 599,
-                          tax_included: false,
-                          tax_details: {
-                            tax_percentage: 18,
-                            tax_amount: 107.82
-                          }
-                          }
+                      pricing: {
+                        currency: "INR",
+                        type: "MRP",
+                        amount: 699,
+                        prices: [
+                          { type: "MRP", amount: 699, tax_included: false, tax_details: { tax_percentage: 18, tax_amount: 125.82 } },
+                          { type: "Selling Price", amount: 599, tax_included: false, tax_details: { tax_percentage: 18, tax_amount: 107.82 } }
                         ]
                       }
-                    };
-
-                    // Ensure the master_sport_events_id is included in the subevent if needed
-                    if (event.master_sport_events_id) {
-                      subevent.master_sport_events_id = event.master_sport_events_id;
-                    }
-
-                    // Add this as a sub_event with proper field name
-                    event.sub_events = [subevent];
-                    
-                    // Remove any existing subevents field (without underscore) to avoid confusion
-                    if (event.subevents) {
-                      delete event.subevents;
-                    }
+                    }];
                   }
                   
-                  return event;
+                  return apiEvent;
                 });
               }
               
-              return sport;
+              return apiSport;
             });
           }
           
-          return season;
+          return apiSeason;
         });
       }
       
       // Final validation before API call
       if (cleanedValues.seasons && Array.isArray(cleanedValues.seasons)) {
-        cleanedValues.seasons.forEach((season, idx) => {
+        cleanedValues.seasons = cleanedValues.seasons.map((season, idx) => {
           // Final validation before API call
           if (!Array.isArray(season.locations_ids)) {
             season.locations_ids = [];
@@ -1200,6 +1361,9 @@ const AddTournamentForm = ({ onCancel, refetchTournaments }) => {
             }
             return true;
           });
+          
+          // Return the processed season object
+          return season;
         });
       }
       
@@ -1227,15 +1391,23 @@ const AddTournamentForm = ({ onCancel, refetchTournaments }) => {
         return;
       }
       
+      console.log("Final payload being sent to API:", JSON.stringify(cleanedValues, null, 2));
       await createTournament(cleanedValues);
       
       // The success handling (notification, form reset, navigation) is now handled in the useApiMutation onSuccess callback
       
     } catch (error) {
+      console.error("Error in onFinish function:", error);
+      console.error("Error stack:", error.stack);
+      console.error("Error message:", error.message);
+      console.error("Error details:", error);
+      
       setIsSubmitting(false);
       
       // Display a more helpful error message
-     renderErrorNotifications("An error occurred while submitting the form. Please try again.");
+      renderErrorNotifications([{
+        message: error.message || "An error occurred while submitting the form. Please try again."
+      }]);
     }
   };
 
@@ -1269,6 +1441,34 @@ const AddTournamentForm = ({ onCancel, refetchTournaments }) => {
       // Recursively check nested objects and arrays
       if (result[key] && typeof result[key] === 'object') {
         result[key] = ensureNoIds(result[key]);
+      }
+    });
+    
+    return result;
+  };
+
+  // Function to only remove temporary IDs (for edit mode)
+  const ensureNoTempIds = (obj) => {
+    if (!obj || typeof obj !== 'object') return obj;
+    
+    // Return value for recursive operations
+    let result = Array.isArray(obj) ? [...obj] : {...obj};
+    
+    // Fix field name if using incorrect version
+    if (result.master_sport_event_id && !result.master_sport_events_id) {
+      result.master_sport_events_id = result.master_sport_event_id;
+      delete result.master_sport_event_id;
+    }
+    
+    Object.keys(result).forEach(key => {
+      // Only remove temp_ prefixed values
+      if (typeof result[key] === 'string' && result[key].startsWith('temp_')) {
+        delete result[key];
+      }
+      
+      // Recursively check nested objects and arrays
+      if (result[key] && typeof result[key] === 'object') {
+        result[key] = ensureNoTempIds(result[key]);
       }
     });
     
@@ -1349,15 +1549,21 @@ const AddTournamentForm = ({ onCancel, refetchTournaments }) => {
 
   // Handler for the Cancel button - use navigate function for consistent navigation
   const handleCancel = () => {
-    // Clear saved form data on cancel
-    localStorage.removeItem('tournamentFormData');
-    setHasSavedDraft(false);
-    
-    // Clear the hash first (important for hash-based routing)
-    window.location.hash = "";
-    
-    // Navigate back to tournaments page with replace to avoid back button issues
-    navigate("/tournaments", { replace: true });
+    if (editMode) {
+      // In edit mode, don't clear saved draft data as it might be for other tournaments
+      // Just navigate back
+      navigate("/tms/tournaments", { replace: true });
+    } else {
+      // In add mode, clear saved form data on cancel
+      localStorage.removeItem('tournamentFormData');
+      setHasSavedDraft(false);
+      
+      // Clear the hash first (important for hash-based routing)
+      window.location.hash = "";
+      
+      // Navigate back to tournaments page with replace to avoid back button issues
+      navigate("/tournaments", { replace: true });
+    }
   };
 
   // Add a new direct submit function to handle manual submission
@@ -1397,7 +1603,7 @@ const AddTournamentForm = ({ onCancel, refetchTournaments }) => {
     }
     
     // Find the sport in the sports data
-    const sport = sportsData.find(s => s.sport_id === sportId);
+    const sport = sportsData.find(s => s.sportsId === sportId);
     if (!sport) {
       return null;
     }
@@ -1538,163 +1744,59 @@ const AddTournamentForm = ({ onCancel, refetchTournaments }) => {
             type="primary"
             htmlType="button"
             className="px-4 py-2"
-            loading={isCreatingTournament}
+            loading={isCreatingTournament || isSubmitting}
             onClick={async (e) => {
-              e.preventDefault(); // Prevent any default behavior
+              e.preventDefault();
               
-              // First approach: Get form values and validate manually
+              console.log("Save Tournament button clicked");
+              
               try {
-                // Get current values without validation first (as a backup)
-                const currentValues = form.getFieldsValue(true);
+                setIsSubmitting(true);
                 
-                // Try to validate (this may fail but we have the unvalidated values as backup)
-                let validatedValues = null;
-                try {
-                  validatedValues = await form.validateFields();
-                } catch (validationError) {
-                  // Form validation failed, but continuing with current values
-                }
+                // Get form values
+                const formValues = form.getFieldsValue(true);
+                console.log("Form values:", formValues);
                 
-                // Use validated values if available, otherwise use current values
-                const valuesToSubmit = validatedValues || currentValues;
-                
-                // Process sport events to ensure we have valid event IDs
-                if (valuesToSubmit.seasons && Array.isArray(valuesToSubmit.seasons)) {
-                  valuesToSubmit.seasons.forEach(season => {
-                    if (season.sports && Array.isArray(season.sports)) {
-                      season.sports.forEach(sport => {
-                        if (sport.events && Array.isArray(sport.events)) {
-                          sport.events.forEach(event => {
-                            // Check for incorrect field name and normalize
-                            if (event.master_sport_event_id && !event.master_sport_events_id) {
-                              event.master_sport_events_id = event.master_sport_event_id;
-                              delete event.master_sport_event_id;
-                            }
-                            
-                            // Check if the event has a valid master_sport_events_id
-                            if (!event.master_sport_events_id || !isValidUUID(event.master_sport_events_id)) {
-                              // Try to get the event ID from the sport data
-                              if (sport.sportsId && event.eventType) {
-                                const eventId = getEventIdBySportAndType(sport.sportsId, event.eventType, rawSportsData);
-                                if (eventId) {
-                                  event.master_sport_events_id = eventId;
-                                }
-                              }
-                            }
-                            
-                            // Handle subevents - transform event itself into a subevent structure if needed
-                            if (!event.sub_events || !Array.isArray(event.sub_events) || event.sub_events.length === 0) {
-                              // If we have an event but no sub_events, create a subevent from this event's data
-                              const subevent = {
-                                name: event.eventName || event.name || event.eventType || "Default Subevent",
-                                description: event.description || `${event.eventType || "Default"} Event`,
-                                expected_participants: 32,
-                                participation_rules: {
-                                  AND: [
-                                    {
-                                      field: "COUNTRY",
-                                      operator: "=",
-                                      value: "India"
-                                    }
-                                  ]
-                                },
-                                meta_data: {
-                                  team: {
-                                    min_players_count: 2,
-                                    max_players_count: 2
-                                  },
-                                  scoring: {
-                                    no_of_games: 3,
-                                    no_of_points: 21,
-                                    win_margin_points: 2,
-                                    display_name: "Games"
-                                  }
-                                },
-                                pricing: {
-                                  currency: "INR",
-                                  prices: [
-                                    {
-                                      type: "MRP",
-                                      amount: 699,
-                                      tax_included: false,
-                                      tax_details: {
-                                        tax_percentage: 18,
-                                        tax_amount: 125.82
-                                      }
-                                    },
-                                    {
-                                      type: "Selling Price",
-                                      amount: 599,
-                                      tax_included: false,
-                                      tax_details: {
-                                        tax_percentage: 18,
-                                        tax_amount: 107.82
-                                      }
-                                    }
-                                  ]
-                                }
-                              };
-
-                              // Add subevent type if available
-                              if (event.eventType) {
-                                subevent.type = event.eventType;
-                              }
-
-                              // Ensure the master_sport_events_id is included in the subevent if needed
-                              if (event.master_sport_events_id) {
-                                subevent.master_sport_events_id = event.master_sport_events_id;
-                              }
-
-                              // Add this as a sub_event with proper field name
-                              event.sub_events = [subevent];
-                              
-                              // Remove any existing subevents field (without underscore) to avoid confusion
-                              if (event.subevents) {
-                                delete event.subevents;
-                              }
-                            }
-                          });
-                        }
-                      });
-                    }
-                  });
-                }
-                
-                // Before creating the tournament, make sure we have all required fields
-                if (!valuesToSubmit.name && !valuesToSubmit.tournament_name) {
+                // Basic validation - check if we have required fields
+                if (!formValues.name) {
                   notification.error({
                     message: "Missing Tournament Name",
                     description: "Please provide a tournament name before submitting."
                   });
+                  setIsSubmitting(false);
                   return;
                 }
                 
-                // Ensure the name field is set correctly for the API
-                if (valuesToSubmit.tournament_name && !valuesToSubmit.name) {
-                  valuesToSubmit.name = valuesToSubmit.tournament_name;
-                }
-                
-                if (!valuesToSubmit.seasons || valuesToSubmit.seasons.length === 0) {
+                if (!formValues.seasons || formValues.seasons.length === 0) {
                   notification.error({
                     message: "Missing Seasons",
                     description: "Please add at least one season before submitting."
                   });
+                  setIsSubmitting(false);
                   return;
                 }
                 
-                await onFinish(valuesToSubmit);
+                console.log("Basic validation passed, calling onFinish");
+                await onFinish(formValues);
+                
               } catch (error) {
+                console.error("Error in button click handler:", error);
+                console.error("Error stack:", error.stack);
+                console.error("Error message:", error.message);
+                console.error("Error details:", error);
                 setIsSubmitting(false);
                 
-                // Display a more helpful error message
                 notification.error({
                   message: "Form Submission Error",
-                  description: error.message || "An error occurred while submitting the form. Please try again."
+                  description: `Detailed error: ${error.message || "An error occurred while submitting the form. Please try again."}`,
+                  duration: 10
                 });
+              } finally {
+                setIsSubmitting(false);
               }
             }}
           >
-            Save Tournament
+            {editMode ? "Update Tournament" : "Save Tournament"}
           </Button>
         </div>
       </Form>

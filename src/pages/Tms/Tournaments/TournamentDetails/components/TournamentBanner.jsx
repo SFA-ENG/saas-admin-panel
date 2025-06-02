@@ -1,7 +1,11 @@
-import { Avatar, Badge } from "antd";
+import { Avatar, Badge, Button, Tooltip } from "antd";
 import { TrophyIcon } from "lucide-react";
+import { Trash2 } from "./Icons";
+import { useDeleteEntity } from "../hooks/useDeleteEntity";
 
 const TournamentBanner = ({ tournament }) => {
+  const { handleDelete, isDeleting } = useDeleteEntity(tournament.id);
+
   // Extract media URLs from the tournament data using the same approach as TournamentCard
   const getMediaUrls = () => {
     const mediaUrls = {
@@ -135,6 +139,22 @@ const TournamentBanner = ({ tournament }) => {
           </p>
         </div>
       )}
+      
+      {/* Delete Button */}
+      <div className="absolute top-4 right-4">
+        <Tooltip title="Delete Tournament">
+          <Button
+            type="primary"
+            danger
+            shape="circle"
+            icon={<Trash2 size={16} />}
+            loading={isDeleting}
+            onClick={() => handleDelete('tournament', tournament.name)}
+            className="bg-red-500 hover:bg-red-600 border-red-500 hover:border-red-600"
+          />
+        </Tooltip>
+      </div>
+
       <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/70 flex items-end">
         <div className="flex items-center p-6 text-white">
           {logo ? (

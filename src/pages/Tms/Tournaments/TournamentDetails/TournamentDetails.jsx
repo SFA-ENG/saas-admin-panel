@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { Alert, Spin } from "antd";
 import { useApiQuery } from "hooks/useApiQuery/useApiQuery";
 import { CACHE_KEYS } from "../../../../commons/constants";
@@ -10,6 +10,7 @@ import TournamentTabs from "./components/TournamentTabs";
 
 const TournamentDetailsPage = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { tournament_id: tournamentId } = useParams();
   const [tournament, setTournament] = useState(null);
   const [preparedTournamentData, setPreparedTournamentData] = useState(null);

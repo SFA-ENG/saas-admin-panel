@@ -45,7 +45,7 @@ const formatCategoryTreeForEventName = (categoryTree) => {
 /**
  * EventCard component for tournament events
  */
-const EventCard = ({ event, removeEvent, events, eventIndex, generateId, isMobile, eventTypeOptions, availableSportEvents = [] }) => {
+const EventCard = ({ event, removeEvent, events, eventIndex, generateId, isMobile, eventTypeOptions, availableSportEvents = [], sportsData, selectedSportId }) => {
   const eventId = `event_${eventIndex}`;
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [form] = Form.useForm();
@@ -55,9 +55,65 @@ const EventCard = ({ event, removeEvent, events, eventIndex, generateId, isMobil
   const [termsFileList, setTermsFileList] = useState([]);
   const [rulesFileList, setRulesFileList] = useState([]);
 
+  console.log('EventCard - Props received:', {
+    eventIndex,
+    selectedSportId,
+    sportsDataLength: sportsData?.length || 0,
+    availableSportEventsLength: availableSportEvents?.length || 0,
+    eventName: event.name,
+    eventNameType: typeof event.name
+  });
+
+  // Get the current selected event ID for this event
+  const getCurrentSelectedEventId = () => {
+    try {
+      if (!parentForm) {
+        console.log('EventCard - No parent form available');
+        return null;
+      }
+      
+      // Get the master_sport_events_id directly from the form field
+      const eventFormPath = [event.name, 'master_sport_events_id'];
+      const selectedEventId = parentForm.getFieldValue(eventFormPath);
+      
+      console.log(`EventCard - Event form path:`, eventFormPath);
+      console.log(`EventCard - Selected event ID from form:`, selectedEventId);
+      
+      // Verify that this event ID exists in the available sport events
+      if (selectedEventId && availableSportEvents && availableSportEvents.length > 0) {
+        const matchingEvent = availableSportEvents.find(e => e.event_id === selectedEventId);
+        if (matchingEvent) {
+          console.log(`EventCard - Found matching event:`, matchingEvent);
+          return selectedEventId;
+        } else {
+          console.log(`EventCard - Event ID ${selectedEventId} not found in available sport events:`, 
+            availableSportEvents.map(e => ({ id: e.event_id, type: e.type })));
+          return null;
+        }
+      }
+      
+      console.log('EventCard - No valid event ID found');
+      return null;
+    } catch (error) {
+      console.error("Error getting current selected event ID:", error);
+      return null;
+    }
+  };
+
+  const currentSelectedEventId = getCurrentSelectedEventId();
+
+  // Get the current selected sport ID for this event's context
+  const getCurrentSelectedSportId = () => {
+    // Use the selectedSportId prop directly since it's passed from SportCard
+    console.log('EventCard - Using selectedSportId from props:', selectedSportId);
+    return selectedSportId;
+  };
+
+  const currentSelectedSportId = getCurrentSelectedSportId();
+
   // Log available sport events on component mount
   useEffect(() => {
-    console.log(`EventCard ${eventId} received availableSportEvents:`, availableSportEvents);
+    
     
     // Check if the event already has a master_sport_events_id set from a previous selection
     try {
@@ -67,36 +123,76 @@ const EventCard = ({ event, removeEvent, events, eventIndex, generateId, isMobil
       }
       
       const currentFormValues = parentForm.getFieldsValue();
-      const existingEventIdPath = event.name ? [...event.name.split('_'), 'master_sport_events_id'] : null;
       
-      if (existingEventIdPath && currentFormValues) {
-        // Navigate through the nested form values to find the master_sport_events_id
-        let current = currentFormValues;
-        for (const part of existingEventIdPath) {
-          if (current && typeof current === 'object') {
-            current = current[part];
-          } else {
-            current = undefined;
-            break;
-          }
-        }
+      // Try different approaches to find the existing event ID
+      let existingEventId = null;
+      
+      // Since event.name is a number (index), we need to extract the path from eventId
+      // eventId format is like "event_0", and we need to find the season and sport from context
+      if (currentFormValues && currentFormValues.seasons) {
+        // Extract indices from eventId (event_0 means eventIndex=0)
+        // We need to find this event by navigating the form structure
+        // Since we don't have direct access to season/sport indices here, 
+        // we'll search through all seasons and sports to find the event with matching master_sport_events_id
         
-        const existingEventId = current;
-        console.log(`EventCard ${eventId} has existing master_sport_events_id:`, existingEventId);
-        
-        // If there is an existing ID and available events, find the matching event
-        if (existingEventId && availableSportEvents && availableSportEvents.length > 0) {
-          const matchingEvent = availableSportEvents.find(e => e.event_id === existingEventId);
-          if (matchingEvent) {
-            console.log(`Found matching event for ID ${existingEventId}:`, matchingEvent);
-            setSelectedEvent(matchingEvent);
+        let foundEventData = null;
+        currentFormValues.seasons.forEach((season, seasonIdx) => {
+          if (season.sports) {
+            season.sports.forEach((sport, sportIdx) => {
+              if (sport.events) {
+                sport.events.forEach((eventData, eventIdx) => {
+                  // Check if this is the event we're looking for
+                  if (eventData && eventData.master_sport_events_id) {
+                    // Store the found event data
+                    if (!foundEventData && eventIdx === parseInt(eventId.split('_')[1])) {
+                      foundEventData = eventData;
+                      existingEventId = eventData.master_sport_events_id;
+                      console.log(`EventCard ${eventId} - Found event data at seasons[${seasonIdx}].sports[${sportIdx}].events[${eventIdx}]:`, eventData);
+                    }
+                  }
+                });
+              }
+            });
           }
-        }
+        });
       }
+      
+      
+      // If there is an existing ID and available events, find the matching event
+      if (existingEventId && availableSportEvents && availableSportEvents.length > 0) {
+        const matchingEvent = availableSportEvents.find(e => e.event_id === existingEventId);
+        if (matchingEvent) {
+          setSelectedEvent(matchingEvent);
+          
+          // Also update the form field value to ensure it shows in the dropdown
+          const formPath = [event.name, "master_sport_events_id"];
+          parentForm.setFieldValue(formPath, existingEventId);
+          
+        } else {
+          console.warn(`EventCard ${eventId} - No matching event found for ID ${existingEventId} in availableSportEvents:`, availableSportEvents.map(e => e.event_id));
+        }
+      } 
     } catch (error) {
       console.error("Error checking for existing event ID:", error);
     }
   }, [availableSportEvents, eventId, event.name, parentForm]);
+
+  // Monitor selectedEvent changes and update form fields accordingly
+  useEffect(() => {
+    if (selectedEvent && parentForm) {
+      console.log(`EventCard ${eventId} - selectedEvent changed:`, selectedEvent);
+      
+      // Update form fields with selected event data
+      const categoryTreeString = formatCategoryTreeForEventName(selectedEvent.category_tree);
+      const eventName = categoryTreeString || selectedEvent.type || "Unnamed Event";
+      const eventType = selectedEvent.type || "";
+     
+      // Set the form values using the correct path structure
+      parentForm.setFieldValue([event.name, 'eventName'], eventName);
+      parentForm.setFieldValue([event.name, 'eventType'], eventType);
+      
+    }
+  }, [selectedEvent, parentForm, eventId, event.name]);
 
   // Format available events for the dropdown
   const eventOptions = availableSportEvents.map(event => {
@@ -112,8 +208,7 @@ const EventCard = ({ event, removeEvent, events, eventIndex, generateId, isMobil
   
   // Handle event selection
   const handleEventSelection = (eventId, option) => {
-    console.log("Selected event ID:", eventId);
-    console.log("Selected event data:", option?.eventData);
+  
     
     if (!option || !option.eventData) {
       notification.warning({
@@ -153,11 +248,7 @@ const EventCard = ({ event, removeEvent, events, eventIndex, generateId, isMobil
       [masterEventIdPath.join('.')]: eventId
     });
     
-    console.log("Set form values:", {
-      eventName,
-      eventType,
-      master_sport_events_id: eventId
-    });
+ 
     
     // Notify successful selection
   renderSuccessNotifications({
@@ -178,6 +269,54 @@ const EventCard = ({ event, removeEvent, events, eventIndex, generateId, isMobil
     setRulesFileList(fileList);
     parentForm.setFieldValue([event.name, 'rulesAndRegulations'], { fileList });
   };
+
+  // Clear event selection when available sport events change (sport changes)
+  useEffect(() => {
+    console.log('EventCard - availableSportEvents changed:', {
+      eventIndex,
+      availableEventsCount: availableSportEvents?.length || 0,
+      selectedSportId,
+      availableEventIds: availableSportEvents?.map(e => e.event_id) || []
+    });
+    
+    if (availableSportEvents && availableSportEvents.length > 0) {
+      const currentEventId = getCurrentSelectedEventId();
+      console.log('EventCard - Current event ID from form:', currentEventId);
+      
+      // Check if the current event ID is valid for the new sport
+      if (currentEventId) {
+        const isValidForCurrentSport = availableSportEvents.some(e => e.event_id === currentEventId);
+        console.log('EventCard - Is event ID valid for current sport?', isValidForCurrentSport);
+        
+        if (!isValidForCurrentSport) {
+          console.log('EventCard - Current event ID is not valid for new sport, clearing selection');
+          // Clear the invalid event selection
+          parentForm.setFieldValue([event.name, 'master_sport_events_id'], undefined);
+          parentForm.setFieldValue([event.name, 'eventName'], '');
+          parentForm.setFieldValue([event.name, 'eventType'], '');
+          setSelectedEvent(null);
+          
+          // Force form to re-render
+          setTimeout(() => {
+            parentForm.setFieldsValue(parentForm.getFieldsValue());
+          }, 100);
+        } else {
+          // If the event ID is valid, make sure we have the correct selectedEvent set
+          const validEvent = availableSportEvents.find(e => e.event_id === currentEventId);
+          if (validEvent && validEvent !== selectedEvent) {
+            console.log('EventCard - Setting selected event to:', validEvent.type);
+            setSelectedEvent(validEvent);
+          }
+        }
+      } else {
+        console.log('EventCard - No current event ID, clearing selected event');
+        setSelectedEvent(null);
+      }
+    } else {
+      console.log('EventCard - No available sport events, clearing selected event');
+      setSelectedEvent(null);
+    }
+  }, [availableSportEvents, parentForm, event.name, selectedSportId]);
 
   return (
     <Card 
@@ -271,7 +410,7 @@ const EventCard = ({ event, removeEvent, events, eventIndex, generateId, isMobil
                   <Input
                     placeholder={selectedEvent ? formatCategoryTreeForEventName(selectedEvent.category_tree) || "Enter event name" : "Enter event name"}
                     className="rounded-lg h-8"
-                    disabled={selectedEvent !== null}
+                    disabled={true}
                   />
                 </Form.Item>
               </Col>
@@ -291,7 +430,7 @@ const EventCard = ({ event, removeEvent, events, eventIndex, generateId, isMobil
                       { value: "DOUBLES", label: "Doubles" },
                       { value: "TEAM", label: "Team Event" },
                     ]}
-                    disabled={selectedEvent !== null}
+                    disabled={true}
                   />
                 </Form.Item>
               </Col>
@@ -316,6 +455,8 @@ const EventCard = ({ event, removeEvent, events, eventIndex, generateId, isMobil
                   />
                 </Form.Item>
               </Col>
+
+             
 
               <Col xs={24} md={12}>
                 <Row gutter={[16, 32]}>
@@ -417,13 +558,17 @@ const EventCard = ({ event, removeEvent, events, eventIndex, generateId, isMobil
                   <>
                     <div className={`w-full ${isMobile ? 'space-y-4' : 'overflow-x-visible'}`}>
                       {subEvents.map((subEvent, subEventIndex) => (
-                        <SubEventCard 
-                          key={subEvent.key} 
-                          subEvent={subEvent} 
-                          removeSubEvent={removeSubEvent} 
-                          subEventIndex={subEventIndex}
-                          isMobile={isMobile}
-                        />
+                        <div key={subEvent.key}>
+                          <SubEventCard 
+                            subEvent={subEvent} 
+                            removeSubEvent={removeSubEvent} 
+                            subEventIndex={subEventIndex}
+                            isMobile={isMobile}
+                            sportsData={sportsData}
+                            selectedSportId={currentSelectedSportId}
+                            selectedEventId={currentSelectedEventId}
+                          />
+                        </div>
                       ))}
                     </div>
                     

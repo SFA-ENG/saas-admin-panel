@@ -19,6 +19,7 @@ const TournamentStructureSection = ({
   countryOptions,
   cityOptions,
   stateOptions,
+  qualifierRules,
   isMobile,
   fetchLocationsForCountry,
   selectedCountryCode
@@ -69,6 +70,7 @@ const TournamentStructureSection = ({
                       countryOptions={countryOptions}
                       cityOptions={cityOptions}
                       stateOptions={stateOptions}
+                      qualifierRules={qualifierRules}
                       isMobile={isMobile}
                       fetchLocationsForCountry={fetchLocationsForCountry}
                       selectedCountryCode={selectedCountryCode}

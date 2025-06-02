@@ -40,6 +40,7 @@ const SeasonCard = ({
   countryOptions,
   cityOptions,
   stateOptions,
+  qualifierRules,
   isMobile,
   fetchLocationsForCountry,
   selectedCountryCode,
@@ -58,6 +59,10 @@ const SeasonCard = ({
   const [termsFileList, setTermsFileList] = useState([]);
   const [rulesFileList, setRulesFileList] = useState([]);
   const [mediaFileLists, setMediaFileLists] = useState({});
+
+  // State for dynamic country options based on qualifier rules
+  const [dynamicCountryOptions, setDynamicCountryOptions] = useState([]);
+  const [isLoadingCountries, setIsLoadingCountries] = useState(false);
 
   // Handle tab change
   const handleTabChange = (key) => {
@@ -156,6 +161,85 @@ const SeasonCard = ({
 
   // Calculate sports count for the badge
   const sportsCount = formInstance.getFieldValue(['seasons', seasonIndex, 'sports'])?.length || 0;
+
+  // Effect to fetch dynamic country options based on qualifier rules
+  useEffect(() => {
+    const fetchDynamicCountries = async () => {
+      if (!qualifierRules || !Array.isArray(qualifierRules) || qualifierRules.length === 0) {
+        // Use fallback country options if no qualifier rules available
+        setDynamicCountryOptions([
+          { label: "India", value: "IN" },
+          { label: "United States", value: "US" },
+          { label: "United Kingdom", value: "GB" }
+        ]);
+        return;
+      }
+
+      setIsLoadingCountries(true);
+      
+      try {
+        // Find season-specific country rules
+        const seasonCountryRules = qualifierRules.filter(rule => 
+          rule.type === 'season' && 
+          rule.attribute_name === 'country'
+        );
+
+        if (seasonCountryRules.length === 0) {
+          // No season-specific rules found, use fallback
+          setDynamicCountryOptions([
+            { label: "India", value: "IN" },
+            { label: "United States", value: "US" },
+            { label: "United Kingdom", value: "GB" }
+          ]);
+          setIsLoadingCountries(false);
+          return;
+        }
+
+        // For now, we'll create country options based on the country_code from the rules
+        // In a more complete implementation, you might want to fetch available countries from an API
+        const countryOptions = seasonCountryRules.map(rule => {
+          // Map country codes to country names
+          const countryNames = {
+            'IN': 'India',
+            'US': 'United States', 
+            'GB': 'United Kingdom',
+            'AU': 'Australia',
+            'CA': 'Canada',
+            'DE': 'Germany',
+            'FR': 'France',
+            'JP': 'Japan',
+            'CN': 'China',
+            'SG': 'Singapore'
+          };
+
+          return {
+            label: countryNames[rule.country_code] || rule.country_code,
+            value: rule.country_code
+          };
+        });
+
+        // Remove duplicates based on country code
+        const uniqueCountryOptions = countryOptions.filter((country, index, self) => 
+          index === self.findIndex(c => c.value === country.value)
+        );
+
+        setDynamicCountryOptions(uniqueCountryOptions);
+        
+      } catch (error) {
+        console.error('Error processing qualifier rules for countries:', error);
+        // Use fallback on error
+        setDynamicCountryOptions([
+          { label: "India", value: "IN" },
+          { label: "United States", value: "US" },
+          { label: "United Kingdom", value: "GB" }
+        ]);
+      } finally {
+        setIsLoadingCountries(false);
+      }
+    };
+
+    fetchDynamicCountries();
+  }, [qualifierRules]);
 
   return (
     <Card
@@ -358,9 +442,9 @@ const SeasonCard = ({
                 <div className="flex items-start">
                   <HelpCircle size={16} className="text-blue-600 mr-2 mt-1" />
                   <div>
-                    <p className="text-blue-800 text-sm font-medium">Location Selection</p>
+                    <p className="text-blue-800 text-sm font-medium">Dynamic Location Selection</p>
                     <p className="text-blue-700 text-sm">
-                      First select a country, then choose from available locations for that country. Locations are loaded dynamically based on your country selection.
+                      Countries are loaded based on season qualifier rules from the API. First select a country, then choose from available locations for that country. Locations are loaded dynamically based on your country selection.
                     </p>
                   </div>
                 </div>
@@ -377,20 +461,18 @@ const SeasonCard = ({
                 rules={[{ required: true, message: "Please select a country" }]}
               >
                 <Select
-                  placeholder="Select country"
+                  placeholder={isLoadingCountries ? "Loading countries..." : "Select country"}
                   className="rounded-lg"
                   suffixIcon={<Map size={16} className="text-blue-500" />}
                   onChange={handleCountryChange}
-                  options={countryOptions && countryOptions.length > 0
-                    ? countryOptions
-                    : [
-                      { label: "India", value: "IN" },
-                      { label: "United States", value: "US" },
-                      { label: "United Kingdom", value: "GB" }
-                    ]
-                  }
+                  loading={isLoadingCountries}
+                  options={dynamicCountryOptions}
                 />
               </Form.Item>
+              <div className="text-xs text-gray-500 mt-1">
+                <HelpCircle size={12} className="inline mr-1 text-blue-500" />
+                Countries loaded based on season qualifier rules from API
+              </div>
             </Col>
 
             <Col xs={24} md={12}>

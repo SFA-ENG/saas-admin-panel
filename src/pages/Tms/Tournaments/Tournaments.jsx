@@ -29,8 +29,17 @@ const TournamentsPage = () => {
   });
 
   const [currentHash, setCurrentHash] = useState(location.hash);
+  
   // Check if we're in the tournament creation mode
   const isAddingTournament = currentHash === "#new";
+  
+  // Check if we're in edit mode using URL search params
+  const urlParams = new URLSearchParams(location.search);
+  const isEditingTournament = urlParams.get('mode') === 'edit';
+  const editingTournamentId = urlParams.get('id');
+  
+  // Get tournament data for editing from navigation state
+  const editTournamentData = location.state?.tournamentData;
 
   const {
     data: tournamentsData,
@@ -40,7 +49,9 @@ const TournamentsPage = () => {
     queryKey: [CACHE_KEYS.TOURNAMENTS],
     url: "/tms/tournaments",
     params: {
-      type: "DETAILED"
+      type: "DETAILED",
+      page: 1,
+      page_size: 100,
     }
   });
 
@@ -169,20 +180,40 @@ useEffect(() => {
   };
 }, [currentHash, refetchTournaments]);
 
+// Separate effect to handle edit mode navigation changes
+useEffect(() => {
+  // Refetch data when we return from edit mode (when query params are cleared)
+  if (!isEditingTournament && location.search === "") {
+    // Small delay to ensure navigation is complete
+    const timeoutId = setTimeout(() => {
+      refetchTournaments();
+    }, 100);
+    
+    return () => clearTimeout(timeoutId);
+  }
+}, [isEditingTournament, location.search, refetchTournaments]);
+
   // Navigate to tournament add form
   const handleAddTournament = () => {
+    // Clear any saved tournament data when starting fresh
+    localStorage.removeItem('tournamentFormData');
+    
     // Update the hash in the URL
     window.location.hash = "#new";
     // Also update the state directly to ensure a re-render
     setCurrentHash("#new");
   };
 
-  // Cancel adding tournament and return to list
+  // Cancel adding/editing tournament and return to list
   const handleCancelAdd = () => {
-    // Update the hash in the URL
-    window.location.hash = "";
-    // Also update the state directly to ensure a re-render
-    setCurrentHash("");
+    if (isEditingTournament) {
+      // For edit mode, navigate to tournaments without query params
+      navigate("/tms/tournaments", { replace: true });
+    } else {
+      // For add mode, clear the hash
+      window.location.hash = "";
+      setCurrentHash("");
+    }
     // Refresh tournaments data
     refetchTournaments();
   };
@@ -191,8 +222,11 @@ useEffect(() => {
     return <FullPageLoader message="Loading tournaments ..." />;
   }
 
-  // Show the AddTournamentForm if the hash is #new, otherwise show the tournament list
-  if (isAddingTournament) {
+  // Show the AddTournamentForm if the hash is #new or #edit-{id}, otherwise show the tournament list
+  if (isAddingTournament || isEditingTournament) {
+    const isEditMode = isEditingTournament;
+    const tournamentData = isEditMode ? editTournamentData : null;
+    
     return (
       <Card style={{ backgroundColor: "#F9FAFB" }}>
         {/* Header & Cancel Button */}
@@ -207,11 +241,13 @@ useEffect(() => {
               <div className="bg-blue-600 h-8 w-2 rounded mr-3"></div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 mb-1">
-                  Add New Tournament
+                  {isEditMode ? "Edit Tournament" : "Add New Tournament"}
                 </h1>
                 <p className="text-gray-600">
-                  Create a new tournament with seasons, sports, events, and
-                  sub-events
+                  {isEditMode 
+                    ? "Update tournament details, seasons, sports, events, and sub-events" 
+                    : "Create a new tournament with seasons, sports, events, and sub-events"
+                  }
                 </p>
               </div>
             </div>
@@ -231,6 +267,9 @@ useEffect(() => {
         <AddTournamentForm 
           onCancel={handleCancelAdd} 
           refetchTournaments={refetchTournaments}
+          editMode={isEditMode}
+          tournamentId={editingTournamentId}
+          tournamentData={tournamentData}
         />
       </Card>
     );

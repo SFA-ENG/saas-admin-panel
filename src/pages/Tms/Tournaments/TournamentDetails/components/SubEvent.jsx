@@ -1,8 +1,13 @@
-import { Tag, Tooltip, Progress, Badge } from "antd";
-import { FlagIcon, Users, Trophy, BookOpenIcon } from "../components/Icons";
+import { Tag, Tooltip, Progress, Badge, Button } from "antd";
+import { FlagIcon, Users, Trophy, BookOpenIcon, Trash2 } from "../components/Icons";
 import { getFormatLabel } from "../../Tournaments.helper";
+import { useDeleteEntity } from "../hooks/useDeleteEntity";
+import { useParams } from "react-router-dom";
 
 const SubEvent = ({ subEvent }) => {
+  const { tournament_id: tournamentId } = useParams();
+  const { handleDelete, isDeleting } = useDeleteEntity(tournamentId);
+
   // Render participation rules safely
   const renderParticipationRules = () => {
     if (!subEvent.participationRules || !subEvent.participationRules.AND || !Array.isArray(subEvent.participationRules.AND)) {
@@ -39,9 +44,22 @@ const SubEvent = ({ subEvent }) => {
           />
         </div>
         
-        <Tag color={subEvent.isActive ? "success" : "default"} className="rounded-full px-3 py-1">
-          {subEvent.isActive ? "Active" : "Inactive"}
-        </Tag>
+        <div className="flex items-center gap-2">
+          <Tag color={subEvent.isActive ? "success" : "default"} className="rounded-full px-3 py-1">
+            {subEvent.isActive ? "Active" : "Inactive"}
+          </Tag>
+          <Tooltip title="Delete Sub-Event">
+            <Button
+              type="text"
+              danger
+              shape="circle"
+              icon={<Trash2 size={14} />}
+              loading={isDeleting}
+              onClick={() => handleDelete('subevent', subEvent.name)}
+              className="hover:bg-red-50"
+            />
+          </Tooltip>
+        </div>
       </div>
 
       <p className="text-sm text-gray-600 mb-4">{subEvent.description}</p>

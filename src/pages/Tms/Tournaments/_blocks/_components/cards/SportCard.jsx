@@ -28,25 +28,64 @@ const SportCard = ({
   
   // Debug log to check received props
   useEffect(() => {
-    console.log(`SportCard ${sportId} received sportsOptions:`, sportsOptions);
-    console.log(`SportCard ${sportId} received sportsData:`, sportsData);
-    
-    // Check if sport ID is already selected in form
-    const currentFormValues = form.getFieldsValue();
-    const sportFieldName = sport.name;
-    
-    if (currentFormValues && 
-        currentFormValues[sportFieldName] && 
-        currentFormValues[sportFieldName].sportsId) {
-      const existingSportId = currentFormValues[sportFieldName].sportsId;
-      console.log(`SportCard ${sportId} has existing sport ID:`, existingSportId);
+    // Add a small delay to ensure form data is fully loaded
+    const timer = setTimeout(() => {
+      
+      // Check if sport ID is already selected in form
+      const currentFormValues = form.getFieldsValue();
+      
+      // Navigate through the form structure to find the sport ID
+      let existingSportId = null;
+      let hasExistingEvents = false;
+      
+      // Try different ways to access the sport ID from the form values
+      if (currentFormValues && currentFormValues.seasons) {
+        // Since sport.name is a number (index), we need to find which season and sport this corresponds to
+        // From the sportId format like "season_0_sport_0", extract the indices
+        const seasonIndex = parseInt(sportId.split('_')[1]);
+        const sportIndex = parseInt(sportId.split('_')[3]);
+                
+        const seasonData = currentFormValues.seasons[seasonIndex];
+        
+        if (seasonData && seasonData.sports) {    
+          if (seasonData.sports[sportIndex]) {
+            const sportData = seasonData.sports[sportIndex];
+            existingSportId = sportData.sportsId;
+            hasExistingEvents = sportData.events && sportData.events.length > 0;
+          } else {
+            console.warn(`  - No sport data at sports[${sportIndex}]`);
+          }
+        } else {
+          console.warn(`  - No season data or sports array at seasons[${seasonIndex}]`);
+        }
+      }
       
       // If we have a selected sport ID, populate events
-      if (existingSportId && sportsData) {
+      if (existingSportId && sportsData && sportsData.length > 0) {
         setSelectedSportId(existingSportId);
-        handleSportChange(existingSportId);
+        
+        // Find the sport in sportsData and set available events
+        const selectedSport = sportsData.find(sport => 
+          sport.sport_id === existingSportId || 
+          sport.id === existingSportId ||
+          sport.value === existingSportId ||
+          sport.master_sports_id === existingSportId
+        );
+        
+        if (selectedSport && selectedSport.events) {
+          setSelectedSportEvents(selectedSport.events);
+        } else {
+          console.warn(`SportCard ${sportId} - No events found for sport ID ${existingSportId}`);
+        }
+        
+        // Only trigger handleSportChange if we don't have existing events (to avoid clearing edit data)
+        if (!hasExistingEvents) {
+          handleSportChange(existingSportId);
+        }
       }
-    }
+    }, 100); // Small delay to ensure form data is loaded
+    
+    return () => clearTimeout(timer);
   }, [sportsOptions, sportId, sportsData, form, sport.name]);
   
   // Handle sport selection change
@@ -60,52 +99,79 @@ const SportCard = ({
       return;
     }
     
-    const selectedSport = sportsData.find(sport => sport.sport_id === sportId);
+    // Try different ID field names to find the matching sport
+    const selectedSport = sportsData.find(sport => 
+      sport.sport_id === sportId || 
+      sport.id === sportId ||
+      sport.value === sportId ||
+      sport.master_sports_id === sportId
+    );
+  
     
     if (selectedSport && selectedSport.events) {
-      console.log(`Found events for sport ${selectedSport.name}:`, selectedSport.events);
       
       // Clear any existing events in the form when sport changes
       const currentFormValues = form.getFieldsValue();
       const sportFieldName = sport.name;
       
+      console.log(`Clearing events for sport field: ${sportFieldName}`);
+      
       if (currentFormValues && currentFormValues[sportFieldName]) {
-        // Reset events array to empty
+        // Reset the entire sport section to clear all nested data
         form.setFieldsValue({
           [sportFieldName]: {
-            ...currentFormValues[sportFieldName],
-            events: []
+            sportsId: sportId, // Keep the new sport ID
+            events: [] // Clear all events
           }
         });
         
-        // Add a default event with the first available event ID
+        console.log(`Cleared all events for sport ${selectedSport.name}`);
+        
+        // Add a default event with the first available event ID after a short delay
         if (selectedSport.events.length > 0) {
-          const defaultEvent = {
-            id: generateId(),
-            master_sport_events_id: selectedSport.events[0].event_id,
-            eventName: selectedSport.events[0].type || "Default Event",
-            eventType: selectedSport.events[0].type || "SINGLES"
-          };
-          
           setTimeout(() => {
-            const updatedValues = form.getFieldsValue();
+            const defaultEvent = {
+              id: generateId(),
+              master_sport_events_id: selectedSport.events[0].event_id,
+              eventName: selectedSport.events[0].type || "Default Event",
+              eventType: selectedSport.events[0].type || "SINGLES",
+              sub_events: [] // Ensure sub_events are also cleared
+            };
+            
+            // Add the default event
+            const currentValues = form.getFieldsValue();
+            const sportData = currentValues[sportFieldName] || {};
+            
             form.setFieldsValue({
               [sportFieldName]: {
-                ...updatedValues[sportFieldName],
+                ...sportData,
+                sportsId: sportId, // Ensure sport ID is preserved
                 events: [defaultEvent]
               }
             });
             
-           renderSuccessNotifications(`Added default event for ${selectedSport.name}`);
-          }, 100);
+            console.log(`Added default event for ${selectedSport.name}:`, defaultEvent);
+            renderSuccessNotifications(`Added default event for ${selectedSport.name}`);
+          }, 200); // Increased delay to ensure proper clearing
         }
       }
       
       // Store the events for selection in EventCard components
       setSelectedSportEvents(selectedSport.events);
+      console.log(`Set selected sport events for ${selectedSport.name}:`, selectedSport.events.map(e => ({ id: e.event_id, type: e.type })));
     } else {
       console.warn(`No events found for sport ID ${sportId}`);
+      console.warn(`Available sports:`, sportsData.map(s => ({ id: s.sport_id || s.id, name: s.name })));
       setSelectedSportEvents([]);
+      
+      // Clear the form section for this sport
+      const sportFieldName = sport.name;
+      form.setFieldsValue({
+        [sportFieldName]: {
+          sportsId: sportId,
+          events: []
+        }
+      });
       
       notification.warning({
         message: "No Events Available",
@@ -210,6 +276,8 @@ const SportCard = ({
                       { value: "TOURNAMENT", label: "Tournament" }
                     ]}
                     availableSportEvents={selectedSportEvents}
+                    sportsData={sportsData}
+                    selectedSportId={selectedSportId}
                   />
                 ))}
                 

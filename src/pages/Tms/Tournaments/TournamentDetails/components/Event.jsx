@@ -1,9 +1,14 @@
-import { Collapse, Tag } from "antd";
-import { ChevronDownIcon, TargetIcon } from "../components/Icons";
+import { Collapse, Tag, Button, Tooltip } from "antd";
+import { ChevronDownIcon, TargetIcon, Trash2 } from "../components/Icons";
 import { formatDate, getIconBgColor } from "../../Tournaments.helper";
 import SubEvent from "./SubEvent";
+import { useDeleteEntity } from "../hooks/useDeleteEntity";
+import { useParams } from "react-router-dom";
 
 const Event = ({ event, eventIndex }) => {
+  const { tournament_id: tournamentId } = useParams();
+  const { handleDelete, isDeleting } = useDeleteEntity(tournamentId);
+
   try {
     // Handle potential undefined or missing data
     if (!event || !event.eventId) {
@@ -21,23 +26,39 @@ const Event = ({ event, eventIndex }) => {
       {
         key: event.eventId,
         label: (
-          <div className="flex items-center">
-            <div
-              className={`${bgColorClass} p-1.5 rounded-full mr-2`}
-            >
-              <TargetIcon size={14} />
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center">
+              <div
+                className={`${bgColorClass} p-1.5 rounded-full mr-2`}
+              >
+                <TargetIcon size={14} />
+              </div>
+              {Object.entries(event.categoryTree || {}).map(
+                ([key, value]) =>
+                  value && (
+                    <span key={key} className="font-medium mr-2">
+                      {value}
+                    </span>
+                  )
+              )}
+              <Tag className="ml-2" color="cyan">
+                {event.eventType}
+              </Tag>
             </div>
-            {Object.entries(event.categoryTree || {}).map(
-              ([key, value]) =>
-                value && (
-                  <span key={key} className="font-medium mr-2">
-                    {value}
-                  </span>
-                )
-            )}
-            <Tag className="ml-2" color="cyan">
-              {event.eventType}
-            </Tag>
+            <Tooltip title="Delete Event">
+              <Button
+                type="text"
+                danger
+                shape="circle"
+                icon={<Trash2 size={14} />}
+                loading={isDeleting}
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent collapse toggle
+                  handleDelete('event', event.name || 'Event');
+                }}
+                className="hover:bg-red-50"
+              />
+            </Tooltip>
           </div>
         ),
         children: (
